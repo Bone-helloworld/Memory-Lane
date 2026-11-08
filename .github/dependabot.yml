@@ -1,0 +1,9 @@
+# Opens pull requests when npm packages in package.json have updates.
+# Review and run `npm test` before merging. Does not change the running app by itself.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5

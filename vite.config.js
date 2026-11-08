@@ -15,7 +15,7 @@ export default defineConfig({
   server: {
     port: 5173,
     // Always 5173: if it is taken (usually a second `npm run dev` still running), stop with an error instead of quietly
-    // moving to 5174 — Google sign-in only knows http://localhost:5173 (PLAN.md, "Bắt đầu nhanh").
+    // moving to 5174 — Google sign-in only knows http://localhost:5173.
     strictPort: true,
     // In development the browser only talks to Vite; API calls are forwarded to Express.
     // changeOrigin: false keeps the address the browser used (localhost:5173) in the Host header — Vite's short form

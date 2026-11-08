@@ -1,38 +1,37 @@
-# Memory Lane — cuốn album không thuật toán
+# Memory Lane — an album with no algorithm
 
-Ứng dụng web riêng tư để lưu **ảnh cũ và video gia đình, người quen cũ, phim & nhạc cả nhà từng yêu**, cùng những **kỷ vật** làm
-từ chính các kỷ niệm đó (bưu thiếp, con tem, thẻ ảnh). Mọi thứ được lưu một cách chủ động và riêng tư, thay vì lướt qua lúc nửa đêm.
+A private web app for keeping **old family photos and videos, people you have lost touch with, and the films and songs the household loved**, plus **keepsakes** made from those memories (postcards, stamps, photo cards). You save them on purpose, and privately, instead of scrolling past them at midnight.
 
-- **Chia sẻ:** chỉ với **đúng những người bạn chọn**, qua link mời riêng. Lời nhắn hiện ra **trực tiếp**.
-- **Thẻ kỷ niệm & Kỷ vật:** biến một kỷ niệm thành bưu thiếp, con tem hay thẻ ảnh để gửi cho người thân, rồi cất những tấm muốn
-  giữ vào tab **Kỷ vật**.
-- **Song ngữ:** **Tiếng Việt ⇄ English** chỉ với một chạm.
-- **Hai giao diện:** *Sổ tay ký ức* và *Phòng tối*.
-- **Thiết bị:** dùng tốt trên máy tính, iPhone và Android.
+- **Sharing:** only with **the people you choose**, through a private invite link. Notes show up **live**.
+- **Keepsake cards and Keepsakes:** turn a memory into a postcard, a stamp, or a photo card to send to someone, then file the ones you want to keep under **Keepsakes**.
+- **Two languages:** **Tiếng Việt ⇄ English** in one tap.
+- **Two themes:** *Notebook* and *Darkroom*.
+- **Devices:** works on a computer, iPhone, and Android.
 
-Đây là bản MVP (bản mẫu hoàn chỉnh) của một đồ án tốt nghiệp. Ứng dụng gồm React ở phía giao diện, API REST bằng Express và cơ sở
-dữ liệu SQLite, với đăng nhập thật (cả bằng Google), lưu ảnh/video riêng tư, chia sẻ, kiểm thử tự động và tệp triển khai.
+This is the MVP of a graduation project. The app is a React interface, an Express REST API, and a SQLite database, with real sign-in (including Google), private photo and video storage, sharing, automated tests, and deploy files.
 
 <p>
-  <img src="docs/screenshots/01-landing-notebook.jpg" width="49%" alt="Trang giới thiệu — giao diện Sổ tay" />
-  <img src="docs/screenshots/02-landing-darkroom.jpg" width="49%" alt="Trang giới thiệu — giao diện Phòng tối" />
+  <img src="docs/screenshots/01-landing-notebook.jpg" width="49%" alt="Landing page — Notebook theme" />
+  <img src="docs/screenshots/02-landing-darkroom.jpg" width="49%" alt="Landing page — Darkroom theme" />
 </p>
 
-| Tài liệu | Nội dung |
+| Document | What it is |
 | --- | --- |
-| [docs/PRESENTATION.md](docs/PRESENTATION.md) | **Thuyết trình toàn bộ dự án**: từng phần front-end, back-end, cơ sở dữ liệu, bảo mật, chia sẻ, luồng xử lý, kịch bản demo. Viết cho người vừa học xong lập trình web. |
-| [PLAN.md](PLAN.md) | **Kế hoạch & hướng dẫn**: chuyển dự án này sang một repo Git thật để tự phát triển tiếp; bản đồ mã nguồn; hướng dẫn **tự xây lại từ thư mục trống** qua 16 chặng (máy chủ, cơ sở dữ liệu, đăng nhập rồi mới tới giao diện; code đầy đủ, đã chạy thử); **Phần C: vận hành, bảo trì, xử lý sự cố** (sao lưu, công cụ quản trị, sổ tay theo triệu chứng); **Phần D: khi không còn ai để hỏi**; và **Phần E: xây lại từng tính năng còn lại của bản thật**, từng bước, code trích nguyên văn. Bắt đầu từ mục **"Đọc trước tiên"** và **"Bắt đầu nhanh"** (mở, chạy, tắt app, các cổng, đăng nhập, tình huống hay gặp). |
-| [docs/MO-RONG.md](docs/MO-RONG.md) | Khi có nhiều người dùng: nén ảnh/video giữ chất lượng (có số liệu đo), lưu trữ đám mây, bảo mật, thời gian thực. |
-| [docs/design/DESIGN.md](docs/design/DESIGN.md) | Thiết kế hai giao diện, Kỷ vật và thẻ kỷ niệm, điện thoại, gợi ý giao diện mới. |
-| [docs/SUA-NOI-DUNG-TIENG-VIET.md](docs/SUA-NOI-DUNG-TIENG-VIET.md) | Cách tự sửa mọi câu chữ tiếng Việt của giao diện (`client/src/i18n/vi.js`). |
-| [docs/DEPLOY.md](docs/DEPLOY.md) | Đưa app lên mạng (Render, Railway, Fly.io / Docker) và cài **đăng nhập Google**. |
-| [docs/CREDITS.md](docs/CREDITS.md) | Nguồn ảnh (Unsplash) và video (Pexels) miễn phí dùng cho dữ liệu demo. |
+| [docs/KIEN-TRUC.md](docs/KIEN-TRUC.md) | **Architecture for beginners (Vietnamese):** what the app does, why each technology is here, a folder map, the path of one request, and how to run it locally. |
+| [docs/LO-TRINH-TU-XAY-LAI.md](docs/LO-TRINH-TU-XAY-LAI.md) | **Rebuild roadmap (Vietnamese):** small milestones, what to study, and which parts of this repo are boilerplate you can skip. |
+| [docs/DEPLOY-VA-VAN-HANH.md](docs/DEPLOY-VA-VAN-HANH.md) | **Production on Render (Vietnamese):** one Node server plus a disk, domain, HTTPS, then an operations and security checklist. |
+| [docs/PRESENTATION.md](docs/PRESENTATION.md) | **Full project talk (Vietnamese):** front end, back end, database, security, sharing, request flow, and a demo script. Written for someone who just learned web development. |
+| [docs/MO-RONG.md](docs/MO-RONG.md) | When there are many users (Vietnamese): compressing photos and video, cloud storage, security, realtime. |
+| [docs/design/DESIGN.md](docs/design/DESIGN.md) | The two themes, keepsakes and cards, phones, and ideas for a new theme (Vietnamese). |
+| [docs/SUA-NOI-DUNG-TIENG-VIET.md](docs/SUA-NOI-DUNG-TIENG-VIET.md) | How to edit every Vietnamese string in the UI (`client/src/i18n/vi.js`). |
+| [docs/DEPLOY.md](docs/DEPLOY.md) | Putting the app online (Render, Railway, Fly.io / Docker) and setting up **Google sign-in** (Vietnamese). |
+| [docs/CREDITS.md](docs/CREDITS.md) | Unsplash photos and Pexels videos used as demo media. |
 
 ---
 
-## Chạy thử nhanh
+## Try it
 
-Cần **Node.js 22.22 trở lên** (đã thử trên Node 24). Không cần cài gì thêm: cơ sở dữ liệu chỉ là một tệp, tự tạo ra.
+You need **Node.js 22.22 or newer** (tested on Node 24). Nothing else to install: the database is a single file, created automatically.
 
 ```bash
 npm install
@@ -46,265 +45,248 @@ npm run seed
 npm run dev
 ```
 
-Mở **http://localhost:5173**, bấm **"Dùng thử bản demo"**. Muốn xem phía người được chia sẻ, bấm dòng nhỏ bên dưới:
-**"…vào vai Thu Hà"**.
+Open **http://localhost:5173** and click **"Try the demo"**. To see the app as someone the album was shared with, click the small line under that button: **"…as Thu Hà"**.
 
-`npm run dev` chạy hai chương trình cùng lúc: API Express ở cổng 3001 và Vite ở cổng 5173 (tự tải lại khi sửa code). Tắt bằng
-`Ctrl + C`. **Chỉ chạy một `npm run dev` một lúc**: lần thứ hai sẽ báo "Port 5173 is already in use". Tìm và tắt bản đang chạy ngầm:
-[PLAN.md, Q3](PLAN.md#q3-tìm-và-tắt-một-máy-chủ-đang-chạy-ngầm).
+`npm run dev` runs two programs at once: the Express API on port 3001 and Vite on port 5173 (the page reloads when you edit code). Stop them with `Ctrl + C`. **Run only one `npm run dev` at a time.** A second one reports "Port 5173 is already in use". Stop the other one with `Ctrl + C` in its terminal. If you cannot find that window, run `lsof -nP -iTCP:5173 -sTCP:LISTEN` and stop the listed process.
 
-Để chạy giống khi đưa lên mạng, tức một máy chủ phục vụ cả API lẫn giao diện đã build:
+To run it the way it runs online — one server for both the API and the built interface:
 
 ```bash
 npm run build && npm start
 ```
 
-rồi mở http://localhost:3001.
+then open http://localhost:3001.
 
-**Thử trên điện thoại thật** (cùng mạng Wi-Fi với máy tính):
+**On a real phone** (same Wi-Fi as the computer):
 
 ```bash
 npm run dev:phone
 ```
 
-Vite in ra một địa chỉ dạng `http://192.168.x.x:5173`; mở địa chỉ đó trên iPhone hoặc Android.
+Vite prints an address like `http://192.168.x.x:5173`. Open that on an iPhone or Android.
 
-**Dữ liệu demo** (`npm run seed`): chỉ tạo lại các tài khoản demo, không bao giờ đụng vào tài khoản thật.
+**Demo data** (`npm run seed`) recreates only the demo accounts. It never touches a real account.
 
-- **An**: 14 kỷ niệm có ảnh và video, 5 người quen, 5 phim/nhạc, và 6 kỷ vật (2 bưu thiếp, 2 con tem, 2 thẻ ảnh) làm từ chính các
-  kỷ niệm đó.
-- **Năm người bạn** đã kết nối với An: Thu Hà, Minh Khoa, Phương Linh, Anh Tuấn, Quốc Bảo. Họ chia sẻ kỷ niệm qua lại với An
-  và có sẵn 20 lời nhắn. Có đủ các trạng thái link mời: đã nhận, đang chờ, hết hạn, đã thu hồi.
-- **Ngày tháng tính theo hôm nay**, nên cuộn phim "Hôm nay, nhiều năm trước" luôn có ảnh.
+- **An:** 14 memories with photos and videos, 5 old friends, 5 films and songs, and 6 keepsakes (2 postcards, 2 stamps, 2 photo cards) made from those memories.
+- **Five friends** already connected to An: Thu Hà, Minh Khoa, Phương Linh, Anh Tuấn, Quốc Bảo. They share memories with An and 20 notes are already there. Invite links cover every state: accepted, pending, expired, revoked.
+- **Dates are computed from today**, so the "On this day, years ago" film strip always has something in it.
 
 ---
 
-## Tính năng
+## Features
 
-| Phần | Làm được gì |
+| Part | What you can do |
 | --- | --- |
-| **Hai giao diện** | **Sổ tay ký ức:** giấy chấm, ảnh dán băng keo, chữ viết tay, mực bi xanh. **Phòng tối:** than chì, đèn đỏ, tờ in thử có lỗ phim, kính lúp khi rê chuột, ảnh "hiện hình". Đổi trên thanh điều hướng hoặc trong Cài đặt. |
-| **Hôm nay gợi lại** | Lời chào, kỷ niệm nổi bật, thống kê, thanh năm, cuộn phim **"Hôm nay, nhiều năm trước"**, kỷ niệm **được chia sẻ với bạn**, người lâu ngày chưa liên lạc, phim & nhạc. |
-| **Album** | Mỗi kỷ niệm có **tối đa 20 ảnh và video**, tiêu đề, nơi chốn, câu chuyện, ngày có thể **không đầy đủ** (chỉ năm, hoặc năm + tháng). Ảnh và video dọc hiển thị đúng hình dạng. |
-| **Ảnh & video** | Kéo thả nhiều tệp, mỗi tệp một thanh tiến trình, chọn ảnh bìa. Ảnh được xử lý **ngay trong trình duyệt**: bỏ GPS, xoay đúng chiều, tối đa 2000 px, lưu **WebP** (nhỏ hơn JPEG khoảng 30%, chất lượng gần như không đổi) và có bản xem trước 560 px. Video (MP4/MOV/WebM ≤ 100 MB) có khung hình đại diện. **Máy chủ xoá GPS thêm lần nữa**, kể cả toạ độ nơi quay trong video. Video phát ngay và tua được. |
-| **Chia sẻ** | **Link mời** dùng một lần, hết hạn sau 7 ngày, thu hồi được, gửi qua Zalo/Messenger. Người nhận lời vào **vòng thân quen** của bạn. Chọn người được xem **ngay trong form tạo kỷ niệm**, và tạo được link mời trước khi lưu. Người được chia sẻ xem và để lại **lời nhắn**. |
-| **Thời gian thực** | Lời nhắn mới **tự hiện ra** cho người đang xem kỷ niệm. Có thông báo nhỏ khi ai đó chia sẻ hoặc nhận lời mời (Server-Sent Events). |
-| **Thẻ kỷ niệm** | Từ một kỷ niệm tạo **bưu thiếp, con tem hoặc thẻ ảnh** (hai kiểu Giấy / Phòng tối), tải về hoặc chia sẻ thẳng sang Zalo/Messenger trên điện thoại. Thẻ được vẽ ngay trên máy; chỉ khi chủ kỷ niệm bấm **Lưu vào Kỷ vật** thì ảnh thẻ mới được tải lên, riêng tư. |
-| **Kỷ vật (Artifacts)** | Bộ sưu tập các **thẻ đã lưu từ chính kỷ niệm của bạn**, trình bày như danh mục một bảo tàng gia đình nhỏ: số hiện vật theo thứ tự lưu, lọc bưu thiếp / con tem / thẻ ảnh, xem lớn, tải về, chia sẻ, mở lại kỷ niệm gốc. Lưu từ trang kỷ niệm, hoặc ngay trong tab ("Tạo từ một kỷ niệm"). Chỉ chủ thấy; xoá kỷ niệm thì các thẻ của nó cũng đi theo. |
-| **Người quen cũ** | Quan hệ, lần cuối liên lạc, độ thân, nhãn "5 năm chưa liên lạc", nhật ký riêng, kỷ niệm chung, nút **"Mời dùng Memory Lane"**. |
-| **Phim & nhạc** | Bộ phim, bài hát của gia đình, của ai, thời nào, câu chuyện, link xem lại. |
-| **Dòng thời gian · Tìm kiếm** | Kỷ niệm theo năm. Một ô tìm cho kỷ niệm, người, ghi chú, phim nhạc, kỷ vật, **không cần gõ dấu** ("da lat" ra "Đà Lạt"). |
-| **Tài khoản** | Đăng ký/đăng nhập bằng email **hoặc Google**. Liên kết/huỷ liên kết Google, đặt mật khẩu, chế độ kín đáo (làm mờ ảnh nơi đông người; mặc định tắt, mỗi tài khoản tự bật), dung lượng đã dùng, đăng xuất mọi nơi, **xuất toàn bộ dữ liệu**, **xoá tài khoản**. |
-| **Ngôn ngữ** | Tiếng Việt ⇄ English ở mọi nơi, đổi tức thì, nhớ trên thiết bị và trong tài khoản. |
-| **Điện thoại** | Đã soát cho iPhone (Safari) và Android/Samsung: chữ trong ô nhập ≥ 16 px (iPhone không tự phóng to), vùng chạm đủ lớn, vùng an toàn tai thỏ, vuốt ảnh, chạm để xem ở chế độ kín đáo, biểu tượng màn hình chính. |
+| **Two themes** | **Notebook:** dotted paper, photos taped down, handwriting, blue ballpoint. **Darkroom:** charcoal, a red safelight, a contact sheet, a loupe on hover, photos that "develop". Switch from the nav bar or from Settings. |
+| **Today** | A greeting, a featured memory, counts, a year bar, the **"On this day, years ago"** film strip, memories **shared with you**, people you have not contacted in a long time, films and music. |
+| **Album** | Each memory holds **up to 20 photos and videos**, a title, a place, a story, and a date that can be **incomplete** (year only, or year and month). Portrait photos and videos keep their shape. |
+| **Photos and video** | Drag and drop many files, one progress bar each, pick a cover. Photos are processed **in the browser**: GPS removed, orientation fixed, max 2000 px, saved as **WebP** (about 30% smaller than JPEG, almost the same quality) plus a 560 px preview. Video (MP4/MOV/WebM, up to 100 MB) gets a poster frame. **The server strips GPS again**, including the location stored in a video. Video starts playing immediately and can be seeked. |
+| **Sharing** | A **one-time invite link**, expiring after 7 days, revocable, sent via Zalo or Messenger. Accepting puts that person in your **circle**. You choose who can see a memory **in the memory form itself**, and you can create the invite before saving. People you share with can view the memory and leave a **note**. |
+| **Live updates** | A new note **appears on its own** for anyone who has the memory open. A small notice when someone shares or accepts an invite (Server-Sent Events). |
+| **Keepsake cards** | From a memory, make a **postcard, stamp, or photo card** (Paper or Darkroom style), download it, or share it to Zalo/Messenger on a phone. The card is drawn on the device. The image is uploaded, privately, only when the owner clicks **Save to Keepsakes**. |
+| **Keepsakes (Artifacts)** | The **cards you saved from your own memories**, laid out like a small family museum: a catalogue number in the order you saved them, filters for postcard / stamp / photo card, a large view, download, share, and a link back to the memory. Save from the memory page, or from the tab ("Make one from a memory"). Only the owner sees them. Delete the memory and its cards go with it. |
+| **Old friends** | Relationship, last contact, closeness, a "5 years out of touch" label, a private log, shared memories, and an **"Invite to Memory Lane"** button. |
+| **Films and music** | A film or a song the family loved, whose it was, when, the story, and a link to watch or hear it again. |
+| **Timeline and search** | Memories by year. One search box for memories, people, notes, films, music, and keepsakes, **accents optional** ("da lat" finds "Đà Lạt"). |
+| **Account** | Register and sign in with email **or Google**. Link or unlink Google, set a password, discreet mode (blur photos in a crowded place; off by default, each account turns it on), storage used, sign out everywhere, **export everything**, **delete the account**. |
+| **Language** | Tiếng Việt ⇄ English everywhere, instant, remembered on the device and on the account. |
+| **Phones** | Checked on iPhone (Safari) and Android/Samsung: input text at least 16 px (so iPhone does not zoom in), large tap targets, the notch safe area, swiping photos, tap-to-reveal in discreet mode, and a home-screen icon. |
 
 <p>
-  <img src="docs/screenshots/03-today-notebook.jpg" width="49%" alt="Hôm nay — Sổ tay" />
-  <img src="docs/screenshots/04-today-darkroom.jpg" width="49%" alt="Hôm nay — Phòng tối" />
-  <img src="docs/screenshots/11-artifacts-notebook.jpg" width="49%" alt="Tab Kỷ vật" />
-  <img src="docs/screenshots/14-card-studio-notebook.jpg" width="49%" alt="Tạo thẻ kỷ niệm" />
-  <img src="docs/screenshots/08-memory-form-share-notebook.jpg" width="49%" alt="Chia sẻ ngay trong form tạo kỷ niệm" />
-  <img src="docs/screenshots/10-sharing-page-darkroom.jpg" width="49%" alt="Trang Chia sẻ" />
+  <img src="docs/screenshots/03-today-notebook.jpg" width="49%" alt="Today — Notebook" />
+  <img src="docs/screenshots/04-today-darkroom.jpg" width="49%" alt="Today — Darkroom" />
+  <img src="docs/screenshots/11-artifacts-notebook.jpg" width="49%" alt="Keepsakes tab" />
+  <img src="docs/screenshots/14-card-studio-notebook.jpg" width="49%" alt="Making a keepsake card" />
+  <img src="docs/screenshots/08-memory-form-share-notebook.jpg" width="49%" alt="Sharing inside the new-memory form" />
+  <img src="docs/screenshots/10-sharing-page-darkroom.jpg" width="49%" alt="Sharing page" />
 </p>
 
 <p>
-  <img src="docs/screenshots/19-mobile-today-notebook.jpg" width="32%" alt="Điện thoại — Hôm nay" />
-  <img src="docs/screenshots/20-mobile-memory-darkroom.jpg" width="32%" alt="Điện thoại — một kỷ niệm" />
-  <img src="docs/screenshots/21-mobile-menu-notebook.jpg" width="32%" alt="Điện thoại — menu" />
+  <img src="docs/screenshots/19-mobile-today-notebook.jpg" width="32%" alt="Phone — Today" />
+  <img src="docs/screenshots/20-mobile-memory-darkroom.jpg" width="32%" alt="Phone — one memory" />
+  <img src="docs/screenshots/21-mobile-menu-notebook.jpg" width="32%" alt="Phone — menu" />
 </p>
 
 ---
 
-## Công nghệ
+## Technology
 
-| Lớp | Công nghệ | Vì sao |
+| Layer | Technology | Why it is here |
 | --- | --- | --- |
-| Giao diện | **React 19** + **React Router 8** | Chia giao diện thành component; điều hướng không tải lại trang. |
-| Build | **Vite 8** | Máy chủ phát triển tức thì, build tối ưu, tách code theo trang. |
-| CSS | **CSS thuần** + biến CSS (design token), mỗi giao diện một bộ token | Hai giao diện trên cùng một HTML (`<html data-theme="notebook\|darkroom">`), không framework. Font **tự đóng gói** bằng `@fontsource` (Be Vietnam Pro, Playpen Sans, Bricolage Grotesque, IBM Plex Mono), đủ dấu tiếng Việt, không gọi Google Fonts. |
-| Đa ngôn ngữ | Lớp nhỏ tự viết (`client/src/i18n`) + **Intl** của trình duyệt | Từ điển `vi.js` / `en.js`, số nhiều, ngày tháng theo ngôn ngữ. |
-| Ảnh, video, thẻ | **Canvas**, `<video>`, **XMLHttpRequest** có sẵn trong trình duyệt | Nén WebP, chụp khung hình video, thanh tiến trình tải lên, vẽ bưu thiếp/con tem, không cần thư viện. |
-| API | **Node.js** + **Express 5** | REST API rõ ràng; Express 5 tự bắt lỗi trong hàm `async`. |
-| Cơ sở dữ liệu | **SQLite** qua **`node:sqlite`** có sẵn trong Node | SQL thật (khóa ngoại, index, migration), không cần cài máy chủ CSDL. |
-| Tải tệp | **multer** (ghi thẳng xuống đĩa) + kiểm tra magic bytes + xoá metadata | Video 100 MB không nằm trong RAM; nhận diện tệp bằng nội dung. |
-| Đăng nhập | Phiên phía máy chủ + **scrypt**; **Google OAuth 2.0 / OpenID Connect** (PKCE, state, nonce) | Thu hồi phiên tức thì; đăng nhập Google mà không nạp script nào của Google vào trang. |
-| Thời gian thực | **Server-Sent Events** (`EventSource`) | Máy chủ đẩy lời nhắn/chia sẻ mới xuống trình duyệt; không cần thư viện WebSocket. |
-| Kiểm thử | **node:test** có sẵn + Chrome thật qua DevTools Protocol | 72 bài máy chủ: API, quyền riêng tư, chia sẻ, tải tệp, kỷ vật, Google (với "Google giả" và lệnh `setup:google`), SSE, xoá metadata, bản dịch, công cụ quản trị, `/api/health`. Và `npm run test:e2e`: **35 tính năng** kiểm tra trên Chrome thật như người dùng bấm. |
+| Interface | **React 19** + **React Router 8** | Split the UI into components. Move between pages without a full reload. |
+| Build | **Vite 8** | A fast dev server, an optimized production build, and one file per page. |
+| CSS | **Plain CSS** and CSS variables (design tokens), one token set per theme | Two themes on the same HTML (`<html data-theme="notebook\|darkroom">`), no CSS framework. Fonts are **bundled** with `@fontsource` (Be Vietnam Pro, Playpen Sans, Bricolage Grotesque, IBM Plex Mono), including Vietnamese diacritics. No request goes to Google Fonts. |
+| Languages | A small layer in `client/src/i18n` plus the browser's **Intl** | Dictionaries `vi.js` / `en.js`, plurals, and dates in the active language. |
+| Photos, video, cards | **Canvas**, `<video>`, and **XMLHttpRequest**, all built into the browser | WebP compression, a video poster frame, upload progress, and drawing postcards and stamps. No extra library. |
+| API | **Node.js** + **Express 5** | A plain REST API. Express 5 forwards errors thrown inside `async` functions. |
+| Database | **SQLite** through **`node:sqlite`**, built into Node | Real SQL (foreign keys, indexes, migrations) with no database server to install. |
+| Uploads | **multer** (straight to disk) plus magic-byte checks and metadata stripping | A 100 MB video is never held in RAM. The file type comes from the bytes, not the name. |
+| Sign-in | Server-side sessions and **scrypt**; **Google OAuth 2.0 / OpenID Connect** (PKCE, state, nonce) | A session can be revoked immediately. Google sign-in loads no Google script on the page. |
+| Live updates | **Server-Sent Events** (`EventSource`) | The server pushes new notes and shares to the browser. No WebSocket library. |
+| Tests | Built-in **node:test**, plus real Chrome over the DevTools Protocol | 72 server tests: API, privacy, sharing, uploads, keepsakes, Google (a fake Google plus `setup:google`), SSE, metadata stripping, translations, the admin tool, `/api/health`. And `npm run test:e2e`: **35 features** exercised in real Chrome the way a person would click. |
 
-Máy chủ chỉ phụ thuộc 3 gói: `express`, `multer`, `compression`.
+The server depends on three packages: `express`, `multer`, `compression`.
 
 ---
 
-## Cấu trúc thư mục
+## Folder map
 
 ```text
 memory-lane/
-├── client/                    Giao diện React (thư mục gốc của Vite)
-│   ├── index.html             trang HTML duy nhất (meta cho điện thoại: theme-color, color-scheme, safe area)
-│   ├── public/                theme-init.js · favicon.svg · apple-touch-icon.png · ảnh trang giới thiệu
+├── client/                    React UI (Vite's project root)
+│   ├── index.html             the only HTML page (phone meta: theme-color, color-scheme, safe area)
+│   ├── public/                theme-init.js · favicon.svg · apple-touch-icon.png · landing photos
 │   └── src/
-│       ├── main.jsx           điểm khởi đầu: font, CSS, các provider
-│       ├── App.jsx            danh sách trang (trang riêng tư tải khi cần)
-│       ├── api.js             nơi duy nhất gọi máy chủ (+ lib/upload.js cho tải tệp có tiến trình)
-│       ├── auth.jsx · theme.jsx · state.jsx   đăng nhập · giao diện · dữ liệu dùng chung
+│       ├── main.jsx           entry: fonts, CSS, providers
+│       ├── App.jsx            the route list (private pages load on demand)
+│       ├── api.js             the only place that calls the server (+ lib/upload.js for progress)
+│       ├── auth.jsx · theme.jsx · state.jsx   sign-in · theme · shared data
 │       ├── i18n/              vi.js · en.js · index.jsx
 │       ├── components/        TopBar, Memories, Gallery, Comments, SharePanel, InviteLink, GoogleButton,
 │       │                      CardStudio, LiveUpdates, forms/ (MemoryForm, ShareFields, PersonForm…)
-│       ├── pages/             mỗi màn hình một tệp (Today, Album, MemoryDetail, Artifacts, Sharing, Join…)
-│       ├── lib/               image.js (WebP) · video.js · upload.js · cards.js (vẽ thẻ) · artifacts.js
+│       ├── pages/             one file per screen (Today, Album, MemoryDetail, Artifacts, Sharing, Join…)
+│       ├── lib/               image.js (WebP) · video.js · upload.js · cards.js (draws cards) · artifacts.js
 │       └── styles/            base · layout · components · pages · notebook · darkroom
-├── server/                    API Express
-│   ├── index.js · app.js      bật máy chủ · lắp middleware + route + xử lý lỗi
-│   ├── config.js · db.js      cấu hình từ biến môi trường · SQLite + migration
+├── server/                    Express API
+│   ├── index.js · app.js      start the server · wire middleware, routes, and errors
+│   ├── config.js · db.js      env config · SQLite and migrations
 │   ├── migrations/            001_init · 002_media_sharing · 003_google_login · 004_artifacts · 005_card_artifacts
-│   ├── models/                TẤT CẢ câu SQL (users, memories, people, media, social, artifacts)
+│   ├── models/                EVERY SQL statement (users, memories, people, media, social, artifacts)
 │   ├── routes/                auth, google, me, dashboard, memories, files, invites, sharing, people, media, artifacts, search
-│   ├── lib/                   files, metadata (xoá GPS), google (OAuth), live (SSE), validate, sessions, security…
-│   ├── seed.js                thế giới demo: An và 5 người bạn
-│   ├── setup-google.js        npm run setup:google — ghi mã OAuth của bạn vào .env
-│   ├── admin.js               npm run admin — công cụ quản trị: tra tài khoản, mật khẩu tạm, kiểm tra tệp, sao lưu
-│   └── seed-media/            ảnh & video demo miễn phí (xem docs/CREDITS.md) · cards/ (thẻ demo do app vẽ)
-├── shared/                    code DÙNG CHUNG cho trình duyệt và máy chủ (giới hạn, tính ngày)
+│   ├── lib/                   files, metadata (strip GPS), google (OAuth), live (SSE), validate, sessions, security…
+│   ├── seed.js                the demo world: An and 5 friends
+│   ├── setup-google.js        npm run setup:google — writes your OAuth client into .env
+│   ├── admin.js               npm run admin — look up accounts, a temporary password, check files, backup
+│   └── seed-media/            free demo photos and videos (see docs/CREDITS.md) · cards/ (cards the app drew)
+├── shared/                    code SHARED by the browser and the server (limits, dates)
 ├── test/                      api.test.js · google.test.js · metadata.test.js · i18n.test.js
-├── docs/                      PRESENTATION · MO-RONG · DESIGN · DEPLOY · CREDITS · SUA-NOI-DUNG-TIENG-VIET · screenshots/
+├── docs/                      architecture, roadmap, and deploy guides in Vietnamese · PRESENTATION · screenshots/
 ├── Dockerfile · render.yaml
-└── PLAN.md
+└── docs/KIEN-TRUC.md · LO-TRINH-TU-XAY-LAI.md · DEPLOY-VA-VAN-HANH.md
 ```
 
 ---
 
-## Một yêu cầu đi như thế nào
+## How one request moves
 
 ```mermaid
 flowchart LR
-  B["Trình duyệt<br/>React"] -->|"fetch /api/... + cookie"| V["Vite<br/>(chuyển tiếp, chỉ khi dev)"]
+  B["Browser<br/>React"] -->|"fetch /api/... + cookie"| V["Vite<br/>(proxy, dev only)"]
   V --> E["Express"]
-  B -.->|"khi chạy thật: cùng một máy chủ"| E
-  E --> M["Middleware<br/>header bảo mật · JSON · chống CSRF · phiên"]
-  M --> R["Route<br/>kiểm tra dữ liệu · kiểm tra quyền"]
-  R --> D["Model<br/>SQL có tham số"]
+  B -.->|"production: the same server"| E
+  E --> M["Middleware<br/>security headers · JSON · CSRF · session"]
+  M --> R["Route<br/>validate input · check access"]
+  R --> D["Model<br/>parameterized SQL"]
   D --> S[("SQLite<br/>data/memorylane.db")]
-  R --> P[("Ảnh & video<br/>data/uploads/")]
-  R -->|"JSON hoặc MÃ lỗi"| B
-  E -.->|"SSE: sự kiện trực tiếp"| B
+  R --> P[("Photos and video<br/>data/uploads/")]
+  R -->|"JSON or an error CODE"| B
+  E -.->|"SSE: live events"| B
 ```
 
-Máy chủ không bao giờ gửi câu chữ, chỉ gửi dữ liệu và **mã lỗi** (`EMAIL_TAKEN`, `INVITE_INVALID`…). Giao diện tự dịch mã
-đó sang tiếng Việt hoặc tiếng Anh.
+The server never sends sentences. It sends data and an **error code** (`EMAIL_TAKEN`, `INVITE_INVALID`, …). The interface translates that code into Vietnamese or English.
 
 ---
 
 ## API
 
-Mọi đường dẫn bắt đầu bằng `/api` và dùng JSON. Tất cả cần đăng nhập, trừ `health`, `auth/*` và `invites/preview`.
+Every path starts with `/api` and speaks JSON. All of them require a signed-in user except `health`, `auth/*`, and `invites/preview`.
 
-| Phương thức & đường dẫn | Làm gì |
+| Method and path | What it does |
 | --- | --- |
-| `GET /health` (công khai) | Máy chủ chạy và đọc được cơ sở dữ liệu? `{ ok: true }`, hoặc `503 { ok: false }` |
-| `GET /auth/session` | Tôi là ai? `{ user \| null, demo, google, limits }` |
-| `POST /auth/register` · `/login` · `/logout` · `/demo` (`{ as: 'friend' }` → Thu Hà) | Tài khoản |
-| `GET /auth/google/start?mode=login\|link&next=` · `GET /auth/google/callback` | Đăng nhập / liên kết Google (chuyển trang, không phải JSON) |
-| `PATCH /me` · `POST /me/password` · `DELETE /me/google` · `POST /me/logout-all` · `GET /me/storage` · `GET /me/export` · `DELETE /me` | Tài khoản của bạn |
-| `GET /events` | Luồng sự kiện trực tiếp (Server-Sent Events) |
-| `GET /dashboard/today?today=YYYY-MM-DD` · `GET /dashboard/summary` | Dữ liệu trang Hôm nay / thanh điều hướng, mỗi thứ một yêu cầu |
-| `GET /memories?year=&q=&person=` · `GET /memories/years` | Kỷ niệm của bạn + số lượng theo năm |
-| `GET /memories/:id` | Một kỷ niệm của bạn **hoặc được chia sẻ với bạn** (chủ thấy thêm các thẻ đã lưu từ kỷ niệm này) |
-| `POST /memories` · `PUT /memories/:id` · `DELETE /memories/:id` | Tạo / sửa / xóa |
-| `POST /memories/:id/files` · `DELETE /memories/:id/files/:fileId` · `PUT /memories/:id/files/order` | Tải một ảnh/video · bỏ · sắp xếp (tệp đầu = ảnh bìa) |
-| `GET /files/:name` | Ảnh/video/bản xem trước, chỉ cho chủ hoặc người được chia sẻ (hỗ trợ Range) |
-| `GET /memories/:id/shares` · `PUT /memories/:id/shares` | Ai được xem (chỉ chủ; chỉ người trong vòng thân quen) |
-| `GET/POST /memories/:id/comments` · `DELETE /memories/:id/comments/:commentId` | Lời nhắn |
-| `GET /invites` · `POST /invites` · `PUT /invites/:id/memory` · `DELETE /invites/:id` | Link mời (mã chỉ hiện một lần) · gắn kỷ niệm vào link · thu hồi |
-| `GET /invites/preview/:token` (công khai) · `POST /invites/accept/:token` | Mở / nhận lời mời |
-| `GET /sharing` · `GET /sharing/circle` · `DELETE /sharing/circle/:userId` | Trang Chia sẻ · vòng thân quen · ngừng kết nối |
-| `POST /memories/:id/artifacts` (ảnh thẻ + bản nhỏ + chữ trên thẻ) | Lưu một thẻ kỷ niệm vào Kỷ vật (chỉ chủ kỷ niệm) |
-| `GET /artifacts?kind=postcard\|stamp\|photo` · `GET /artifacts/:id` · `DELETE /artifacts/:id` | Kỷ vật: danh sách, một thẻ, xoá |
-| `GET /people` · `GET /people/:id` · `POST` · `PUT` · `DELETE` · `POST /people/:id/contacted` · `/notes` | Người quen cũ & nhật ký |
-| `GET /media?kind=film\|music` · `POST` · `PUT /media/:id` · `DELETE /media/:id` | Phim & nhạc |
-| `GET /search?q=` | Tìm trong kỷ niệm, người, phim nhạc, kỷ vật, không cần dấu |
+| `GET /health` (public) | Is the server up, and can it read the database? `{ ok: true }`, or `503 { ok: false }` |
+| `GET /auth/session` | Who am I? `{ user \| null, demo, google, limits }` |
+| `POST /auth/register` · `/login` · `/logout` · `/demo` (`{ as: 'friend' }` → Thu Hà) | Accounts |
+| `GET /auth/google/start?mode=login\|link&next=` · `GET /auth/google/callback` | Sign in or link Google (a redirect, not JSON) |
+| `PATCH /me` · `POST /me/password` · `DELETE /me/google` · `POST /me/logout-all` · `GET /me/storage` · `GET /me/export` · `DELETE /me` | Your account |
+| `GET /events` | The live event stream (Server-Sent Events) |
+| `GET /dashboard/today?today=YYYY-MM-DD` · `GET /dashboard/summary` | Data for Today and for the nav bar, one request each |
+| `GET /memories?year=&q=&person=` · `GET /memories/years` | Your memories, and counts by year |
+| `GET /memories/:id` | One memory you own **or that was shared with you** (the owner also sees cards saved from it) |
+| `POST /memories` · `PUT /memories/:id` · `DELETE /memories/:id` | Create, update, delete |
+| `POST /memories/:id/files` · `DELETE /memories/:id/files/:fileId` · `PUT /memories/:id/files/order` | Upload one photo or video, remove one, reorder (first file is the cover) |
+| `GET /files/:name` | A photo, video, or preview, only for the owner or someone it was shared with (Range requests supported) |
+| `GET /memories/:id/shares` · `PUT /memories/:id/shares` | Who can see it (owner only; only people in the circle) |
+| `GET/POST /memories/:id/comments` · `DELETE /memories/:id/comments/:commentId` | Notes |
+| `GET /invites` · `POST /invites` · `PUT /invites/:id/memory` · `DELETE /invites/:id` | Invite links (the code is shown once), attach a memory, revoke |
+| `GET /invites/preview/:token` (public) · `POST /invites/accept/:token` | Open or accept an invite |
+| `GET /sharing` · `GET /sharing/circle` · `DELETE /sharing/circle/:userId` | The Sharing page, the circle, disconnect |
+| `POST /memories/:id/artifacts` (card image, thumbnail, and the text on the card) | Save a keepsake card (memory owner only) |
+| `GET /artifacts?kind=postcard\|stamp\|photo` · `GET /artifacts/:id` · `DELETE /artifacts/:id` | Keepsakes: list, one card, delete |
+| `GET /people` · `GET /people/:id` · `POST` · `PUT` · `DELETE` · `POST /people/:id/contacted` · `/notes` | Old friends and the log |
+| `GET /media?kind=film\|music` · `POST` · `PUT /media/:id` · `DELETE /media/:id` | Films and music |
+| `GET /search?q=` | Search memories, people, films, music, and keepsakes, accents optional |
 
-Lỗi có dạng `{ "error": "VALIDATION", "fields": { "file": { "code": "FILE_TOO_LARGE", "max": 100 } } }`. Lỗi không lường trước
-(500) kèm mã tham chiếu `{ "error": "SERVER", "ref": "1f9e2221" }`: giao diện hiện "Mã lỗi: 1f9e2221", log máy chủ có cùng mã
-([PLAN.md, C2](PLAN.md#c2-nhìn-vào-đâu-apihealth-log-mã-lỗi-devtools)).
+Errors look like `{ "error": "VALIDATION", "fields": { "file": { "code": "FILE_TOO_LARGE", "max": 100 } } }`. An unexpected error (500) includes a reference `{ "error": "SERVER", "ref": "1f9e2221" }`: the UI shows "Error reference: 1f9e2221", and the server log has the same code ([docs/DEPLOY-VA-VAN-HANH.md](docs/DEPLOY-VA-VAN-HANH.md)).
 
 ---
 
-## Mô hình dữ liệu
+## Data model
 
 ```mermaid
 erDiagram
-  users ||--o{ sessions : "đăng nhập"
-  users ||--o{ memories : "sở hữu"
-  memories ||--o{ memory_files : "ảnh, video"
-  users ||--o{ people : "theo dõi"
-  people ||--o{ person_notes : "ghi chú"
-  memories ||--o{ memory_people : "gắn người"
-  users ||--o{ media : "phim, nhạc"
-  users ||--o{ artifacts : "kỷ vật"
-  memories ||--o{ artifacts : "thẻ làm từ kỷ niệm"
-  users ||--o{ connections : "vòng thân quen (2 chiều)"
-  users ||--o{ invites : "gửi lời mời"
-  memories ||--o{ shares : "được chia sẻ"
-  users ||--o{ shares : "được xem"
-  memories ||--o{ comments : "lời nhắn"
+  users ||--o{ sessions : "signs in"
+  users ||--o{ memories : "owns"
+  memories ||--o{ memory_files : "photos, videos"
+  users ||--o{ people : "keeps track of"
+  people ||--o{ person_notes : "notes"
+  memories ||--o{ memory_people : "tags a person"
+  users ||--o{ media : "films, music"
+  users ||--o{ artifacts : "keepsakes"
+  memories ||--o{ artifacts : "cards made from a memory"
+  users ||--o{ connections : "circle (both ways)"
+  users ||--o{ invites : "sends an invite"
+  memories ||--o{ shares : "is shared"
+  users ||--o{ shares : "can view"
+  memories ||--o{ comments : "notes"
 ```
 
-Năm migration chạy lần lượt khi khởi động (`PRAGMA user_version` nhớ đã chạy tới đâu):
-`001_init` (album, người quen, phim nhạc) → `002_media_sharing` (nhiều ảnh/video, chia sẻ, lời nhắn) →
-`003_google_login` (`google_sub`, `google_email`) → `004_artifacts` (kỷ vật đời đầu: đồ vật, thư từ) →
-`005_card_artifacts` (kỷ vật = thẻ lưu từ một kỷ niệm, xoá theo kỷ niệm).
+Five migrations run in order at startup (`PRAGMA user_version` remembers how far it got):
+`001_init` (album, old friends, films and music) → `002_media_sharing` (many photos and videos, sharing, notes) →
+`003_google_login` (`google_sub`, `google_email`) → `004_artifacts` (the first keepsakes: objects and letters) →
+`005_card_artifacts` (a keepsake is a card saved from a memory, and it is deleted with that memory).
 
 ---
 
-## Bảo mật & quyền riêng tư (tóm tắt)
+## Security and privacy (short version)
 
-- **Mật khẩu:** băm bằng **scrypt** + salt. Đăng nhập tốn cùng thời gian dù email có tồn tại hay không.
-- **Phiên đăng nhập phía máy chủ:** token ngẫu nhiên nằm trong cookie `HttpOnly; SameSite=Lax` (`Secure` khi chạy thật); cơ sở
-  dữ liệu chỉ lưu mã băm SHA-256 của token. Đăng xuất là thu hồi ngay.
-- **Đăng nhập Google:** luồng authorization code + **PKCE + state + nonce**, kiểm tra người phát hành, đối tượng nhận, hạn dùng
-  và email đã xác minh.
-  - **Không tự gộp** với tài khoản cùng email đã đăng ký bằng mật khẩu (chống chiếm đoạt trước). Chủ tài khoản phải đăng nhập rồi
-    tự liên kết.
-- **Kiểm tra quyền:** mọi truy vấn kiểm tra **chủ sở hữu hoặc được chia sẻ đích danh**. Còn lại trả **404**, không phải 403.
-  Người được chia sẻ chỉ xem và viết lời nhắn. Kỷ vật luôn chỉ chủ mới thấy.
-- **Link mời:** 192 bit ngẫu nhiên, chỉ lưu mã băm, dùng một lần, hết hạn 7 ngày, thu hồi được.
-- **Tệp:** không bao giờ công khai. Mỗi lần xem đều kiểm tra quyền, tên tệp ngẫu nhiên, loại tệp nhận diện bằng nội dung.
-  **GPS/EXIF bị xoá ở trình duyệt và máy chủ**, kể cả trong video. Có giới hạn cho mỗi tệp và hạn mức cho mỗi tài khoản.
-- **CSRF, XSS:** chặn CSRF bằng Fetch Metadata + cookie SameSite; **CSP** chặt chẽ, không script/font/ảnh của bên thứ ba.
-- **Dữ liệu là của bạn:** xuất toàn bộ thành JSON, xoá tài khoản là xoá hết.
+- **Passwords:** hashed with **scrypt** and a salt. Signing in takes the same time whether or not the email exists.
+- **Server-side sessions:** a random token in an `HttpOnly; SameSite=Lax` cookie (`Secure` in production). The database stores only the SHA-256 of the token. Logging out revokes it immediately.
+- **Google sign-in:** authorization-code flow with **PKCE, state, and nonce**. The server checks the issuer, the audience, the expiry, and that the email is verified.
+  - An existing password account with the same email is **not merged automatically** (that would allow pre-hijacking). The owner signs in and links Google themselves.
+- **Access checks:** every query checks **the owner, or a person that memory was shared with by name**. Everyone else gets **404**, not 403. Someone a memory was shared with can view it and write notes. Keepsakes are visible only to the owner.
+- **Invite links:** 192 random bits, only the hash is stored, single use, expire after 7 days, revocable.
+- **Files:** never public. Every view checks access. File names are random. The type is detected from the contents. **GPS and EXIF are stripped in the browser and again on the server**, including inside video. There is a per-file limit and a per-account quota.
+- **CSRF and XSS:** cross-site writes are blocked with Fetch Metadata plus the SameSite cookie. The **CSP** is strict: no third-party scripts, fonts, or images.
+- **The data is yours:** export everything as JSON. Deleting the account deletes all of it.
 
-Giải thích chi tiết: [docs/PRESENTATION.md § 11](docs/PRESENTATION.md#11-bảo-mật--quyền-riêng-tư). Khi có nhiều người dùng:
-[docs/MO-RONG.md](docs/MO-RONG.md).
+The long version is [docs/PRESENTATION.md § 11](docs/PRESENTATION.md#11-bảo-mật--quyền-riêng-tư) (Vietnamese). For many users, see [docs/MO-RONG.md](docs/MO-RONG.md).
 
 ---
 
-## Các lệnh
+## Commands
 
-| Lệnh | Làm gì |
+| Command | What it does |
 | --- | --- |
-| `npm run dev` | API (tự khởi động lại) + Vite (tự tải lại) |
-| `npm run dev:phone` | Như trên, mở cho điện thoại cùng Wi-Fi truy cập |
-| `npm run build` | Build giao diện → `client/dist/` |
-| `npm start` | Một máy chủ: API + giao diện đã build, cổng `PORT` (mặc định 3001) |
-| `npm run seed` | Tạo lại thế giới demo (An + 5 người bạn) với ảnh, video, kỷ vật |
-| `npm run setup:google` | Bật "Tiếp tục với Google" trên máy: dán Client ID và Client secret của bạn, lệnh ghi vào `.env` |
-| `npm run start:demo` | Seed rồi chạy (dùng trên nền tảng hosting) |
-| `npm run admin -- <lệnh>` | Công cụ quản trị: `stats`, `users`, `user <email>`, `memory <id>`, `sessions`, `reset-password`, `check-files`, `backup` ([PLAN.md, C3](PLAN.md#c3-công-cụ-quản-trị-npm-run-admin)) |
-| `npm test` | 72 bài kiểm thử máy chủ |
-| `npm run test:e2e` | Kiểm tra toàn hệ thống trên Chrome thật (35 tính năng, 1–2 phút; tự dựng máy chủ và dữ liệu riêng). Cần Google Chrome |
+| `npm run dev` | API (restarts on save) + Vite (reloads the page) |
+| `npm run dev:phone` | The same, reachable from a phone on the same Wi-Fi |
+| `npm run build` | Build the interface into `client/dist/` |
+| `npm start` | One server: API plus the built interface, port `PORT` (default 3001) |
+| `npm run seed` | Recreate the demo world (An and 5 friends) with photos, videos, and keepsakes |
+| `npm run setup:google` | Turn on "Continue with Google" on this machine: paste your Client ID and Client secret; the command writes `.env` |
+| `npm run start:demo` | Seed, then start (what the hosting blueprint uses) |
+| `npm run admin -- <command>` | Admin tool: `stats`, `users`, `user <email>`, `memory <id>`, `sessions`, `reset-password`, `check-files`, `backup` ([docs/DEPLOY-VA-VAN-HANH.md](docs/DEPLOY-VA-VAN-HANH.md)) |
+| `npm test` | The 72 server tests |
+| `npm run test:e2e` | Full-system check in real Chrome (35 features, 1–2 minutes; it builds its own server and data). Needs Google Chrome |
 
-Cấu hình là tuỳ chọn: chép `.env.example` thành `.env` để đổi cổng, thư mục dữ liệu, giới hạn tệp, hạn mức, thời hạn lời mời,
-hoặc bật đăng nhập Google (`npm run setup:google`, hoặc tự điền `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`; xem
-[docs/DEPLOY.md](docs/DEPLOY.md#bật-tiếp-tục-với-google)).
+Configuration is optional. Copy `.env.example` to `.env` to change the port, the data directory, file limits, the quota, how long an invite lasts, or to turn on Google sign-in (`npm run setup:google`, or set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` yourself; see [docs/DEPLOY.md](docs/DEPLOY.md#bật-tiếp-tục-với-google), in Vietnamese).
 
 ---
 
-## Chưa có trong bản MVP (bước tiếp theo hay)
+## Not in this MVP (likely next)
 
-- Xác minh email và quên mật khẩu qua email. (Trong lúc chờ: người vận hành đặt mật khẩu tạm bằng
-  `npm run admin -- reset-password <email>`, xem [PLAN.md, C5.1](PLAN.md#c51-tôi-quên-mật-khẩu).)
-- Chuyển mã video ở máy chủ (ffmpeg) và kho lưu trữ đám mây (xem [docs/MO-RONG.md](docs/MO-RONG.md)).
-- Thông báo đẩy khi app đang đóng.
-- Album chung nhiều người cùng thêm ảnh.
-- PWA dùng khi mất mạng.
-- Kiểm thử end-to-end trên trình duyệt (Playwright).
+- Email verification, and a forgot-password email. Until then, an operator sets a temporary password with `npm run admin -- reset-password <email>`. See [docs/DEPLOY-VA-VAN-HANH.md](docs/DEPLOY-VA-VAN-HANH.md).
+- Server-side video transcoding (ffmpeg) and cloud storage (see [docs/MO-RONG.md](docs/MO-RONG.md)).
+- Push notifications while the app is closed.
+- A shared album several people can add photos to.
+- An offline PWA.
+- Browser end-to-end tests (Playwright).

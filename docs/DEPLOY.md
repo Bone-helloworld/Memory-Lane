@@ -62,7 +62,7 @@ nếu đặt `ALLOW_DEMO=false`.
 
 ## Cách A — Render (Blueprint, vài cú bấm)
 
-Chuẩn bị: dự án đã nằm trên GitHub ([PLAN.md § A3](../PLAN.md#a3-commit-đầu-tiên--github)); `.gitignore` đã loại sẵn `node_modules`,
+Chuẩn bị: dự án đã nằm trên GitHub; `.gitignore` đã loại sẵn `node_modules`,
 `data/` và `.env`. Thư mục `server/seed-media/` (ảnh và video demo, khoảng 34 MB) **được** commit có chủ ý. Mở sẵn tệp `.env`
 trên máy (`open -e .env` trong thư mục dự án) để lấy hai mã Google.
 
@@ -89,7 +89,7 @@ trên máy (`open -e .env` trong thư mục dự án) để lấy hai mã Google
 9. Làm tiếp danh sách [kiểm tra nhanh](#sau-khi-triển-khai--kiểm-tra-nhanh-15-phút) ở cuối tài liệu này.
 
 **Mỗi lần cập nhật:** đẩy code lên nhánh `main` → Render tự build và triển khai lại (xem tab **Events**). Trước khi đẩy, sao lưu dữ
-liệu (tab **Shell** → `npm run admin -- backup`, [PLAN.md C6](../PLAN.md#c6-sao-lưu-và-khôi-phục)).
+liệu (tab **Shell** → `npm run admin -- backup`, xem [DEPLOY-VA-VAN-HANH.md](DEPLOY-VA-VAN-HANH.md)).
 
 ## Cách B — Railway
 
@@ -214,15 +214,13 @@ Cách hoạt động (PKCE, state, nonce, vì sao không tự gộp tài khoản
 
 ## Sau đó: vận hành hằng ngày
 
-Khi đã có người dùng thật, mọi việc "sau khi deploy" nằm trong [PLAN.md, Phần C](../PLAN.md#phần-c--vận-hành-bảo-trì-và-xử-lý-sự-cố):
+Khi đã có người dùng thật, checklist vận hành nằm trong [DEPLOY-VA-VAN-HANH.md](DEPLOY-VA-VAN-HANH.md):
 
 - **Theo dõi:** `/api/health` (Render dùng nó làm health check; Docker có `HEALTHCHECK`), log có dòng `SERVER <mã lỗi>` khi có lỗi
-  không lường trước, và người dùng thấy cùng mã đó trên màn hình ([C2](../PLAN.md#c2-nhìn-vào-đâu-apihealth-log-mã-lỗi-devtools)).
-- **Công cụ quản trị** `npm run admin`: tra tài khoản, đặt mật khẩu tạm, đăng xuất mọi nơi, kiểm tra tệp, sao lưu
-  ([C3](../PLAN.md#c3-công-cụ-quản-trị-npm-run-admin)).
-- **Sao lưu** trước mỗi lần deploy và mỗi tuần, rồi chép ra ngoài máy chủ ([C6](../PLAN.md#c6-sao-lưu-và-khôi-phục)).
-- **Khi mở cho người dùng thật:** `ALLOW_DEMO=false` và đổi `startCommand` trong `render.yaml` thành `npm start`
-  ([C8](../PLAN.md#c8-an-toàn-và-riêng-tư-khi-vận-hành)).
+  không lường trước, và người dùng thấy cùng mã đó trên màn hình.
+- **Công cụ quản trị** `npm run admin`: tra tài khoản, đặt mật khẩu tạm, đăng xuất mọi nơi, kiểm tra tệp, sao lưu.
+- **Sao lưu** trước mỗi lần deploy và mỗi tuần, rồi chép ra ngoài máy chủ.
+- **Khi mở cho người dùng thật:** `ALLOW_DEMO=false` và đổi `startCommand` trong `render.yaml` thành `npm start`.
 
 ## Khi một máy chủ không còn đủ
 

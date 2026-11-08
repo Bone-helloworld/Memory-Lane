@@ -1,4 +1,4 @@
-// Looking after the server (PLAN.md, Phần C): the health check, the error reference people can quote, and
+// Looking after the server: the health check, the error reference people can quote, and
 // `npm run admin` — against the real app and a throw-away data folder.
 import { after, before, describe, test } from 'node:test';
 import assert from 'node:assert/strict';

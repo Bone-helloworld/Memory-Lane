@@ -8,7 +8,7 @@ services:
     plan: starter
     buildCommand: npm ci && npm run build
     startCommand: npm run start:demo
-    # Answers {"ok":true} when the server is up and can read its database (PLAN.md, C2.1).
+    # Answers {"ok":true} when the server is up and can read its database.
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
