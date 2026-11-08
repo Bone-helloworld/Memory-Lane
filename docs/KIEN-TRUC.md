@@ -8,7 +8,7 @@ Ba tài liệu đi cùng nhau:
 - [LO-TRINH-TU-XAY-LAI.md](LO-TRINH-TU-XAY-LAI.md): tự xây một bản nhỏ hơn từ thư mục trống.
 - [DEPLOY-VA-VAN-HANH.md](DEPLOY-VA-VAN-HANH.md): đưa đúng stack này lên mạng và trông nom nó.
 
-Bản thuyết trình dài hơn nằm ở [PRESENTATION.md](PRESENTATION.md). [PLAN.md](../PLAN.md) là sổ tay rất dài (có cả đoạn code dán sẵn); đừng đọc từ đầu đến cuối trước khi chạy được app.
+Bản thuyết trình dài hơn nằm ở [PRESENTATION.md](PRESENTATION.md). Đưa lên mạng: [DEPLOY-VA-VAN-HANH.md](DEPLOY-VA-VAN-HANH.md).
 
 ## Ứng dụng này làm gì
 

@@ -24,7 +24,7 @@ RUN mkdir -p /data && chown -R node:node /data
 USER node
 VOLUME /data
 EXPOSE 3001
-# "Is it healthy?" — the server answers {"ok":true} when it can read its database (PLAN.md, C2.1). No curl in the image: Node asks.
+# "Is it healthy?" — the server answers {"ok":true} when it can read its database. No curl in the image: Node asks.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:' + (process.env.PORT || 3001) + '/api/health').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))"
 # Re-seeds only the two demo accounts (real accounts are never touched), then starts the server.

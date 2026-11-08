@@ -94,7 +94,7 @@ hiệu ứng nhỏ. Dự án làm **cả hai hướng**, nên ứng dụng có h
 
 Ảnh chụp các trang tham khảo nằm trong [`docs/design/references/`](references/). Đó là ảnh chụp màn hình trang web của người
 khác (bản quyền thuộc về họ), chỉ dùng làm bảng cảm hứng (moodboard). Khi đưa mã nguồn lên GitHub, **nhất là ở chế độ công khai**,
-hãy bỏ thư mục này (lệnh chép trong [PLAN.md](../../PLAN.md#a2-tạo-dự-án-của-bạn-từ-bản-mvp) đã bỏ sẵn).
+hãy bỏ thư mục này trước khi đẩy repo công khai.
 
 ---
 
@@ -222,14 +222,13 @@ tạo bưu thiếp rồi chia sẻ · bật chế độ kín đáo rồi chạm 
 
 ## 9. Gợi ý giao diện mới — nên làm lúc nào?
 
-**Lời khuyên: chưa vội.** Hãy làm chủ toàn bộ dự án trước (xem [PLAN.md](../../PLAN.md)). Lý do:
+**Lời khuyên: chưa vội.** Hãy làm chủ album, đăng nhập và một giao diện trước (xem [LO-TRINH-TU-XAY-LAI.md](../LO-TRINH-TU-XAY-LAI.md)). Lý do:
 
 - **Hai giao diện đã đủ** để chứng minh kiến trúc "một mã nguồn, nhiều giao diện".
 - **Mỗi giao diện mới kéo theo nhiều việc:** khoảng 400 dòng CSS, kiểm tra ở mọi trang, hai ngôn ngữ, điện thoại và độ tương phản.
 - **Giám khảo đánh giá chiều sâu** (bảo mật, dữ liệu, kiểm thử) nhiều hơn số lượng giao diện.
 
-Nếu còn thời gian sau ngày 25/10, **một** giao diện thứ ba là điểm cộng đẹp. Công thức 8 bước nằm trong
-[PLAN.md § A6](../../PLAN.md#a6-biến-giao-diện-thành-của-bạn). Năm ý tưởng, xếp theo độ hợp với Memory Lane:
+Nếu còn thời gian, **một** giao diện thứ ba là điểm cộng đẹp. Năm ý tưởng, xếp theo độ hợp với Memory Lane:
 
 | Ý tưởng | Ẩn dụ & chi tiết | Màu & chữ | Công sức |
 | --- | --- | --- | --- |
@@ -272,6 +271,6 @@ tưởng / kỹ thuật** (tự làm lại), nguồn nào **cố ý không dùng
 | 22 | Chỉnh ảnh | **Squoosh** · iLoveIMG · Photopea | ◐ Cùng việc **Squoosh** làm (thu nhỏ, nén ảnh, so chất lượng): app nén **WebP** ngay trong trình duyệt và đo bằng SSIM; ảnh demo chuẩn bị bằng `sips` của macOS |
 | 23 | Dữ liệu giả | Mockaroo · DummyJSON · DiceBear | ✗ Dữ liệu demo viết tay bằng tiếng Việt cho thật; ảnh đại diện là chữ cái đầu |
 | 24 | Trạng thái tải / trống / lỗi | React Skeleton · PatternFly · GOV.UK | ◐ Khung xương khi tải; trạng thái trống và lỗi nói rõ chuyện gì xảy ra và làm gì tiếp, theo nguyên tắc của **GOV.UK** |
-| 25 | Kiểm thử | WebAIM · WAVE · **DevTools** | ✓ **DevTools** để kiểm tra bố cục (360–1536 px), mạng (video 206, luồng sự kiện SSE) và console. ○ **WebAIM / WAVE**: chạy trước khi nộp (lịch 25/10 trong PLAN.md) |
+| 25 | Kiểm thử | WebAIM · WAVE · **DevTools** | ✓ **DevTools** để kiểm tra bố cục (360–1536 px), mạng (video 206, luồng sự kiện SSE) và console. ○ **WebAIM / WAVE**: chạy trước khi nộp |
 
 Ký hiệu: ✓ dùng trực tiếp · ◐ mượn ý tưởng / kỹ thuật, tự làm lại · ○ gợi ý dùng tiếp · ✗ cố ý không dùng.

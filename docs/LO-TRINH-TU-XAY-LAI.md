@@ -2,7 +2,7 @@
 
 Mục tiêu: từ một thư mục trống, tự tay viết một album nhỏ cùng **họ** với dự án này (React + Vite + Express + SQLite), đủ để bạn giải thích từng file khi thầy hỏi. Bản trong repo là đích để **đọc**, không phải bản để chép nguyên.
 
-[PLAN.md](../PLAN.md) phần B là bản dài của cùng ý tưởng: 16 chặng, có code dán sẵn, dài hơn mười nghìn dòng. Dùng file đó như từ điển khi kẹt một chặng. Đừng đọc hết trước khi viết dòng đầu. Lộ trình dưới đây bám đúng những gì repo đang dùng, và nói rõ chỗ nào là lớp sơn do AI thêm vào.
+Lộ trình dưới đây bám đúng những gì repo đang dùng, và nói rõ chỗ nào là lớp sơn do AI thêm vào. Đọc [KIEN-TRUC.md](KIEN-TRUC.md) một lượt trước mốc 0.
 
 Quy ước mỗi mốc:
 
@@ -212,4 +212,4 @@ Mỗi mục là một commit riêng. Đọc file rồi viết lại ngắn hơn,
 2. Tab Network: status, body, header `Set-Cookie`.
 3. `console.error` phía server. Bản repo gắn lỗi 500 với một `ref` ngắn để đối chiếu log (`server/app.js`).
 4. So với file "Đọc" của đúng mốc, không so với cả repo.
-5. Phần D của [PLAN.md](../PLAN.md) là sổ tay gỡ lỗi dài hơn nếu bốn bước trên chưa đủ.
+5. Tab Network và log của Express thường đủ. Nếu vẫn kẹt, đọc lại file "Đọc" của đúng mốc, không đọc cả repo.
