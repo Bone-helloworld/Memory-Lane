@@ -34,11 +34,14 @@ import { sharingRoutes } from './routes/sharing.js';
  */
 export function createApp({ db, config }) {
   const app = express();
+  const live = createLive();
+  const sessions = createSessions(db, config);
+  sessions.attachLive(live);
 
   // Shared dependencies handed to every route module.
   const ctx = {
     config,
-    sessions: createSessions(db, config),
+    sessions,
     files: createFileStore(config.uploadDir),
     users: usersModel(db),
     memories: memoriesModel(db),
@@ -46,11 +49,17 @@ export function createApp({ db, config }) {
     media: mediaModel(db),
     artifacts: artifactsModel(db),
     social: socialModel(db),
-    live: createLive(),
+    live,
   };
 
   app.disable('x-powered-by');
-  if (config.isProd) app.set('trust proxy', 1); // HTTPS is terminated by the hosting proxy
+  // Exactly one proxy hop in production — Render's load balancer, which terminates HTTPS.
+  // `true` would trust the whole X-Forwarded-For chain. The visitor can prepend addresses,
+  // so the login limiter would see a new IP on every attempt and never return 429.
+  // The visitor address itself is chosen in lib/rateLimit.js (one hop, or Cloudflare's
+  // overwritten CF-Connecting-IP when this process is actually running on Render).
+  if (config.isProd) app.set('trust proxy', 1);
+  app.set('client ip from cloudflare', Boolean(config.cloudflareClientIp));
   app.use(securityHeaders(config));
   // gzip text responses (JS, CSS, JSON): ~3× less to download. Never the live event stream:
   // compression would hold its small messages back in a buffer.

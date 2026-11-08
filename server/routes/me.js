@@ -35,7 +35,7 @@ export function meRoutes({ config, users, memories, people, media, artifacts, so
     }
     v.check();
     users.setPassword(req.user.id, await hashPassword(newPassword));
-    // Sign out every other device, then keep this one signed in.
+    // Sign out every device (their sessions and their live streams), then keep this one signed in.
     sessions.revokeAll(req.user.id);
     sessions.start(res, req.user.id);
     res.status(204).end();
@@ -95,6 +95,8 @@ export function meRoutes({ config, users, memories, people, media, artifacts, so
       throw new HttpError(400, 'VALIDATION', { email: { code: 'CONFIRM_MISMATCH' } });
     }
     const names = [...memories.allFileNames(req.user.id), ...artifacts.allFileNames(req.user.id)];
+    // Close every live stream and drop every session before the rows disappear with the account.
+    sessions.revokeAll(req.user.id);
     users.remove(req.user.id); // ON DELETE CASCADE: memories, shares, comments, circle, invites…
     names.forEach((name) => files.remove(name));
     sessions.end(req, res);

@@ -30,6 +30,10 @@ export function loadConfig(env = process.env) {
     inviteDays: Number(env.INVITE_DAYS) || 7,
     // Login/register attempts allowed per IP in each 15-minute window.
     authRateLimit: Number(env.AUTH_RATE_LIMIT) || 20,
+    // Render sets RENDER=true. Its edge is Cloudflare, which overwrites CF-Connecting-IP
+    // with the visitor address — a client cannot choose that value. Anywhere else the
+    // header would just be forwarded, so a caller could pick a fresh key and skip the limit.
+    cloudflareClientIp: env.RENDER === 'true',
     // "Continue with Google": both values come from an OAuth client in Google Cloud Console
     // (see docs/DEPLOY.md). Without them the Google button is shown but disabled.
     google:

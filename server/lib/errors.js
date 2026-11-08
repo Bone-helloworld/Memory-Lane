@@ -1,6 +1,6 @@
 /**
  * An error the API can show to the client.
- * `code` is a stable machine-readable string (e.g. 'EMAIL_TAKEN'); the browser translates it,
+ * `code` is a stable machine-readable string (e.g. 'INVALID_CREDENTIALS'); the browser translates it,
  * which keeps the server language-neutral and makes EN/VI a purely front-end concern.
  */
 export class HttpError extends Error {
