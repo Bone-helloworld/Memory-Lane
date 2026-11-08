@@ -222,7 +222,7 @@ tạo bưu thiếp rồi chia sẻ · bật chế độ kín đáo rồi chạm 
 
 ## 9. Gợi ý giao diện mới — nên làm lúc nào?
 
-**Lời khuyên: chưa vội.** Hãy làm chủ album, đăng nhập và một giao diện trước (xem [LO-TRINH-TU-XAY-LAI.md](../LO-TRINH-TU-XAY-LAI.md)). Lý do:
+**Lời khuyên: chưa vội.** Hãy làm chủ album, đăng nhập và một giao diện trước (xem [HUONG-DAN-TU-XAY-LAI.md](../HUONG-DAN-TU-XAY-LAI.md)). Lý do:
 
 - **Hai giao diện đã đủ** để chứng minh kiến trúc "một mã nguồn, nhiều giao diện".
 - **Mỗi giao diện mới kéo theo nhiều việc:** khoảng 400 dòng CSS, kiểm tra ở mọi trang, hai ngôn ngữ, điện thoại và độ tương phản.

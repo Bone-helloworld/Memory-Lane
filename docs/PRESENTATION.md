@@ -982,7 +982,7 @@ cổng 3299, rồi điều khiển **ba trình duyệt cùng lúc** (An, Thu Hà
 35 tính năng từ trang giới thiệu, đăng ký, tạo kỷ niệm có ảnh và video, lời nhắn trực tiếp giữa hai người, chia sẻ, link mời từ đầu
 đến cuối, thẻ kỷ niệm và Kỷ vật, người quen, phim nhạc, tìm kiếm không dấu, cài đặt (đổi mật khẩu, xuất dữ liệu, xoá tài khoản), tới
 hai giao diện, điện thoại 390 px, tiếng Anh, mã lỗi khi máy chủ gặp sự cố, và không có lỗi JavaScript nào. Kết quả ngày 14/10/2026:
-**35/35 đạt**. Cách tự viết lại từng mốc nằm ở [LO-TRINH-TU-XAY-LAI.md](LO-TRINH-TU-XAY-LAI.md).
+**35/35 đạt**. Cách tự viết lại từng mốc nằm ở [HUONG-DAN-TU-XAY-LAI.md](HUONG-DAN-TU-XAY-LAI.md).
 
 **Kiểm thử thủ công trên trình duyệt:**
 
@@ -1006,7 +1006,7 @@ hai giao diện, điện thoại 390 px, tiếng Anh, mã lỗi khi máy chủ g
 Hướng dẫn từng bước (Render, Railway, Fly.io/Docker, Google): [DEPLOY.md](DEPLOY.md). Repo có sẵn `render.yaml`, `Dockerfile` và
 `.github/workflows/ci.yml`.
 
-**Sau khi chạy thật — vận hành** (chi tiết: [DEPLOY-VA-VAN-HANH.md](DEPLOY-VA-VAN-HANH.md)):
+**Sau khi chạy thật — vận hành** (chi tiết: [HUONG-DAN-TU-XAY-LAI.md](HUONG-DAN-TU-XAY-LAI.md), mốc 14):
 
 - **`GET /api/health`** trả `{"ok":true}` khi máy chủ đọc được cơ sở dữ liệu; Render dùng làm health check, Docker có `HEALTHCHECK`.
 - **Mã lỗi tham chiếu:** lỗi 500 trả `{"error":"SERVER","ref":"1f9e2221"}`, giao diện hiện "Mã lỗi: 1f9e2221", log máy chủ có dòng

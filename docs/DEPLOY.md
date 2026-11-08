@@ -89,7 +89,7 @@ trên máy (`open -e .env` trong thư mục dự án) để lấy hai mã Google
 9. Làm tiếp danh sách [kiểm tra nhanh](#sau-khi-triển-khai--kiểm-tra-nhanh-15-phút) ở cuối tài liệu này.
 
 **Mỗi lần cập nhật:** đẩy code lên nhánh `main` → Render tự build và triển khai lại (xem tab **Events**). Trước khi đẩy, sao lưu dữ
-liệu (tab **Shell** → `npm run admin -- backup`, xem [DEPLOY-VA-VAN-HANH.md](DEPLOY-VA-VAN-HANH.md)).
+liệu (tab **Shell** → `npm run admin -- backup`, xem [HUONG-DAN-TU-XAY-LAI.md](HUONG-DAN-TU-XAY-LAI.md), mốc 14).
 
 ## Cách B — Railway
 
@@ -214,7 +214,7 @@ Cách hoạt động (PKCE, state, nonce, vì sao không tự gộp tài khoản
 
 ## Sau đó: vận hành hằng ngày
 
-Khi đã có người dùng thật, checklist vận hành nằm trong [DEPLOY-VA-VAN-HANH.md](DEPLOY-VA-VAN-HANH.md):
+Khi đã có người dùng thật, checklist vận hành nằm trong [HUONG-DAN-TU-XAY-LAI.md](HUONG-DAN-TU-XAY-LAI.md), mốc 14:
 
 - **Theo dõi:** `/api/health` (Render dùng nó làm health check; Docker có `HEALTHCHECK`), log có dòng `SERVER <mã lỗi>` khi có lỗi
   không lường trước, và người dùng thấy cùng mã đó trên màn hình.
