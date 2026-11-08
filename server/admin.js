@@ -1,4 +1,4 @@
-// npm run admin -- <lệnh> — looking after a running Memory Lane. See docs/DEPLOY-VA-VAN-HANH.md.
+// npm run admin -- <lệnh> — looking after a running Memory Lane.
 //
 // It opens the same database as the server (DATA_DIR, from .env or the environment), so run it where the server
 // runs: on your computer, or in the hosting platform's shell. Read-only commands never change anything and are
@@ -255,7 +255,7 @@ function memory() {
     console.log(`\nChia sẻ với: ${d.sharedWith.length ? d.sharedWith.map((s) => s.email).join(', ') : 'không ai (chỉ chủ xem được)'}`);
     console.log(`Lời nhắn: ${d.comments} · thẻ trong Kỷ vật: ${d.artifacts}`);
     if (d.files.some((f) => !f.onDisk || f.posterOnDisk === false)) {
-      console.log('\n! Có tệp bị mất trên đĩa: khôi phục từ bản sao lưu (docs/DEPLOY-VA-VAN-HANH.md) hoặc nhờ chủ kỷ niệm tải lại.');
+      console.log('\n! Có tệp bị mất trên đĩa: khôi phục từ bản sao lưu hoặc nhờ chủ kỷ niệm tải lại.');
     }
   });
 }
@@ -366,7 +366,7 @@ function checkFiles() {
     if (d.unknown.length) console.log(`? ${d.unknown.length} tệp lạ (tên không do app đặt), để nguyên: ${d.unknown.join(', ')}`);
     if (fix) console.log(`\n✓ Đã xoá ${d.removed.length} tệp, giải phóng ${mb(d.freedBytes)}.`);
     else if (d.orphans.length || d.staleTmp.length) console.log('\nXoá tệp mồ côi và tệp tạm cũ: npm run admin -- check-files --fix');
-    if (d.missing.length) console.log('Tệp bị mất không tự sửa được: khôi phục từ bản sao lưu (docs/DEPLOY-VA-VAN-HANH.md).');
+    if (d.missing.length) console.log('Tệp bị mất không tự sửa được: khôi phục từ bản sao lưu.');
   });
 }
 
@@ -394,7 +394,7 @@ Từ DATA_DIR: ${config.dataDir} · phiên bản cơ sở dữ liệu ${schemaVe
 memorylane.db  cơ sở dữ liệu (bản chụp nhất quán bằng VACUUM INTO)
 uploads/       ảnh, video, ảnh nhỏ và thẻ kỷ vật — tên tệp khớp với cơ sở dữ liệu
 
-Khôi phục (chi tiết: docs/DEPLOY-VA-VAN-HANH.md):
+Khôi phục:
 1. Dừng máy chủ.
 2. Đổi tên thư mục DATA_DIR đang dùng (ví dụ data → data-cu). Đừng xoá.
 3. Tạo lại DATA_DIR, chép memorylane.db và thư mục uploads/ của bản này vào.

@@ -17,13 +17,6 @@ This is the MVP of a graduation project. The app is a React interface, an Expres
 
 | Document | What it is |
 | --- | --- |
-| [docs/KIEN-TRUC.md](docs/KIEN-TRUC.md) | **Architecture for beginners (Vietnamese):** what the app does, why each technology is here, a folder map, the path of one request, and how to run it locally. |
-| [docs/LO-TRINH-TU-XAY-LAI.md](docs/LO-TRINH-TU-XAY-LAI.md) | **Rebuild roadmap (Vietnamese):** small milestones, what to study, and which parts of this repo are boilerplate you can skip. |
-| [docs/DEPLOY-VA-VAN-HANH.md](docs/DEPLOY-VA-VAN-HANH.md) | **Production on Render (Vietnamese):** one Node server plus a disk, domain, HTTPS, then an operations and security checklist. |
-| [docs/PRESENTATION.md](docs/PRESENTATION.md) | **Full project talk (Vietnamese):** front end, back end, database, security, sharing, request flow, and a demo script. Written for someone who just learned web development. |
-| [docs/MO-RONG.md](docs/MO-RONG.md) | When there are many users (Vietnamese): compressing photos and video, cloud storage, security, realtime. |
-| [docs/design/DESIGN.md](docs/design/DESIGN.md) | The two themes, keepsakes and cards, phones, and ideas for a new theme (Vietnamese). |
-| [docs/SUA-NOI-DUNG-TIENG-VIET.md](docs/SUA-NOI-DUNG-TIENG-VIET.md) | How to edit every Vietnamese string in the UI (`client/src/i18n/vi.js`). |
 | [docs/DEPLOY.md](docs/DEPLOY.md) | Putting the app online (Render, Railway, Fly.io / Docker) and setting up **Google sign-in** (Vietnamese). |
 | [docs/CREDITS.md](docs/CREDITS.md) | Unsplash photos and Pexels videos used as demo media. |
 
@@ -160,9 +153,8 @@ memory-lane/
 │   └── seed-media/            free demo photos and videos (see docs/CREDITS.md) · cards/ (cards the app drew)
 ├── shared/                    code SHARED by the browser and the server (limits, dates)
 ├── test/                      api.test.js · google.test.js · metadata.test.js · i18n.test.js
-├── docs/                      architecture, roadmap, and deploy guides in Vietnamese · PRESENTATION · screenshots/
-├── Dockerfile · render.yaml
-└── docs/KIEN-TRUC.md · LO-TRINH-TU-XAY-LAI.md · DEPLOY-VA-VAN-HANH.md
+├── docs/                      DEPLOY.md · CREDITS.md · screenshots/
+└── Dockerfile · render.yaml
 ```
 
 ---
@@ -216,7 +208,7 @@ Every path starts with `/api` and speaks JSON. All of them require a signed-in u
 | `GET /media?kind=film\|music` · `POST` · `PUT /media/:id` · `DELETE /media/:id` | Films and music |
 | `GET /search?q=` | Search memories, people, films, music, and keepsakes, accents optional |
 
-Errors look like `{ "error": "VALIDATION", "fields": { "file": { "code": "FILE_TOO_LARGE", "max": 100 } } }`. An unexpected error (500) includes a reference `{ "error": "SERVER", "ref": "1f9e2221" }`: the UI shows "Error reference: 1f9e2221", and the server log has the same code ([docs/DEPLOY-VA-VAN-HANH.md](docs/DEPLOY-VA-VAN-HANH.md)).
+Errors look like `{ "error": "VALIDATION", "fields": { "file": { "code": "FILE_TOO_LARGE", "max": 100 } } }`. An unexpected error (500) includes a reference `{ "error": "SERVER", "ref": "1f9e2221" }`: the UI shows "Error reference: 1f9e2221", and the server log has the same code.
 
 ---
 
@@ -259,8 +251,6 @@ Five migrations run in order at startup (`PRAGMA user_version` remembers how far
 - **CSRF and XSS:** cross-site writes are blocked with Fetch Metadata plus the SameSite cookie. The **CSP** is strict: no third-party scripts, fonts, or images.
 - **The data is yours:** export everything as JSON. Deleting the account deletes all of it.
 
-The long version is [docs/PRESENTATION.md § 11](docs/PRESENTATION.md#11-bảo-mật--quyền-riêng-tư) (Vietnamese). For many users, see [docs/MO-RONG.md](docs/MO-RONG.md).
-
 ---
 
 ## Commands
@@ -274,7 +264,7 @@ The long version is [docs/PRESENTATION.md § 11](docs/PRESENTATION.md#11-bảo-m
 | `npm run seed` | Recreate the demo world (An and 5 friends) with photos, videos, and keepsakes |
 | `npm run setup:google` | Turn on "Continue with Google" on this machine: paste your Client ID and Client secret; the command writes `.env` |
 | `npm run start:demo` | Seed, then start (what the hosting blueprint uses) |
-| `npm run admin -- <command>` | Admin tool: `stats`, `users`, `user <email>`, `memory <id>`, `sessions`, `reset-password`, `check-files`, `backup` ([docs/DEPLOY-VA-VAN-HANH.md](docs/DEPLOY-VA-VAN-HANH.md)) |
+| `npm run admin -- <command>` | Admin tool: `stats`, `users`, `user <email>`, `memory <id>`, `sessions`, `reset-password`, `check-files`, `backup` |
 | `npm test` | The 72 server tests |
 | `npm run test:e2e` | Full-system check in real Chrome (35 features, 1–2 minutes; it builds its own server and data). Needs Google Chrome |
 
@@ -284,8 +274,8 @@ Configuration is optional. Copy `.env.example` to `.env` to change the port, the
 
 ## Not in this MVP (likely next)
 
-- Email verification, and a forgot-password email. Until then, an operator sets a temporary password with `npm run admin -- reset-password <email>`. See [docs/DEPLOY-VA-VAN-HANH.md](docs/DEPLOY-VA-VAN-HANH.md).
-- Server-side video transcoding (ffmpeg) and cloud storage (see [docs/MO-RONG.md](docs/MO-RONG.md)).
+- Email verification, and a forgot-password email. Until then, an operator sets a temporary password with `npm run admin -- reset-password <email>`.
+- Server-side video transcoding (ffmpeg) and cloud storage.
 - Push notifications while the app is closed.
 - A shared album several people can add photos to.
 - An offline PWA.

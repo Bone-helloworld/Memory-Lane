@@ -2,7 +2,6 @@
 // Tiếng Việt không đổi dạng theo số nhiều, nên mỗi mục chỉ cần một chuỗi.
 // ============================================================================
 //  NỘI DUNG TIẾNG VIỆT CỦA GIAO DIỆN — bạn sửa trực tiếp file này.
-//  Hướng dẫn chi tiết: docs/SUA-NOI-DUNG-TIENG-VIET.md
 //
 //  • Chỉ sửa phần chữ trong dấu nháy '…'. Không đổi tên khóa (phần trước dấu hai chấm).
 //  • Giữ nguyên các chỗ {trong ngoặc nhọn} như {name}, {count}: ứng dụng tự điền vào.

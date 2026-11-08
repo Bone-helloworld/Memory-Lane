@@ -31,7 +31,7 @@ nhưng không dùng thật được.
 | `PUBLIC_URL` | `https://ten-mien-cua-ban` | Địa chỉ người dùng gõ để vào app, dùng để tạo địa chỉ quay về của Google |
 
 **Tính ổ đĩa cho video.** Riêng dữ liệu demo đã khoảng 34 MB. Vài tài khoản thử tải video từ điện thoại là đầy 1 GB rất nhanh.
-Vì vậy hãy cấp ổ đĩa rộng hơn hoặc giảm `STORAGE_MB`. Xem thêm cách nén video ở [MO-RONG.md](MO-RONG.md#3-video-phần-nặng-nhất).
+Vì vậy hãy cấp ổ đĩa rộng hơn hoặc giảm `STORAGE_MB`. App chưa nén video trên máy chủ.
 
 **Tải tệp lớn qua proxy.** Một video 100 MB là một yêu cầu HTTP:
 
@@ -89,7 +89,7 @@ trên máy (`open -e .env` trong thư mục dự án) để lấy hai mã Google
 9. Làm tiếp danh sách [kiểm tra nhanh](#sau-khi-triển-khai--kiểm-tra-nhanh-15-phút) ở cuối tài liệu này.
 
 **Mỗi lần cập nhật:** đẩy code lên nhánh `main` → Render tự build và triển khai lại (xem tab **Events**). Trước khi đẩy, sao lưu dữ
-liệu (tab **Shell** → `npm run admin -- backup`, xem [DEPLOY-VA-VAN-HANH.md](DEPLOY-VA-VAN-HANH.md)).
+liệu (tab **Shell** → `npm run admin -- backup`).
 
 ## Cách B — Railway
 
@@ -186,10 +186,7 @@ Giao diện Google Cloud gọi khu vực này là **Google Auth Platform**. Tên
 - **Không dùng được qua địa chỉ Wi-Fi** `http://192.168…` (`npm run dev:phone`): Google chỉ cho phép `localhost` hoặc tên miền thật
   có HTTPS. Muốn thử Google trên điện thoại, hãy dùng bản online.
 - "Email này đã có album trên Memory Lane": đó là tính năng bảo mật, không phải lỗi. Hãy đăng nhập bằng mật khẩu, rồi vào **Cài đặt
-  → Liên kết tài khoản Google**.
-
-Cách hoạt động (PKCE, state, nonce, vì sao không tự gộp tài khoản) được giải thích trong
-[PRESENTATION.md § 7.12](PRESENTATION.md#712-đăng-nhập-bằng-google--oauth-20--openid-connect).
+  → Liên kết tài khoản Google**. Luồng PKCE, `state`, `nonce`, và việc không tự gộp tài khoản nằm ở `server/lib/google.js` và `server/routes/google.js`.
 
 ---
 
@@ -214,7 +211,7 @@ Cách hoạt động (PKCE, state, nonce, vì sao không tự gộp tài khoản
 
 ## Sau đó: vận hành hằng ngày
 
-Khi đã có người dùng thật, checklist vận hành nằm trong [DEPLOY-VA-VAN-HANH.md](DEPLOY-VA-VAN-HANH.md):
+Khi đã có người dùng thật:
 
 - **Theo dõi:** `/api/health` (Render dùng nó làm health check; Docker có `HEALTHCHECK`), log có dòng `SERVER <mã lỗi>` khi có lỗi
   không lường trước, và người dùng thấy cùng mã đó trên màn hình.
@@ -224,8 +221,7 @@ Khi đã có người dùng thật, checklist vận hành nằm trong [DEPLOY-VA
 
 ## Khi một máy chủ không còn đủ
 
-SQLite và thư mục `uploads/` rất hợp với một máy chủ. Khi cần nhiều máy chủ sau một bộ cân bằng tải, đọc
-[MO-RONG.md](MO-RONG.md). Tóm tắt:
+SQLite và thư mục `uploads/` hợp với một máy chủ. App này chưa chạy nhiều máy sau một bộ cân bằng tải. Hướng đó là:
 
 - **PostgreSQL** thay SQLite.
 - **Kho lưu trữ đối tượng** (S3, Cloudflare R2) cho ảnh/video, kèm link có chữ ký ngắn hạn.
