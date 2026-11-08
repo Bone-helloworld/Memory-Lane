@@ -1,0 +1,858 @@
+/* ==========================================================================
+   Public pages: landing, login / register, invite ("join"), 404.
+   ========================================================================== */
+
+/* ---------- Collage of sample photos (landing + auth) ---------- */
+.collage {
+  position: relative;
+}
+/* The taped prints are absolutely placed: the box keeps a fixed shape so they never spill out. */
+[data-theme='notebook'] .collage {
+  width: 100%;
+  aspect-ratio: 1 / 1.12;
+}
+.collage-item {
+  position: absolute;
+  margin: 0;
+}
+.collage-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.collage-item figcaption {
+  font-family: var(--font-note);
+}
+.collage-lens {
+  display: none;
+}
+
+[data-theme='notebook'] .collage-item {
+  padding: 10px 10px 12px;
+  background: #fff;
+  box-shadow:
+    0 2px 3px rgba(60, 46, 30, 0.08),
+    0 28px 40px -26px rgba(60, 46, 30, 0.6);
+}
+[data-theme='notebook'] .collage-item .print-film {
+  aspect-ratio: 4 / 4.3;
+  overflow: hidden;
+  background: var(--photo-bg);
+}
+[data-theme='notebook'] .collage-item figcaption {
+  padding: 9px 4px 0;
+  font-size: 17px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+[data-theme='notebook'] .collage-item figcaption span {
+  color: var(--accent);
+}
+[data-theme='notebook'] .collage .c1 {
+  width: 43%;
+  left: 2%;
+  top: 0;
+  transform: rotate(-6deg);
+  --tape: rgba(255, 226, 120, 0.72);
+}
+[data-theme='notebook'] .collage .c2 {
+  width: 41%;
+  left: 54%;
+  top: 2%;
+  transform: rotate(4deg);
+  --tape: rgba(150, 214, 196, 0.72);
+  --tape-tilt: 5deg;
+}
+[data-theme='notebook'] .collage .c3 {
+  width: 40%;
+  left: 10%;
+  top: 50%;
+  transform: rotate(3deg);
+  z-index: 2;
+  --tape: rgba(246, 170, 176, 0.66);
+}
+[data-theme='notebook'] .collage .c4 {
+  width: 41%;
+  left: 55%;
+  top: 53%;
+  transform: rotate(-3deg);
+  --tape: rgba(160, 190, 240, 0.7);
+  --tape-tilt: -6deg;
+}
+[data-theme='notebook'] .collage .doodle-star {
+  position: absolute;
+  right: 2%;
+  top: 40%;
+  width: 46px;
+  transform: rotate(12deg);
+}
+
+/* Darkroom: the same four photos as a proof sheet under the safelight */
+[data-theme='darkroom'] .collage {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: center;
+  gap: 22px 0;
+  min-height: 0;
+  padding: 26px 22px;
+  background: #0d0c0b;
+  border: 1px solid #000;
+  box-shadow:
+    0 50px 100px -40px rgba(0, 0, 0, 0.95),
+    0 0 160px -30px rgba(224, 72, 58, 0.4);
+  transform: rotate(-1.2deg);
+}
+[data-theme='darkroom'] .collage-item {
+  position: relative;
+}
+[data-theme='darkroom'] .collage-item .print-film {
+  aspect-ratio: 3 / 2.3;
+}
+[data-theme='darkroom'] .collage-item .print-film img {
+  outline: 1px solid #000;
+}
+[data-theme='darkroom'] .collage-item figcaption {
+  padding: 6px 8px 0;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+[data-theme='darkroom'] .collage .c3 .print-film::after {
+  opacity: 0.95;
+  transform: scale(1) rotate(-1deg);
+}
+[data-theme='darkroom'] .collage-lens {
+  position: absolute;
+  z-index: 3;
+  display: block;
+  right: 9%;
+  top: 14%;
+  width: 118px;
+  height: 118px;
+  border-radius: 50%;
+  border: 2px solid rgba(236, 230, 216, 0.85);
+  background: url('/landing/hoian.jpg') 42% 46% / 420px auto no-repeat;
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.75);
+}
+
+/* ---------- Landing ---------- */
+.landing {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+.landing-top {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  max-width: calc(var(--page-max) + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: 20px var(--gutter);
+}
+.landing-nav {
+  display: flex;
+  gap: 4px;
+  margin-left: 8px;
+}
+.landing-nav a {
+  padding: 8px 12px;
+  border-radius: var(--radius-s);
+  color: var(--text-2);
+  font-size: var(--tab-size);
+  font-family: var(--tab-font);
+  letter-spacing: var(--tab-tracking);
+  text-transform: var(--tab-transform);
+}
+.landing-nav a:hover {
+  color: var(--text);
+  background: var(--hover);
+}
+.landing-tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+.landing-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--s7);
+  align-items: center;
+  max-width: calc(var(--page-max) + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: var(--s7) var(--gutter) var(--s8);
+}
+.landing-copy {
+  display: grid;
+  gap: 22px;
+  justify-items: start;
+}
+.landing-title {
+  font-family: var(--font-display);
+  font-size: clamp(44px, 6.2vw, 80px);
+  font-weight: 800;
+  font-stretch: var(--display-stretch);
+  letter-spacing: -0.035em;
+  line-height: 0.98;
+}
+.landing-title span {
+  display: inline;
+}
+.landing-sub {
+  max-width: 48ch;
+  font-size: 17.5px;
+  line-height: 1.65;
+  color: var(--text-2);
+}
+.cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.cta-row .btn {
+  min-height: 50px;
+  padding: 0 24px;
+}
+.promise {
+  font-size: 13px;
+  color: var(--text-3);
+  font-family: var(--label-font);
+  letter-spacing: var(--label-tracking);
+  text-transform: var(--label-transform);
+}
+[data-theme='darkroom'] .landing-title {
+  font-stretch: 74%;
+  letter-spacing: -0.02em;
+  font-size: clamp(54px, 8.4vw, 116px);
+  line-height: 0.9;
+}
+[data-theme='darkroom'] .landing-title .mark {
+  display: block;
+}
+[data-theme='notebook'] .landing-title .mark {
+  font-family: var(--font-note);
+  font-size: 0.86em;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.landing-section {
+  padding: var(--s8) var(--gutter);
+}
+.landing-inner {
+  max-width: var(--page-max);
+  margin: 0 auto;
+}
+.landing-section-head {
+  display: grid;
+  gap: 10px;
+  max-width: 640px;
+  margin-bottom: var(--s7);
+}
+.landing-section-head .section-title {
+  font-size: clamp(30px, 4vw, 46px);
+}
+[data-theme='notebook'] .landing-section + .landing-section {
+  border-top: 1.5px dashed var(--line-2);
+}
+[data-theme='darkroom'] .landing-section + .landing-section {
+  border-top: 1px solid var(--line);
+}
+
+.drawers {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s6);
+}
+.drawer {
+  display: grid;
+  gap: 18px;
+  align-content: start;
+}
+.drawer-art {
+  position: relative;
+  display: grid;
+  align-content: center;
+  min-height: 236px;
+  padding: 22px;
+  border-radius: var(--radius-l);
+  overflow: hidden;
+}
+.drawer h3 {
+  font-family: var(--font-display);
+  font-size: 23px;
+  font-weight: var(--display-weight);
+  font-stretch: var(--display-stretch);
+  letter-spacing: var(--display-tracking);
+  line-height: 1.15;
+  margin-top: 6px;
+}
+.drawer p {
+  margin-top: 8px;
+  color: var(--text-2);
+}
+[data-theme='notebook'] .drawer-art {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+[data-theme='darkroom'] .drawer-art {
+  border: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.3);
+}
+.mini-prints {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.mini-prints .print {
+  pointer-events: none;
+}
+[data-theme='notebook'] .mini-prints .print {
+  padding: 6px 6px 8px;
+}
+[data-theme='notebook'] .mini-prints .print-cap {
+  padding-top: 6px;
+}
+[data-theme='notebook'] .mini-prints .print-title {
+  font-size: 13.5px;
+}
+[data-theme='darkroom'] .mini-prints {
+  gap: 0;
+}
+[data-theme='darkroom'] .mini-prints .print-cap {
+  padding: 6px 4px 0;
+}
+[data-theme='darkroom'] .mini-prints .print-title {
+  font-size: 12.5px;
+}
+.mini-prints .print-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.mini-people {
+  display: grid;
+  gap: 10px;
+}
+.mini-people .person-row {
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  padding: 10px 12px;
+}
+.mini-people .person-row .tag {
+  grid-column: 2;
+  justify-self: start;
+}
+.mini-reels {
+  display: grid;
+  gap: 12px;
+}
+.mini-reels .reel {
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 14px;
+  padding: 12px;
+  align-items: center;
+}
+.mini-reels .disc {
+  width: 64px;
+  height: 64px;
+}
+[data-theme='notebook'] .mini-reels .disc {
+  width: 70px;
+  height: 46px;
+}
+[data-theme='notebook'] .mini-reels .reel {
+  grid-template-columns: 74px minmax(0, 1fr);
+}
+
+/* Sharing band */
+.share-band-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+  gap: var(--s7);
+  align-items: center;
+}
+.share-steps {
+  display: grid;
+  gap: 18px;
+  margin-top: var(--s5);
+  counter-reset: step;
+}
+.share-steps li {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  counter-increment: step;
+}
+.share-steps li::before {
+  content: counter(step);
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1.5px solid var(--line-3);
+  font-family: var(--font-note);
+  font-size: 17px;
+  color: var(--accent-text);
+}
+.share-steps b {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.share-steps span {
+  color: var(--text-2);
+}
+.share-demo {
+  position: relative;
+  display: grid;
+  gap: 16px;
+  padding: 22px;
+  border-radius: var(--radius-l);
+}
+.share-demo-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.share-demo-head p {
+  font-size: 15px;
+}
+.share-demo-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: var(--radius-s);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--text-2);
+  overflow: hidden;
+  white-space: nowrap;
+}
+.share-demo .print {
+  max-width: 260px;
+  justify-self: center;
+}
+.share-demo .print-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+[data-theme='notebook'] .share-demo {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-l);
+  transform: rotate(-1deg);
+}
+[data-theme='notebook'] .share-demo-link {
+  background: rgba(255, 224, 102, 0.4);
+  border: 1.5px dashed rgba(35, 38, 47, 0.3);
+}
+[data-theme='darkroom'] .share-demo {
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+  box-shadow: var(--shadow-l);
+}
+[data-theme='darkroom'] .share-demo-link {
+  background: #0d0c0b;
+  border: 1px solid rgba(224, 72, 58, 0.4);
+}
+
+.principles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s6);
+}
+.principle {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+.principle-num {
+  font-family: var(--stat-font);
+  font-size: 46px;
+  line-height: 1;
+  font-weight: var(--display-weight);
+  font-stretch: var(--display-stretch);
+  color: var(--accent-text);
+}
+.principle h3 {
+  font-size: 20px;
+  font-weight: 700;
+  font-family: var(--font-display);
+  font-stretch: var(--display-stretch);
+}
+.principle p {
+  color: var(--text-2);
+}
+[data-theme='darkroom'] .principle-num {
+  color: transparent;
+  -webkit-text-stroke: 1px var(--accent-text);
+  font-size: 64px;
+}
+
+.closing {
+  display: grid;
+  justify-items: center;
+  gap: 26px;
+  padding: var(--s8) var(--gutter);
+  text-align: center;
+}
+.closing h2 {
+  max-width: 18ch;
+  font-family: var(--font-display);
+  font-size: clamp(34px, 5vw, 62px);
+  font-weight: 800;
+  font-stretch: var(--display-stretch);
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+}
+[data-theme='notebook'] .closing h2 em {
+  font-style: normal;
+  font-family: var(--font-note);
+  font-weight: 600;
+  color: var(--accent);
+}
+[data-theme='darkroom'] .closing h2 em {
+  font-style: normal;
+  color: var(--accent-text);
+}
+.landing-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px 24px;
+  max-width: calc(var(--page-max) + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: 26px var(--gutter) 36px;
+  border-top: 1px solid var(--line);
+  color: var(--text-3);
+  font-size: 13px;
+}
+.landing-foot nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.landing-foot a:hover {
+  color: var(--text);
+}
+
+/* ---------- Auth (login / register / join) ---------- */
+.auth {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+.auth-art {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 36px;
+  padding: 28px clamp(24px, 4vw, 56px) 40px;
+  overflow: hidden;
+}
+.auth-art .collage {
+  max-width: 520px;
+  width: 100%;
+  margin: 0 auto;
+}
+.auth-quote {
+  max-width: 24ch;
+  font-family: var(--font-display);
+  font-size: clamp(24px, 2.6vw, 32px);
+  font-weight: 700;
+  font-stretch: var(--display-stretch);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+.auth-quote em {
+  font-style: normal;
+  color: var(--accent-text);
+}
+[data-theme='notebook'] .auth-quote em {
+  font-family: var(--font-note);
+  font-weight: 600;
+}
+.auth-note {
+  margin-top: 14px;
+  font-size: 12.5px;
+  color: var(--text-3);
+  font-family: var(--label-font);
+  letter-spacing: var(--label-tracking);
+  text-transform: var(--label-transform);
+}
+[data-theme='notebook'] .auth-art {
+  border-right: 1.5px dashed var(--line-2);
+}
+[data-theme='darkroom'] .auth-art {
+  border-right: 1px solid var(--line);
+  background: radial-gradient(ellipse 80% 60% at 30% 40%, rgba(224, 72, 58, 0.08), transparent 70%);
+}
+.auth-main {
+  display: flex;
+  flex-direction: column;
+  padding: 24px clamp(20px, 5vw, 64px) 40px;
+}
+.auth-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.auth-top .back-link {
+  margin: 0;
+}
+.auth-tools {
+  display: flex;
+  gap: 8px;
+}
+.auth-card {
+  display: grid;
+  gap: 22px;
+  width: 100%;
+  max-width: 420px;
+  margin: auto;
+  padding: 36px 0;
+}
+.auth-title {
+  font-family: var(--font-display);
+  font-size: clamp(30px, 4vw, 40px);
+  font-weight: var(--display-weight);
+  font-stretch: var(--display-stretch);
+  letter-spacing: var(--display-tracking);
+  line-height: 1.08;
+}
+.auth-sub {
+  margin-top: 8px;
+  color: var(--text-2);
+}
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-3);
+  font-size: 12.5px;
+  font-family: var(--label-font);
+  letter-spacing: var(--label-tracking);
+  text-transform: var(--label-transform);
+}
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line-2);
+}
+.auth-alt {
+  color: var(--text-2);
+  font-size: 14px;
+  text-align: center;
+}
+.auth-alt a {
+  color: var(--accent-text);
+  font-weight: 600;
+}
+.auth-alt a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.demo-row {
+  display: grid;
+  gap: 8px;
+}
+.demo-friend {
+  border: 0;
+  background: none;
+  padding: 4px;
+  color: var(--text-3);
+  font-size: 13px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.demo-friend:hover {
+  color: var(--text);
+}
+
+/* Join page */
+.invite-card {
+  display: grid;
+  gap: 18px;
+}
+.invite-from {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.invite-from .avatar {
+  width: 54px;
+  height: 54px;
+  font-size: 16px;
+}
+.invite-memory {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  background: var(--accent-soft);
+  font-size: 14.5px;
+}
+.invite-points {
+  display: grid;
+  gap: 10px;
+  color: var(--text-2);
+  font-size: 14px;
+}
+.invite-points li {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 10px;
+}
+.invite-points svg {
+  margin-top: 3px;
+  color: var(--accent-text);
+}
+.invite-actions {
+  display: grid;
+  gap: 10px;
+}
+/* Your own invite link: a dashed "picture" of what the recipient will see */
+.invite-preview {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border: 1.5px dashed var(--line-3);
+  border-radius: var(--radius);
+  opacity: 0.8;
+  pointer-events: none;
+  user-select: none;
+}
+.invite-preview-label {
+  font-size: 12.5px;
+  color: var(--text-3);
+}
+.invite-preview .auth-alt {
+  text-align: center;
+}
+/* "Not you? Log out…" — a quiet text button that may wrap onto two lines */
+.invite-switch {
+  justify-self: center;
+  max-width: 100%;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  color: var(--text-2);
+  font: inherit;
+  font-size: 13.5px;
+  line-height: 1.45;
+  text-align: center;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.invite-switch:hover {
+  color: var(--text);
+}
+
+/* ---------- 404 ---------- */
+.notfound {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 32px var(--gutter);
+  text-align: center;
+}
+.notfound-inner {
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+  max-width: 460px;
+}
+.notfound-code {
+  font-family: var(--font-display);
+  font-size: 120px;
+  font-weight: 800;
+  font-stretch: var(--display-stretch);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  color: var(--accent-text);
+}
+[data-theme='notebook'] .notfound-code {
+  font-family: var(--font-note);
+  transform: rotate(-4deg);
+}
+[data-theme='darkroom'] .notfound-code {
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--accent-text);
+}
+.notfound h1 {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: var(--display-weight);
+  font-stretch: var(--display-stretch);
+  letter-spacing: var(--display-tracking);
+}
+.notfound p {
+  color: var(--text-2);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 980px) {
+  .landing-hero,
+  .share-band-inner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s6);
+  }
+  .landing-hero {
+    padding-top: var(--s5);
+  }
+  .drawers,
+  .principles {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .drawers {
+    gap: var(--s7);
+  }
+  .landing-nav {
+    display: none;
+  }
+  .auth {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .auth-art {
+    display: none;
+  }
+}
+@media (max-width: 620px) {
+  .landing-top {
+    gap: 10px;
+    padding-top: 14px;
+  }
+  .landing-tools .lang-toggle,
+  .landing-tools .theme-switch,
+  .landing-tools .btn-quiet {
+    display: none;
+  }
+  [data-theme='darkroom'] .collage {
+    padding: 18px 12px;
+  }
+  .cta-row .btn {
+    flex: 1 1 100%;
+  }
+  .landing-section {
+    padding: var(--s7) var(--gutter);
+  }
+}

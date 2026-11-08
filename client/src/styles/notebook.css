@@ -1,0 +1,782 @@
+/* ==========================================================================
+   Theme A — "Sổ tay ký ức" (the memory notebook)
+   Dot-grid paper, ballpoint blue, highlighter yellow. Photos are prints taped
+   into a journal, captions are handwritten (Playpen Sans), the UI is set in
+   Be Vietnam Pro. References: juanmnl.com, Siteinspire "Photography".
+   ========================================================================== */
+
+[data-theme='notebook'] {
+  color-scheme: light;
+
+  --bg: #f6f1e6;
+  --surface: #fffdf8;
+  --surface-2: #f1ebdd;
+  --hover: rgba(35, 38, 47, 0.06);
+  --text: #23262f;
+  --text-2: #4d515c;
+  --text-3: #868892;
+  --line: rgba(35, 38, 47, 0.11);
+  --line-2: rgba(35, 38, 47, 0.2);
+  --line-3: rgba(35, 38, 47, 0.38);
+
+  --accent: #2547a6; /* ballpoint blue */
+  --accent-2: #1c3a8f;
+  --accent-ink: #ffffff;
+  --accent-border: #23262f;
+  --accent-text: #2547a6;
+  --accent-soft: rgba(37, 71, 166, 0.08);
+  --mark: #ffe066; /* highlighter */
+  --focus: #2547a6;
+  --selection: rgba(255, 224, 102, 0.8);
+  --danger: #c0392b; /* red pen */
+  --danger-soft: rgba(192, 57, 43, 0.08);
+  --ok: #2d7a50;
+  --warn: #b26b00;
+  --backdrop: rgba(44, 38, 28, 0.36);
+  --toast-bg: #fff2a3;
+  --toast-fg: #23262f;
+  --skeleton-a: #ece5d5;
+  --skeleton-b: #f6f1e6;
+
+  --font-body: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Be Vietnam Pro', system-ui, sans-serif;
+  --font-note: 'Playpen Sans Variable', 'Segoe Print', 'Bradley Hand', cursive;
+  --display-weight: 700;
+  --display-stretch: 100%;
+  --display-tracking: -0.025em;
+  --h1-size: clamp(32px, 4.2vw, 46px);
+  --h2-size: clamp(22px, 2.5vw, 28px);
+  --story-size: 16.5px;
+
+  --kicker-size: 18px;
+  --kicker-weight: 500;
+  --kicker-tracking: 0;
+  --kicker-transform: none;
+  --kicker-color: var(--accent);
+  --label-font: var(--font-body);
+  --label-tracking: 0;
+  --label-transform: none;
+  --link-more-size: 16.5px;
+
+  --radius-s: 6px;
+  --radius: 10px;
+  --radius-l: 14px;
+  --shadow-s: 0 1px 2px rgba(60, 46, 30, 0.08);
+  --shadow: 0 1px 2px rgba(60, 46, 30, 0.06), 0 14px 28px -18px rgba(60, 46, 30, 0.45);
+  --shadow-l: 0 2px 4px rgba(60, 46, 30, 0.06), 0 30px 60px -28px rgba(60, 46, 30, 0.55);
+  --card-border: 1px solid var(--line);
+
+  --btn-radius: 7px 11px 8px 12px / 11px 7px 12px 8px;
+  --btn-border-w: 1.5px;
+  --btn-font: var(--font-body);
+  --btn-size: 14.5px;
+  --btn-weight: 600;
+  --btn-tracking: 0;
+  --btn-transform: none;
+  --btn-shadow: none;
+  --btn-hover-transform: translateY(-1px);
+  --btn-hover-shadow: 0 6px 14px -10px rgba(35, 38, 47, 0.5);
+
+  --input-border-w: 1.5px;
+  --input-border: var(--line-2);
+  --input-radius: 7px;
+  --input-bg: #fffdf8;
+  --input-focus-ring: 0 0 0 3px rgba(37, 71, 166, 0.14);
+  --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5c1.8 1.6 3.3 3.4 5 5 1.6-1.7 3.2-3.4 5-5' fill='none' stroke='%2323262f' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+  --chip-radius: 999px;
+  --check-radius: 4px;
+  --check-mark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M2.5 7.6c1.2 1 2.1 2.1 3 3.3 1.7-3 3.7-5.6 6-7.6' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --seg-radius: 9px;
+  --search-radius: 999px;
+
+  --avatar-font: var(--font-note);
+  --avatar-ink: #23262f;
+  --avatar-border: 1.5px solid #23262f;
+  --c-teal: #bfe3d8;
+  --c-amber: #f8d9a0;
+  --c-rose: #f5c2c0;
+  --c-ink: #cbd5f0;
+
+  --tag-radius: 3px;
+  --tag-font: var(--font-note);
+  --tag-tracking: 0;
+  --tone-long-bg: rgba(255, 160, 170, 0.55);
+  --tone-long: #6d1f28;
+  --tone-mid-bg: rgba(255, 224, 102, 0.8);
+  --tone-mid: #5a4300;
+  --tone-soft-bg: rgba(170, 226, 190, 0.75);
+  --tone-soft: #1c5234;
+
+  --empty-border: 1.5px dashed var(--line-2);
+  --empty-bg: transparent;
+  --art-ink: #2547a6;
+
+  --brand-mark: #2547a6;
+  --brand-font: var(--font-note);
+  --brand-size: 23px;
+  --brand-weight: 600;
+  --brand-tracking: -0.01em;
+  --nav-bg: rgba(246, 241, 230, 0.88);
+  --nav-border: 1px solid var(--line);
+  --nav-blur: blur(10px) saturate(1.2);
+  --tab-font: var(--font-body);
+  --tab-size: 14.5px;
+  --tab-weight: 500;
+  --tab-tracking: 0;
+  --tab-transform: none;
+
+  --scene1: radial-gradient(circle at 28% 30%, rgba(233, 180, 92, 0.55), transparent 58%), radial-gradient(circle at 72% 74%, rgba(102, 160, 150, 0.4), transparent 55%), #fbf7ee;
+  --scene2: radial-gradient(circle at 70% 28%, rgba(120, 160, 214, 0.5), transparent 58%), radial-gradient(circle at 26% 76%, rgba(240, 200, 120, 0.45), transparent 55%), #fbf7ee;
+  --scene3: radial-gradient(circle at 34% 34%, rgba(236, 140, 140, 0.45), transparent 58%), radial-gradient(circle at 74% 70%, rgba(250, 210, 120, 0.45), transparent 55%), #fbf7ee;
+  --scene4: radial-gradient(circle at 30% 70%, rgba(140, 180, 120, 0.5), transparent 58%), radial-gradient(circle at 72% 30%, rgba(200, 170, 120, 0.4), transparent 55%), #fbf7ee;
+  --scene5: radial-gradient(circle at 66% 34%, rgba(232, 120, 90, 0.42), transparent 58%), radial-gradient(circle at 30% 72%, rgba(255, 210, 110, 0.5), transparent 55%), #fbf7ee;
+
+  --prints-gap-y: 40px;
+  --prints-gap-x: 30px;
+  --print-ratio: 4 / 4.4;
+  --photo-bg: #ece6d8;
+  --print-paper: #ffffff;
+  --badge-radius: 999px;
+  --print-date-font: var(--font-note);
+  --print-date-size: 14px;
+  --print-date-color: var(--accent);
+  --print-title-font: var(--font-note);
+  --print-title-size: 17px;
+  --print-title-weight: 500;
+  --strip-gap: 30px;
+  --stat-font: var(--font-note);
+  --stat-size: 42px;
+  --year-font: var(--font-note);
+  --year-size: 19px;
+  --year-weight: 500;
+  --year-tracking: 0;
+  --people-gap: 14px;
+  --stage-bg: #ffffff;
+  --comment-gap: 22px;
+  --tl-size: 58px;
+}
+
+/* Paper with a faint dot grid — like a bullet journal */
+[data-theme='notebook'] body {
+  background-color: var(--bg);
+  background-image: radial-gradient(circle at 1px 1px, rgba(35, 38, 47, 0.12) 1px, transparent 1.6px);
+  background-size: 24px 24px;
+}
+
+/* Icons get a slightly wobbly, hand-drawn line (filter defined once in the app shell) */
+[data-theme='notebook'] .icon {
+  filter: url(#hn-sketch);
+}
+
+/* ---------- Doodles & handwriting ---------- */
+.doodle {
+  display: none;
+}
+[data-theme='notebook'] .doodle {
+  display: block;
+  color: var(--accent);
+  pointer-events: none;
+}
+[data-theme='notebook'] .kicker {
+  transform: rotate(-1.2deg);
+  transform-origin: left center;
+}
+[data-theme='notebook'] .mark {
+  padding: 0 0.12em;
+  background: linear-gradient(100deg, transparent 0.6%, var(--mark) 2.4%, var(--mark) 97%, transparent 99.4%) 0 70% / 100% 62% no-repeat;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+/* A short blue scribble under page titles */
+[data-theme='notebook'] .page-title::after,
+[data-theme='notebook'] .memory-title::after {
+  content: '';
+  display: block;
+  width: 96px;
+  height: 10px;
+  margin-top: 8px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 10' preserveAspectRatio='none'%3E%3Cpath d='M2 6.5C14 3 22 8.5 36 5.6S62 2.4 74 5.4 92 7.6 98 4' fill='none' stroke='%232547a6' stroke-width='2.4' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+}
+
+/* ---------- Brand + navigation ---------- */
+[data-theme='notebook'] .brand-name {
+  transform: rotate(-2deg);
+}
+[data-theme='notebook'] .tab::after {
+  content: '';
+  position: absolute;
+  left: 9px;
+  right: 9px;
+  bottom: 3px;
+  height: 7px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 8' preserveAspectRatio='none'%3E%3Cpath d='M1.5 5.2C16 2 28 6.8 44 4.2S74 2 98.5 4.8' fill='none' stroke='%232547a6' stroke-width='2.2' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  opacity: 0;
+  transform: scaleX(0.4);
+  transform-origin: left;
+  transition:
+    opacity 0.2s,
+    transform 0.3s var(--ease-out);
+}
+[data-theme='notebook'] .tab:hover::after {
+  opacity: 0.35;
+  transform: scaleX(1);
+}
+[data-theme='notebook'] .tab.active {
+  font-weight: 600;
+}
+[data-theme='notebook'] .tab.active::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+[data-theme='notebook'] .tab-badge {
+  font-family: var(--font-note);
+  font-size: 11.5px;
+  background: var(--mark);
+  color: var(--text);
+  border: 1.2px solid var(--text);
+}
+[data-theme='notebook'] .sheet-nav .tab {
+  font-family: var(--font-note);
+  font-weight: 500;
+}
+[data-theme='notebook'] .sheet-nav .tab::after {
+  left: 4px;
+  right: auto;
+  width: 120px;
+}
+
+/* ---------- Buttons ---------- */
+[data-theme='notebook'] .btn-primary {
+  box-shadow: 2px 3px 0 var(--text);
+}
+[data-theme='notebook'] .btn-primary:hover:not(:disabled) {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 4px 0 var(--text);
+}
+[data-theme='notebook'] .btn-secondary {
+  --btn-border: var(--line-3);
+  --btn-bg: var(--surface);
+}
+
+/* ---------- Cards & panels: sheets of paper ---------- */
+[data-theme='notebook'] .panel,
+[data-theme='notebook'] .list-card,
+[data-theme='notebook'] .share-panel,
+[data-theme='notebook'] .profile,
+[data-theme='notebook'] .invite-note,
+[data-theme='notebook'] .reel,
+[data-theme='notebook'] .note-form {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+[data-theme='notebook'] .panel-title,
+[data-theme='notebook'] .section-title {
+  letter-spacing: -0.02em;
+}
+[data-theme='notebook'] .panel--danger {
+  border-color: rgba(192, 57, 43, 0.35);
+  background:
+    repeating-linear-gradient(-45deg, rgba(192, 57, 43, 0.045) 0 2px, transparent 2px 10px),
+    var(--surface);
+}
+
+/* ---------- Washi tape ---------- */
+[data-theme='notebook'] .tape {
+  position: absolute;
+  z-index: 3;
+  top: -11px;
+  left: 50%;
+  display: block;
+  width: 86px;
+  height: 24px;
+  background-color: var(--tape, rgba(255, 226, 120, 0.68));
+  background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0) 35%, rgba(255, 255, 255, 0.22) 70%, rgba(255, 255, 255, 0));
+  clip-path: polygon(0 0, 100% 0, 97% 20%, 100% 40%, 97% 60%, 100% 80%, 97% 100%, 0 100%, 3% 80%, 0 60%, 3% 40%, 0 20%);
+  transform: translateX(-50%) rotate(var(--tape-tilt, -3deg));
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+/* ---------- Prints: photos taped into the notebook ---------- */
+[data-theme='notebook'] .print {
+  --tilt: 0deg;
+  padding: 10px 10px 12px;
+  background: var(--print-paper);
+  box-shadow:
+    0 1px 1px rgba(60, 46, 30, 0.08),
+    0 14px 24px -16px rgba(60, 46, 30, 0.5);
+  transform: rotate(var(--tilt));
+  transition:
+    transform 0.3s var(--ease-out),
+    box-shadow 0.3s var(--ease-out);
+}
+[data-theme='notebook'] .print:nth-child(5n + 1) {
+  --tilt: -1.6deg;
+  --tape: rgba(255, 226, 120, 0.7);
+  --tape-tilt: -4deg;
+}
+[data-theme='notebook'] .print:nth-child(5n + 2) {
+  --tilt: 1.2deg;
+  --tape: rgba(150, 214, 196, 0.7);
+  --tape-tilt: 3deg;
+}
+[data-theme='notebook'] .print:nth-child(5n + 3) {
+  --tilt: -0.5deg;
+  --tape: rgba(246, 170, 176, 0.62);
+  --tape-tilt: -2deg;
+}
+[data-theme='notebook'] .print:nth-child(5n + 4) {
+  --tilt: 1.8deg;
+  --tape: rgba(160, 190, 240, 0.66);
+  --tape-tilt: 4deg;
+}
+[data-theme='notebook'] .print:nth-child(5n) {
+  --tilt: -2.1deg;
+  --tape: rgba(255, 196, 120, 0.66);
+  --tape-tilt: -1deg;
+}
+[data-theme='notebook'] .print:hover {
+  transform: rotate(0deg) translateY(-5px);
+  box-shadow:
+    0 2px 3px rgba(60, 46, 30, 0.08),
+    0 26px 36px -20px rgba(60, 46, 30, 0.55);
+  z-index: 2;
+}
+[data-theme='notebook'] .print:focus-visible {
+  outline-offset: 6px;
+}
+[data-theme='notebook'] .print-cap {
+  padding: 10px 3px 0;
+}
+[data-theme='notebook'] .print-title {
+  line-height: 1.2;
+}
+[data-theme='notebook'] .print-blank {
+  background: repeating-linear-gradient(-45deg, rgba(35, 38, 47, 0.07) 0 1px, transparent 1px 8px);
+  font-family: var(--font-note);
+  font-size: 19px;
+  color: var(--text-2);
+  line-height: 1.25;
+}
+[data-theme='notebook'] .print-owner {
+  font-family: var(--font-note);
+  font-size: 14px;
+}
+
+/* Today's strip: prints scattered across the desk */
+[data-theme='notebook'] .strip-track {
+  padding: 22px 8px 30px;
+  margin: -10px -8px 0;
+}
+[data-theme='notebook'] .strip .print:nth-child(odd) {
+  --tilt: -2.4deg;
+  translate: 0 6px;
+}
+[data-theme='notebook'] .strip .print:nth-child(even) {
+  --tilt: 1.9deg;
+}
+[data-theme='notebook'] .strip-add {
+  border-radius: 4px;
+  border-width: 2px;
+  font-family: var(--font-note);
+  font-size: 15px;
+}
+
+/* ---------- Today: featured print with a handwritten arrow ---------- */
+[data-theme='notebook'] .featured {
+  padding: 14px 14px 18px;
+  background: #fff;
+  box-shadow:
+    0 2px 3px rgba(60, 46, 30, 0.08),
+    0 34px 50px -30px rgba(60, 46, 30, 0.6);
+  transform: rotate(1.6deg);
+  transition: transform 0.4s var(--ease-out);
+}
+[data-theme='notebook'] .featured:hover {
+  transform: rotate(0.4deg) translateY(-4px);
+}
+[data-theme='notebook'] .featured .tape {
+  --tape: rgba(255, 226, 120, 0.72);
+  left: 16%;
+  width: 110px;
+}
+[data-theme='notebook'] .featured .tape + .tape {
+  --tape: rgba(150, 214, 196, 0.7);
+  --tape-tilt: 6deg;
+  left: 84%;
+}
+[data-theme='notebook'] .featured-cap {
+  padding: 14px 4px 0;
+  font-family: var(--font-note);
+}
+[data-theme='notebook'] .featured-title {
+  font-size: 22px;
+  font-weight: 500;
+}
+[data-theme='notebook'] .featured-when {
+  font-family: var(--font-note);
+  font-size: 18px;
+  color: var(--accent);
+}
+/* A handwritten note under the print, its arrow pointing up at the photo */
+[data-theme='notebook'] .featured-note {
+  position: absolute;
+  left: -14px;
+  bottom: -64px;
+  display: flex;
+  align-items: flex-start;
+  gap: 2px;
+  font-family: var(--font-note);
+  font-size: 17px;
+  color: var(--accent);
+  transform: rotate(-3deg);
+}
+[data-theme='notebook'] .featured-note svg {
+  width: 48px;
+  height: 40px;
+  margin-top: -26px;
+  transform: scaleY(-1);
+}
+[data-theme='notebook'] .today-hero {
+  padding-bottom: 40px;
+}
+[data-theme='notebook'] .stat-num {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* ---------- Year bar: the chosen year is circled in pen ---------- */
+[data-theme='notebook'] .year-circle {
+  position: absolute;
+  inset: -2px -8px;
+  width: calc(100% + 16px);
+  height: calc(100% + 4px);
+  overflow: visible;
+  color: var(--accent);
+  pointer-events: none;
+}
+[data-theme='notebook'] .year-circle path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw 0.55s var(--ease-out) forwards;
+}
+[data-theme='notebook'] .year:hover:not(.is-active) {
+  color: var(--accent);
+}
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ---------- People: index cards ---------- */
+[data-theme='notebook'] .person-row,
+[data-theme='notebook'] .profile {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background:
+    linear-gradient(90deg, transparent 69px, rgba(214, 88, 76, 0.42) 69px 70.5px, transparent 70.5px),
+    repeating-linear-gradient(180deg, transparent 0 27px, rgba(37, 71, 166, 0.1) 27px 28px),
+    #fffefa;
+  box-shadow:
+    0 1px 1px rgba(60, 46, 30, 0.06),
+    0 10px 18px -14px rgba(60, 46, 30, 0.45);
+}
+[data-theme='notebook'] .profile {
+  background:
+    linear-gradient(90deg, transparent 117px, rgba(214, 88, 76, 0.42) 117px 118.5px, transparent 118.5px),
+    repeating-linear-gradient(180deg, transparent 0 27px, rgba(37, 71, 166, 0.1) 27px 28px),
+    #fffefa;
+}
+[data-theme='notebook'] .person-row:nth-child(odd) {
+  transform: rotate(-0.25deg);
+}
+[data-theme='notebook'] .person-row:nth-child(even) {
+  transform: rotate(0.3deg);
+}
+[data-theme='notebook'] .tag {
+  font-size: 13.5px;
+  padding: 1px 10px;
+  border-radius: 2px 6px 3px 5px;
+}
+
+/* ---------- Notes & story on ruled paper ---------- */
+[data-theme='notebook'] .note {
+  padding: 4px 0 4px 18px;
+  border-left: 2px solid rgba(37, 71, 166, 0.35);
+}
+[data-theme='notebook'] .note-head time {
+  font-family: var(--font-note);
+  font-size: 14.5px;
+  color: var(--accent);
+}
+[data-theme='notebook'] .note-form textarea,
+[data-theme='notebook'] .comment-form .textarea {
+  --rule: 28px;
+  line-height: var(--rule);
+  padding-top: 6px;
+  background: repeating-linear-gradient(180deg, transparent 0 calc(var(--rule) - 1px), rgba(37, 71, 166, 0.13) calc(var(--rule) - 1px) var(--rule)) 0 6px / 100% var(--rule) local,
+    var(--surface);
+}
+[data-theme='notebook'] .story {
+  --rule: 30px;
+  gap: var(--rule);
+  font-size: 16.5px;
+  line-height: var(--rule);
+  padding: 2px 0 0;
+  background: repeating-linear-gradient(180deg, transparent 0 calc(var(--rule) - 1px), rgba(37, 71, 166, 0.12) calc(var(--rule) - 1px) var(--rule));
+}
+
+/* ---------- Films & music: cassette tapes ---------- */
+[data-theme='notebook'] .reel {
+  grid-template-columns: 100px minmax(0, 1fr);
+}
+[data-theme='notebook'] .disc {
+  --disc-color: #f8d9a0;
+  width: 100px;
+  height: 66px;
+  margin-top: 4px;
+  border: 1.5px solid var(--text);
+  border-radius: 7px;
+  background:
+    radial-gradient(circle at 30% 60%, #fffdf8 0 6px, var(--text) 6px 7.5px, transparent 8px),
+    radial-gradient(circle at 70% 60%, #fffdf8 0 6px, var(--text) 6px 7.5px, transparent 8px),
+    linear-gradient(var(--text), var(--text)) 50% 60% / 34% 1.5px no-repeat,
+    linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.9)) 50% 16% / 80% 9px no-repeat,
+    var(--disc-color);
+  transform: rotate(-3deg);
+  transition: transform 0.3s var(--ease-out);
+}
+[data-theme='notebook'] .disc.d2 {
+  --disc-color: #bfe3d8;
+  transform: rotate(2deg);
+}
+[data-theme='notebook'] .disc.d3 {
+  --disc-color: #f5c2c0;
+}
+[data-theme='notebook'] .reel:hover .disc {
+  transform: rotate(0deg) scale(1.04);
+}
+[data-theme='notebook'] .reel-title {
+  font-family: var(--font-note);
+  font-size: 19px;
+  font-weight: 500;
+}
+
+/* ---------- Memory page ---------- */
+[data-theme='notebook'] .viewer-stage {
+  padding: 14px;
+  background: #fff;
+  box-shadow:
+    0 2px 3px rgba(60, 46, 30, 0.08),
+    0 34px 54px -32px rgba(60, 46, 30, 0.6);
+  transform: rotate(-0.6deg);
+}
+[data-theme='notebook'] .viewer .tape {
+  top: -12px;
+  width: 120px;
+}
+[data-theme='notebook'] .viewer-count {
+  font-family: var(--font-note);
+  font-size: 15px;
+  color: var(--accent);
+  letter-spacing: 0;
+}
+[data-theme='notebook'] .thumb {
+  padding: 4px;
+  background: #fff;
+  box-shadow: 0 6px 10px -8px rgba(60, 46, 30, 0.6);
+  opacity: 0.75;
+}
+[data-theme='notebook'] .thumb:nth-child(odd) {
+  transform: rotate(-2deg);
+}
+[data-theme='notebook'] .thumb:nth-child(even) {
+  transform: rotate(2deg);
+}
+[data-theme='notebook'] .thumb.is-active {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+[data-theme='notebook'] .thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+[data-theme='notebook'] .memory-when {
+  font-family: var(--font-note);
+  font-size: 16px;
+  color: var(--accent);
+}
+[data-theme='notebook'] .owner-note {
+  border: 1.5px dashed rgba(37, 71, 166, 0.45);
+  background: rgba(37, 71, 166, 0.05);
+}
+
+/* ---------- Comments: sticky notes ---------- */
+[data-theme='notebook'] .comment-list {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  align-items: start;
+}
+[data-theme='notebook'] .comment {
+  --note: #fff1a3;
+  padding: 18px 16px 16px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.03), rgba(0, 0, 0, 0) 22%), var(--note);
+  box-shadow: 0 14px 22px -16px rgba(70, 58, 20, 0.6);
+  transform: rotate(var(--tilt, -1deg));
+}
+[data-theme='notebook'] .comment:nth-child(4n + 2) {
+  --note: #ffd8de;
+  --tilt: 1.4deg;
+}
+[data-theme='notebook'] .comment:nth-child(4n + 3) {
+  --note: #d8ecff;
+  --tilt: -0.6deg;
+}
+[data-theme='notebook'] .comment:nth-child(4n) {
+  --note: #ddf3d4;
+  --tilt: 1deg;
+}
+[data-theme='notebook'] .comment-body {
+  font-family: var(--font-note);
+  font-size: 16px;
+  line-height: 1.45;
+}
+[data-theme='notebook'] .comment-time {
+  font-family: var(--font-note);
+}
+
+/* ---------- Dialogs, toasts ---------- */
+[data-theme='notebook'] .modal-card {
+  overflow: visible;
+  border-radius: 6px;
+}
+[data-theme='notebook'] .modal-card::before {
+  content: '';
+  position: absolute;
+  top: -11px;
+  left: 50%;
+  width: 104px;
+  height: 24px;
+  background: rgba(255, 226, 120, 0.72);
+  clip-path: polygon(0 0, 100% 0, 97% 25%, 100% 50%, 97% 75%, 100% 100%, 0 100%, 3% 75%, 0 50%, 3% 25%);
+  transform: translateX(-50%) rotate(-2deg);
+}
+[data-theme='notebook'] .modal-body {
+  scrollbar-width: thin;
+}
+[data-theme='notebook'] .toast {
+  border-radius: 2px;
+  font-family: var(--font-note);
+  font-size: 16px;
+  transform: rotate(-1deg);
+  box-shadow: 0 14px 24px -14px rgba(70, 58, 20, 0.55);
+}
+
+/* ---------- Upload, sharing ---------- */
+[data-theme='notebook'] .dropzone {
+  border-width: 2px;
+  background: rgba(255, 255, 255, 0.55);
+  font-family: var(--font-note);
+  font-size: 16px;
+}
+[data-theme='notebook'] .media-thumb {
+  border: 3px solid #fff;
+  box-shadow: 0 4px 8px -6px rgba(60, 46, 30, 0.6);
+}
+[data-theme='notebook'] .link-box {
+  border-color: rgba(37, 71, 166, 0.5);
+  background: rgba(255, 255, 255, 0.6);
+}
+
+/* ---------- Timeline ---------- */
+[data-theme='notebook'] .tl-num {
+  color: var(--accent);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  transform: rotate(-3deg);
+  transform-origin: left bottom;
+}
+[data-theme='notebook'] .tl-count {
+  font-family: var(--font-note);
+  font-size: 15px;
+}
+
+/* ---------- Empty states ---------- */
+[data-theme='notebook'] .empty-title {
+  font-family: var(--font-note);
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+/* ---------- Artifacts: a print taped above a manila museum tag ---------- */
+[data-theme='notebook'] .artifact-photo {
+  padding: 10px;
+  background: #fff;
+  box-shadow:
+    0 2px 3px rgba(60, 46, 30, 0.08),
+    0 18px 30px -18px rgba(60, 46, 30, 0.5);
+}
+[data-theme='notebook'] .artifact-card:nth-child(3n + 1) .artifact-photo {
+  transform: rotate(-1.2deg);
+}
+[data-theme='notebook'] .artifact-card:nth-child(3n + 2) .artifact-photo {
+  transform: rotate(0.9deg);
+}
+[data-theme='notebook'] .artifact-card:hover .artifact-photo {
+  transform: rotate(0deg) translateY(-3px);
+}
+[data-theme='notebook'] .artifact-label {
+  position: relative;
+  padding: 12px 14px 12px 32px;
+  border: 1px solid #d9caa6;
+  border-radius: 4px 16px 16px 4px;
+  background: #f3ead6;
+  box-shadow: 0 6px 12px -10px rgba(60, 46, 30, 0.6);
+}
+/* the punched hole, and a bit of string through it */
+[data-theme='notebook'] .artifact-label::before {
+  content: '';
+  position: absolute;
+  top: 17px;
+  left: 11px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--bg);
+  box-shadow: inset 0 0 0 1.5px #bfae86;
+}
+[data-theme='notebook'] .artifact-label::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 15px;
+  width: 1.5px;
+  height: 14px;
+  background: #a08a5c;
+  transform: rotate(-24deg);
+  transform-origin: bottom;
+}
+[data-theme='notebook'] .artifact-no {
+  font-family: var(--font-note);
+  font-size: 14px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--accent);
+}
+[data-theme='notebook'] .artifact-title {
+  font-family: var(--font-note);
+  font-size: 19px;
+  font-weight: 500;
+}
+[data-theme='notebook'] .artifact-view-photo {
+  padding: 12px;
+  background: #fff;
+  box-shadow: 0 24px 40px -26px rgba(60, 46, 30, 0.6);
+}

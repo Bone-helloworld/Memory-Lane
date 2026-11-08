@@ -1,0 +1,36 @@
+# Render Blueprint — "New → Blueprint" in the Render dashboard, pick this repository.
+# Memory Lane. The SQLite database, photos and videos live on a persistent disk. Render only offers disks on
+# paid instance types; on a free instance everything would be wiped at each restart.
+services:
+  - type: web
+    name: memory-lane
+    runtime: node
+    plan: starter
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start:demo
+    # Answers {"ok":true} when the server is up and can read its database (PLAN.md, C2.1).
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "24"
+      - key: DATA_DIR
+        value: /var/data
+      - key: ALLOW_DEMO
+        value: "true"
+      # Videos fill disks fast: keep each account's share of the disk modest.
+      - key: STORAGE_MB
+        value: "500"
+      # "Continue with Google" (see docs/DEPLOY.md). sync: false → Render asks for the values when the
+      # Blueprint is created; they are never stored in the repository.
+      - key: PUBLIC_URL
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+    disk:
+      name: memory-lane-data
+      mountPath: /var/data
+      sizeGB: 3

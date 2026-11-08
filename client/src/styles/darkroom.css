@@ -1,0 +1,820 @@
+/* ==========================================================================
+   Theme B — "Phòng tối & tờ in thử" (the darkroom and the contact sheet)
+   Charcoal under a safelight. Photos sit on strips of film with edge printing
+   and sprocket holes; a red grease pencil marks the frame you point at, a loupe
+   magnifies it, and pictures "develop" in from overexposed. Bricolage
+   Grotesque for the big numerals, IBM Plex Mono for every label.
+   References: Stephen Kent Johnson, Daigh Rick (Siteinspire), YOIN (Curated).
+   ========================================================================== */
+
+[data-theme='darkroom'] {
+  color-scheme: dark;
+
+  --bg: #121110;
+  --surface: #1a1917;
+  --surface-2: #22201e;
+  --hover: rgba(236, 230, 216, 0.06);
+  --text: #ece6d8;
+  --text-2: #b1aa9b;
+  --text-3: #7d776b;
+  --line: rgba(236, 230, 216, 0.1);
+  --line-2: rgba(236, 230, 216, 0.2);
+  --line-3: rgba(236, 230, 216, 0.38);
+
+  --accent: #e0483a; /* safelight red */
+  --accent-2: #ef5a4b;
+  --accent-ink: #fff6f2;
+  --accent-border: #e0483a;
+  --accent-text: #ff7a6b;
+  --accent-soft: rgba(224, 72, 58, 0.12);
+  --edge: #e8953a; /* edge printing on film */
+  --mark: rgba(224, 72, 58, 0.3);
+  --focus: #ff7a6b;
+  --selection: rgba(224, 72, 58, 0.45);
+  --danger: #ff6b5b;
+  --danger-soft: rgba(255, 107, 91, 0.1);
+  --ok: #94c99f;
+  --warn: #e8b04a;
+  --backdrop: rgba(0, 0, 0, 0.7);
+  --toast-bg: #0a0a09;
+  --toast-fg: #ece6d8;
+  --skeleton-a: #1b1a18;
+  --skeleton-b: #272522;
+
+  --font-body: 'Bricolage Grotesque Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Bricolage Grotesque Variable', system-ui, sans-serif;
+  --font-note: var(--font-mono);
+  --display-weight: 700;
+  --display-stretch: 76%;
+  --display-tracking: -0.015em;
+  --h1-size: clamp(38px, 5.4vw, 64px);
+  --h2-size: clamp(25px, 3vw, 34px);
+  --story-size: 17px;
+
+  --kicker-size: 11.5px;
+  --kicker-weight: 500;
+  --kicker-tracking: 0.16em;
+  --kicker-transform: uppercase;
+  --kicker-color: var(--text-2);
+  --label-font: var(--font-mono);
+  --label-tracking: 0.08em;
+  --label-transform: uppercase;
+  --link-more-size: 11.5px;
+
+  --radius-s: 3px;
+  --radius: 4px;
+  --radius-l: 6px;
+  --shadow-s: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow: 0 18px 40px -20px rgba(0, 0, 0, 0.85);
+  --shadow-l: 0 40px 80px -30px rgba(0, 0, 0, 0.9);
+  --card-border: 1px solid var(--line);
+
+  --btn-radius: 2px;
+  --btn-border-w: 1px;
+  --btn-font: var(--font-mono);
+  --btn-size: 12px;
+  --btn-weight: 500;
+  --btn-tracking: 0.1em;
+  --btn-transform: uppercase;
+  --btn-shadow: none;
+  --btn-hover-transform: none;
+  --btn-hover-shadow: none;
+
+  --input-border-w: 1px;
+  --input-border: var(--line-2);
+  --input-radius: 2px;
+  --input-bg: #161514;
+  --input-focus-ring: 0 0 0 3px rgba(224, 72, 58, 0.22);
+  --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23b1aa9b' stroke-width='1.4'/%3E%3C/svg%3E");
+  --chip-radius: 2px;
+  --check-radius: 1px;
+  --check-mark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M2.5 7.5l3 3 6-7' fill='none' stroke='white' stroke-width='2'/%3E%3C/svg%3E");
+  --seg-radius: 3px;
+  --search-radius: 2px;
+
+  --avatar-font: var(--font-mono);
+  --avatar-ink: #ece6d8;
+  --avatar-border: 1px solid rgba(236, 230, 216, 0.45);
+  --c-teal: #23383a;
+  --c-amber: #3d3021;
+  --c-rose: #3e2526;
+  --c-ink: #262a36;
+
+  --tag-radius: 2px;
+  --tag-font: var(--font-mono);
+  --tag-tracking: 0.04em;
+  --tone-long-bg: rgba(224, 72, 58, 0.14);
+  --tone-long: #ff8a7d;
+  --tone-mid-bg: rgba(232, 176, 74, 0.13);
+  --tone-mid: #f0c06c;
+  --tone-soft-bg: rgba(148, 201, 159, 0.12);
+  --tone-soft: #a8d9b2;
+
+  --empty-border: 1px dashed var(--line-2);
+  --empty-bg: rgba(0, 0, 0, 0.18);
+  --art-ink: #ece6d8;
+
+  --brand-mark: #e0483a;
+  --brand-font: var(--font-display);
+  --brand-size: 21px;
+  --brand-weight: 700;
+  --brand-tracking: 0.01em;
+  --nav-bg: rgba(14, 13, 12, 0.86);
+  --nav-border: 1px solid rgba(236, 230, 216, 0.08);
+  --nav-blur: blur(10px);
+  --tab-font: var(--font-mono);
+  --tab-size: 11.5px;
+  --tab-weight: 500;
+  --tab-tracking: 0.12em;
+  --tab-transform: uppercase;
+
+  --scene1: radial-gradient(circle at 30% 35%, #5b4535, transparent 70%), #17130f;
+  --scene2: radial-gradient(circle at 70% 30%, #34484f, transparent 70%), #10141a;
+  --scene3: radial-gradient(circle at 40% 40%, #5a3533, transparent 70%), #160f0f;
+  --scene4: radial-gradient(circle at 35% 65%, #3f4a33, transparent 70%), #12140f;
+  --scene5: radial-gradient(circle at 65% 35%, #5f4127, transparent 70%), #17110b;
+
+  --prints-gap-y: 34px;
+  --prints-gap-x: 0px;
+  --print-ratio: 3 / 2.25;
+  --photo-bg: #0b0a09;
+  --print-paper: #0b0a09;
+  --badge-radius: 2px;
+  --print-date-font: var(--font-mono);
+  --print-date-size: 10.5px;
+  --print-date-color: var(--edge);
+  --print-title-font: var(--font-body);
+  --print-title-size: 15px;
+  --print-title-weight: 600;
+  --strip-gap: 0px;
+  --stat-font: var(--font-display);
+  --stat-size: 52px;
+  --year-font: var(--font-mono);
+  --year-size: 12.5px;
+  --year-weight: 500;
+  --year-tracking: 0.1em;
+  --people-gap: 0px;
+  --stage-bg: #050505;
+  --comment-gap: 0px;
+  --tl-size: 84px;
+}
+
+/* Safelight glow in the corner + a little film grain over everything */
+[data-theme='darkroom'] body {
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(ellipse 70% 46% at 100% -8%, rgba(224, 72, 58, 0.16), transparent 70%),
+    radial-gradient(ellipse 50% 40% at -10% 110%, rgba(232, 149, 58, 0.06), transparent 70%);
+  background-attachment: fixed;
+}
+[data-theme='darkroom'] body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  pointer-events: none;
+  opacity: 0.07;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: soft-light;
+}
+
+/* ---------- Type ---------- */
+[data-theme='darkroom'] .kicker::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 10px 2px rgba(224, 72, 58, 0.6);
+}
+[data-theme='darkroom'] .mark {
+  color: var(--accent-text);
+}
+[data-theme='darkroom'] .page-title,
+[data-theme='darkroom'] .memory-title {
+  line-height: 0.98;
+}
+[data-theme='darkroom'] .field-label {
+  font-size: 11px;
+  font-weight: 500;
+}
+[data-theme='darkroom'] .page-sub,
+[data-theme='darkroom'] .lede {
+  font-size: 16px;
+}
+
+/* ---------- Brand + navigation ---------- */
+[data-theme='darkroom'] .brand-name {
+  text-transform: uppercase;
+  font-stretch: 80%;
+}
+[data-theme='darkroom'] .brand-mark {
+  filter: drop-shadow(0 0 6px rgba(224, 72, 58, 0.65));
+}
+[data-theme='darkroom'] .tab-no {
+  display: inline;
+  color: var(--text-3);
+  font-size: 10px;
+}
+[data-theme='darkroom'] .tab::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: transparent;
+  transition: background-color 0.2s;
+}
+[data-theme='darkroom'] .tab.active::before {
+  background: var(--accent);
+  box-shadow: 0 0 10px 2px rgba(224, 72, 58, 0.7);
+}
+[data-theme='darkroom'] .tab.active .tab-no {
+  color: var(--accent-text);
+}
+[data-theme='darkroom'] .tab-badge {
+  border-radius: 2px;
+}
+[data-theme='darkroom'] .sheet-nav .tab {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 700;
+  font-stretch: 76%;
+  letter-spacing: 0;
+  text-transform: none;
+  justify-content: flex-start;
+  gap: 14px;
+}
+[data-theme='darkroom'] .sheet-nav .tab-no {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-stretch: 100%;
+}
+[data-theme='darkroom'] .lang-toggle button[aria-pressed='true'],
+[data-theme='darkroom'] .theme-switch button[aria-pressed='true'],
+[data-theme='darkroom'] .segmented button[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+/* ---------- Buttons ---------- */
+[data-theme='darkroom'] .btn {
+  min-height: 40px;
+}
+[data-theme='darkroom'] .btn-secondary {
+  --btn-border: var(--line-3);
+}
+[data-theme='darkroom'] .btn-secondary:hover:not(:disabled) {
+  --btn-border: var(--text);
+  --btn-bg: rgba(236, 230, 216, 0.04);
+}
+[data-theme='darkroom'] .btn-primary:hover:not(:disabled) {
+  box-shadow: 0 0 22px -4px rgba(224, 72, 58, 0.7);
+}
+
+/* ---------- Panels: matte black boards ---------- */
+[data-theme='darkroom'] .panel,
+[data-theme='darkroom'] .list-card,
+[data-theme='darkroom'] .share-panel,
+[data-theme='darkroom'] .profile,
+[data-theme='darkroom'] .invite-note,
+[data-theme='darkroom'] .reel,
+[data-theme='darkroom'] .note-form {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.015), rgba(255, 255, 255, 0)), var(--surface);
+}
+[data-theme='darkroom'] .panel--danger {
+  border-color: rgba(255, 107, 91, 0.35);
+}
+[data-theme='darkroom'] .panel-title {
+  font-size: 23px;
+}
+
+/* ---------- Contact sheet: every print is a frame on a strip of film ---------- */
+[data-theme='darkroom'] .print-film {
+  position: relative;
+  padding: 20px 7px;
+  background:
+    linear-gradient(90deg, #26231f 0 9px, transparent 9px) 5px 5px / 19px 9px repeat-x,
+    linear-gradient(90deg, #26231f 0 9px, transparent 9px) 5px calc(100% - 5px) / 19px 9px repeat-x,
+    #0a0908;
+}
+[data-theme='darkroom'] .edge {
+  position: absolute;
+  z-index: 1;
+  display: block;
+  left: 9px;
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--edge);
+  opacity: 0.85;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+}
+[data-theme='darkroom'] .edge-top {
+  top: 6px;
+  left: auto;
+  right: 10px;
+  padding: 0 4px;
+  background: #0a0908;
+}
+[data-theme='darkroom'] .edge-bottom {
+  bottom: 5px;
+  padding: 0 4px;
+  background: #0a0908;
+}
+[data-theme='darkroom'] .print-photo {
+  outline: 1px solid rgba(0, 0, 0, 0.6);
+}
+/* Red grease pencil: the frame you point at gets marked, like on a real proof sheet */
+[data-theme='darkroom'] .print-film::after {
+  content: '';
+  position: absolute;
+  inset: 13px 2px;
+  border: 2.5px solid var(--accent);
+  border-radius: 7px 11px 6px 12px / 10px 6px 12px 7px;
+  opacity: 0;
+  transform: scale(1.03) rotate(-0.8deg);
+  transition:
+    opacity 0.18s,
+    transform 0.25s var(--ease-out);
+  pointer-events: none;
+}
+[data-theme='darkroom'] .print:hover .print-film::after,
+[data-theme='darkroom'] .print:focus-visible .print-film::after {
+  opacity: 0.95;
+  transform: scale(1) rotate(-0.8deg);
+}
+[data-theme='darkroom'] .print:focus-visible {
+  outline: none;
+}
+[data-theme='darkroom'] .print-cap {
+  padding: 10px 10px 0;
+}
+[data-theme='darkroom'] .print-title {
+  font-stretch: 90%;
+}
+[data-theme='darkroom'] .print-meta {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+[data-theme='darkroom'] .print-people .avatar {
+  border-color: var(--bg);
+}
+[data-theme='darkroom'] .print-blank {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(236, 230, 216, 0.45);
+}
+[data-theme='darkroom'] .print-owner {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* The loupe: a lens that follows the pointer over a frame */
+.loupe {
+  display: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  [data-theme='darkroom'] .loupe {
+    position: absolute;
+    z-index: 4;
+    display: block;
+    width: 128px;
+    height: 128px;
+    border: 2px solid rgba(236, 230, 216, 0.9);
+    border-radius: 50%;
+    background-color: #000;
+    background-repeat: no-repeat;
+    box-shadow:
+      0 14px 30px rgba(0, 0, 0, 0.7),
+      inset 0 0 0 1px rgba(0, 0, 0, 0.5),
+      inset 0 0 22px rgba(0, 0, 0, 0.45);
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    transition: opacity 0.15s;
+    pointer-events: none;
+  }
+  [data-theme='darkroom'] .print-photo:hover .loupe.is-ready {
+    opacity: 1;
+  }
+}
+
+/* Photos develop: they appear overexposed and settle, like in the tray */
+[data-theme='darkroom'] .photo.is-loaded {
+  animation: develop 1.5s ease-out both;
+}
+@keyframes develop {
+  0% {
+    opacity: 0;
+    filter: brightness(2.6) contrast(0.35) saturate(0) blur(1.5px);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    filter: none;
+  }
+}
+
+/* Today's strip: one continuous strip of film */
+[data-theme='darkroom'] .strip {
+  padding: 0;
+  border-top: 1px solid #000;
+  border-bottom: 1px solid #000;
+}
+[data-theme='darkroom'] .strip-add {
+  border: 0;
+  border-radius: 0;
+  padding: 20px 7px;
+  aspect-ratio: auto;
+  min-height: 100%;
+  background:
+    linear-gradient(90deg, #26231f 0 9px, transparent 9px) 5px 5px / 19px 9px repeat-x,
+    linear-gradient(90deg, #26231f 0 9px, transparent 9px) 5px calc(100% - 5px) / 19px 9px repeat-x,
+    #0a0908;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+[data-theme='darkroom'] .strip-add:hover {
+  color: var(--accent-text);
+}
+
+/* ---------- Today: the enlargement under the safelight ---------- */
+[data-theme='darkroom'] .featured {
+  padding: 12px;
+  background: #e9e3d6;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.6),
+    0 40px 90px -30px rgba(0, 0, 0, 0.9),
+    0 0 140px -20px rgba(224, 72, 58, 0.35);
+  isolation: isolate;
+}
+/* Room above the enlargement for its big outlined year */
+[data-theme='darkroom'] .today-hero {
+  padding-top: 72px;
+}
+@media (max-width: 980px) {
+  [data-theme='darkroom'] .today-hero {
+    padding-top: 0;
+  }
+  [data-theme='darkroom'] .featured {
+    margin-top: 64px;
+  }
+}
+[data-theme='darkroom'] .featured-numeral {
+  display: block;
+  position: absolute;
+  z-index: -1;
+  top: -0.42em;
+  left: -0.18em;
+  font-family: var(--font-display);
+  font-size: clamp(110px, 16vw, 210px);
+  font-weight: 800;
+  font-stretch: 75%;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(236, 230, 216, 0.22);
+  pointer-events: none;
+}
+[data-theme='darkroom'] .featured-cap {
+  padding: 12px 2px 2px;
+  color: #1a1816;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+[data-theme='darkroom'] .featured-title {
+  font-weight: 600;
+}
+[data-theme='darkroom'] .featured-note {
+  display: block;
+  position: absolute;
+  right: 0;
+  bottom: -30px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+}
+[data-theme='darkroom'] .featured-note svg {
+  display: none;
+}
+[data-theme='darkroom'] .featured .tape {
+  display: none;
+}
+[data-theme='darkroom'] .stat-num {
+  font-weight: 700;
+}
+
+/* ---------- Year bar ---------- */
+[data-theme='darkroom'] .years {
+  gap: 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+[data-theme='darkroom'] .year {
+  min-height: 42px;
+  padding: 0 14px;
+  text-transform: uppercase;
+}
+[data-theme='darkroom'] .year::after {
+  content: '';
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: -1px;
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transition: transform 0.25s var(--ease-out);
+}
+[data-theme='darkroom'] .year.is-active {
+  color: var(--accent-text);
+}
+[data-theme='darkroom'] .year.is-active::after {
+  transform: scaleX(1);
+}
+[data-theme='darkroom'] .year-circle {
+  display: none;
+}
+
+/* ---------- People: an index of negatives ---------- */
+[data-theme='darkroom'] .people-list {
+  border-top: 1px solid var(--line);
+}
+[data-theme='darkroom'] .person-row {
+  padding: 16px 6px;
+  border-bottom: 1px solid var(--line);
+  transition: background-color 0.15s;
+}
+[data-theme='darkroom'] .person-row:hover {
+  background: rgba(236, 230, 216, 0.025);
+}
+[data-theme='darkroom'] .person-name {
+  font-size: 18px;
+  font-stretch: 88%;
+}
+[data-theme='darkroom'] .person-meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+[data-theme='darkroom'] .tag {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  border: 1px solid currentColor;
+  background: transparent;
+}
+[data-theme='darkroom'] .dots span.on {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+/* ---------- Notes, story ---------- */
+[data-theme='darkroom'] .note {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+[data-theme='darkroom'] .notes {
+  gap: 0;
+  border-top: 1px solid var(--line);
+}
+[data-theme='darkroom'] .story {
+  color: #ddd6c7;
+}
+
+/* ---------- Films & music: records ---------- */
+[data-theme='darkroom'] .disc {
+  background:
+    radial-gradient(circle, #0b0a09 0 3px, var(--disc-label, #e0483a) 3.5px 17px, transparent 17.5px),
+    repeating-radial-gradient(circle, #141312 0 1px, #1c1a18 1.5px 2.6px);
+  box-shadow:
+    0 0 0 1px rgba(236, 230, 216, 0.08),
+    0 10px 24px -10px rgba(0, 0, 0, 0.9);
+  transition: transform 1.2s var(--ease-out);
+}
+[data-theme='darkroom'] .disc.d2 {
+  --disc-label: #e8953a;
+}
+[data-theme='darkroom'] .disc.d3 {
+  --disc-label: #c9c1af;
+}
+[data-theme='darkroom'] .reel:hover .disc {
+  transform: rotate(200deg);
+}
+[data-theme='darkroom'] .reel-title {
+  font-size: 19px;
+  font-stretch: 85%;
+}
+
+/* ---------- Memory page ---------- */
+[data-theme='darkroom'] .viewer-stage {
+  border: 1px solid #000;
+  box-shadow: 0 30px 70px -30px rgba(0, 0, 0, 0.9);
+}
+[data-theme='darkroom'] .viewer .tape {
+  display: none;
+}
+[data-theme='darkroom'] .viewer-count {
+  color: var(--edge);
+}
+[data-theme='darkroom'] .thumbs {
+  gap: 0;
+  padding: 14px 6px;
+  background:
+    linear-gradient(90deg, #26231f 0 7px, transparent 7px) 4px 3px / 15px 7px repeat-x,
+    linear-gradient(90deg, #26231f 0 7px, transparent 7px) 4px calc(100% - 3px) / 15px 7px repeat-x,
+    #0a0908;
+}
+[data-theme='darkroom'] .thumb {
+  margin: 0 3px;
+  opacity: 0.45;
+}
+[data-theme='darkroom'] .thumb.is-active {
+  opacity: 1;
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+[data-theme='darkroom'] .thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+[data-theme='darkroom'] .memory-when {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+[data-theme='darkroom'] .owner-note {
+  border: 1px solid rgba(224, 72, 58, 0.35);
+  border-radius: 2px;
+}
+[data-theme='darkroom'] .facts dd {
+  font-size: 14.5px;
+}
+
+/* ---------- Comments: the lab log ---------- */
+[data-theme='darkroom'] .comment-list {
+  border-top: 1px solid var(--line);
+}
+[data-theme='darkroom'] .comment {
+  grid-template-columns: 190px minmax(0, 1fr);
+  column-gap: 20px;
+  padding: 16px 4px;
+  border-bottom: 1px solid var(--line);
+}
+[data-theme='darkroom'] .comment-head {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: 4px;
+  grid-row: span 2;
+}
+[data-theme='darkroom'] .comment-time {
+  font-size: 10.5px;
+}
+[data-theme='darkroom'] .comment-delete {
+  margin-top: 2px;
+}
+[data-theme='darkroom'] .comment-body {
+  font-size: 15.5px;
+  color: #ddd6c7;
+}
+
+/* ---------- Dialogs, toasts, menus ---------- */
+[data-theme='darkroom'] .modal-card {
+  border: 1px solid var(--line-2);
+  background: #171614;
+}
+[data-theme='darkroom'] .modal-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), transparent 70%);
+}
+[data-theme='darkroom'] .modal-title {
+  font-size: 30px;
+}
+[data-theme='darkroom'] .toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line-2);
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  letter-spacing: 0.04em;
+}
+[data-theme='darkroom'] .toast::before {
+  content: '';
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px 2px rgba(224, 72, 58, 0.7);
+}
+[data-theme='darkroom'] .toast.error {
+  background: #2a0f0c;
+  color: #ffd5cf;
+}
+[data-theme='darkroom'] .menu-pop {
+  background: #171614;
+  border-color: var(--line-2);
+}
+
+/* ---------- Upload, sharing ---------- */
+[data-theme='darkroom'] .dropzone {
+  background: rgba(0, 0, 0, 0.25);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+[data-theme='darkroom'] .dropzone-hint {
+  text-transform: none;
+  letter-spacing: 0;
+}
+[data-theme='darkroom'] .media-item {
+  background: var(--surface-2);
+}
+[data-theme='darkroom'] .link-box {
+  border-style: solid;
+  border-color: rgba(224, 72, 58, 0.45);
+}
+[data-theme='darkroom'] .list-row-title {
+  font-stretch: 90%;
+  font-size: 15.5px;
+}
+
+/* ---------- Timeline ---------- */
+[data-theme='darkroom'] .tl-num {
+  color: transparent;
+  -webkit-text-stroke: 1px var(--text);
+  font-weight: 800;
+}
+[data-theme='darkroom'] .tl-year:hover .tl-num {
+  color: var(--accent);
+  -webkit-text-stroke-color: var(--accent);
+}
+
+/* ---------- Empty states ---------- */
+[data-theme='darkroom'] .empty-title {
+  font-size: 26px;
+}
+
+/* ---------- Artifacts: an archive index card under a dark print ---------- */
+[data-theme='darkroom'] .artifact-photo {
+  border: 1px solid #000;
+  background: #0a0908;
+}
+[data-theme='darkroom'] .artifact-card:hover .artifact-photo {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+[data-theme='darkroom'] .artifact-label {
+  padding: 12px 14px;
+  border: 1px solid var(--line-2);
+  border-top: 2px solid var(--accent);
+  background: var(--surface);
+}
+[data-theme='darkroom'] .artifact-no {
+  color: var(--edge);
+}
+[data-theme='darkroom'] .artifact-title {
+  font-family: var(--font-display);
+  font-size: 21px;
+  font-stretch: 85%;
+}
+[data-theme='darkroom'] .artifact-meta,
+[data-theme='darkroom'] .artifact-origin {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+[data-theme='darkroom'] .artifact-view-photo {
+  border: 1px solid #000;
+  background: #0a0908;
+}
