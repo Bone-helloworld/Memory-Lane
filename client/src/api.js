@@ -59,6 +59,6 @@ export const api = {
 export function errorMessage(t, error) {
   if (!(error instanceof ApiError)) return t('errors.SERVER');
   const message = t(`errors.${error.code}`);
-  // "… Mã lỗi: 3f9a1c2e." — something to quote when reporting the problem (see docs/DEPLOY-VA-VAN-HANH.md).
+  // "… Mã lỗi: 3f9a1c2e." — the same ref is printed on the server log line.
   return error.ref ? `${message} ${t('errors.ref', { ref: error.ref })}` : message;
 }

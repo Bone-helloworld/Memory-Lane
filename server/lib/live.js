@@ -9,7 +9,7 @@
  * browser's EventSource reconnects by itself, and it goes through proxies and our cookie login.
  *
  * Subscribers live in memory, in this one process. With several servers behind a load balancer,
- * publish through a shared channel instead (Redis pub/sub) — see docs/MO-RONG.md.
+ * publish through a shared channel instead (Redis pub/sub).
  */
 export function createLive({ heartbeatMs = 25_000 } = {}) {
   const clients = new Map(); // userId → Set of open responses (one per tab)
