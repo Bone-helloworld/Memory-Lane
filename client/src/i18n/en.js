@@ -778,7 +778,7 @@ export default {
       TOO_LONG: 'Too long — at most {max} characters.',
       TOO_SHORT: 'Too short — at least {min} characters.',
       INVALID_EMAIL: 'That does not look like an email address.',
-      EMAIL_TAKEN: 'An album already uses this email.',
+      EMAIL_UNAVAILABLE: "Couldn't create an album with this email. If you already have one, log in.",
       OUT_OF_RANGE: 'Must be between {min} and {max}.',
       INVALID_DATE: 'That date does not exist.',
       FUTURE_DATE: 'Memories are from the past — this date is in the future.',

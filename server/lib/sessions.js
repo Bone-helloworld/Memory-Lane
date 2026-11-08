@@ -29,6 +29,7 @@ export function createSessions(db, config) {
   const maxAgeMs = config.sessionDays * 86_400_000;
   const insert = db.prepare('INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)');
   const remove = db.prepare('DELETE FROM sessions WHERE token_hash = ?');
+  const removeUser = db.prepare('DELETE FROM sessions WHERE user_id = ?');
   // req.user never carries the password hash — only whether the account has a password.
   const lookup = db.prepare(`
     SELECT u.id, u.email, u.name, u.locale, u.created_at, u.password_hash <> '' AS has_password, u.google_email
@@ -37,7 +38,15 @@ export function createSessions(db, config) {
 
   db.prepare('DELETE FROM sessions WHERE expires_at <= ?').run(new Date().toISOString());
 
+  // Filled in by createApp once the live channel exists. The session id is the token hash:
+  // the same value stored in the database, never the raw cookie.
+  let live = null;
+
   return {
+    attachLive(channel) {
+      live = channel;
+    },
+
     start(res, userId) {
       const token = randomBytes(32).toString('base64url');
       insert.run(hashToken(token), userId, new Date(Date.now() + maxAgeMs).toISOString());
@@ -52,19 +61,30 @@ export function createSessions(db, config) {
 
     end(req, res) {
       const token = readCookie(req, COOKIE);
+      const sessionId = req.sessionId || (token ? hashToken(token) : null);
       if (token) remove.run(hashToken(token));
       res.clearCookie(COOKIE, { path: '/', httpOnly: true, sameSite: 'lax', secure: config.cookieSecure });
+      // This device only. Another browser signed in as the same person keeps its stream.
+      live?.closeSession(sessionId);
     },
 
-    /** Log a user out everywhere (used after a password change). */
+    /** Log a user out everywhere (password change, "log out all devices", account deletion). */
     revokeAll(userId) {
-      db.prepare('DELETE FROM sessions WHERE user_id = ?').run(userId);
+      removeUser.run(userId);
+      live?.closeUser(userId);
     },
 
-    /** Middleware: sets req.user to the logged-in user or null. */
+    /** Middleware: sets req.user and req.sessionId for the logged-in session, or null. */
     loadUser(req, res, next) {
       const token = readCookie(req, COOKIE);
-      req.user = token ? (lookup.get(hashToken(token), new Date().toISOString()) ?? null) : null;
+      req.user = null;
+      req.sessionId = null;
+      if (!token) return next();
+      const sessionId = hashToken(token);
+      const user = lookup.get(sessionId, new Date().toISOString()) ?? null;
+      if (!user) return next();
+      req.user = user;
+      req.sessionId = sessionId;
       next();
     },
   };

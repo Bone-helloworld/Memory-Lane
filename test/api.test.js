@@ -185,7 +185,8 @@ describe('authentication', () => {
     await agent().post('/api/auth/register', { json: { name: 'A', email: 'Same@Example.com', password: '12345678' } });
     const res = await agent().post('/api/auth/register', { json: { name: 'B', email: 'same@example.com', password: '12345678' } });
     assert.equal(res.status, 400);
-    assert.equal(res.body.fields.email.code, 'EMAIL_TAKEN');
+    assert.equal(res.body.fields.email.code, 'EMAIL_UNAVAILABLE');
+    assert.equal(JSON.stringify(res.body).includes('EMAIL_TAKEN'), false);
   });
 
   test('login: wrong password and unknown email give the same answer', async () => {
@@ -659,6 +660,125 @@ describe('circle, invites, sharing and comments', () => {
       assert.equal((await next('comment-removed')).commentId, note.comment.id);
     } finally {
       controller.abort();
+    }
+  });
+
+  /** Reads one SSE response. `untilDone` resolves true when the server closes it. */
+  function eventStream(res) {
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let done = false;
+    let pending = null;
+    async function pull(ms) {
+      const deadline = Date.now() + ms;
+      while (!done && Date.now() < deadline) {
+        pending ??= reader.read().then(
+          (result) => {
+            pending = null;
+            return result;
+          },
+          () => {
+            pending = null;
+            done = true;
+            return null;
+          },
+        );
+        const result = await Promise.race([
+          pending,
+          new Promise((resolve) => setTimeout(() => resolve(undefined), Math.max(0, deadline - Date.now()))),
+        ]);
+        if (result === undefined) return;
+        if (!result) return;
+        if (result.value) buffer += decoder.decode(result.value, { stream: true });
+        if (result.done) done = true;
+      }
+    }
+    return {
+      get buffer() {
+        return buffer;
+      },
+      untilDone: async (ms) => {
+        await pull(ms);
+        return done;
+      },
+      async next(type, ms = 3000) {
+        const deadline = Date.now() + ms;
+        while (Date.now() < deadline) {
+          const match = buffer.match(new RegExp(`event: ${type}\\ndata: (.*)\\n\\n`));
+          if (match) {
+            buffer = buffer.slice(match.index + match[0].length);
+            return JSON.parse(match[1]);
+          }
+          if (done) return null;
+          await pull(Math.min(200, deadline - Date.now()));
+        }
+        return null;
+      },
+    };
+  }
+
+  test('logging out closes that session’s stream; another device keeps receiving', async () => {
+    const { agent: an } = await registeredAgent('An');
+    const { agent: phone, user: haUser, password } = await registeredAgent('Hà');
+    const laptop = agent();
+    assert.equal((await laptop.post('/api/auth/login', { json: { email: haUser.email, password } })).status, 200);
+    await connect(an, phone);
+    const memory = await createMemory(an, { title: 'Huế' });
+
+    const phoneAbort = new AbortController();
+    const laptopAbort = new AbortController();
+    try {
+      const phoneRes = await fetch(`${base}/api/events`, { headers: { cookie: phone.cookie }, signal: phoneAbort.signal });
+      const laptopRes = await fetch(`${base}/api/events`, { headers: { cookie: laptop.cookie }, signal: laptopAbort.signal });
+      assert.equal(phoneRes.status, 200);
+      assert.equal(laptopRes.status, 200);
+      const phoneStream = eventStream(phoneRes);
+      const laptopStream = eventStream(laptopRes);
+
+      assert.equal((await phone.post('/api/auth/logout')).status, 204);
+      assert.equal(await phoneStream.untilDone(1500), true, 'the logged-out stream should close');
+
+      await an.put(`/api/memories/${memory.id}/shares`, { json: { userIds: [haUser.id] } });
+      const shared = await laptopStream.next('shared');
+      assert.equal(shared?.memoryId, memory.id, 'the other session is still signed in');
+      assert.equal(phoneStream.buffer.includes('event: shared'), false);
+    } finally {
+      phoneAbort.abort();
+      laptopAbort.abort();
+    }
+  });
+
+  test('changing the password closes the other device’s live stream', async () => {
+    const { agent: phone, user, password } = await registeredAgent();
+    const laptop = agent();
+    assert.equal((await laptop.post('/api/auth/login', { json: { email: user.email, password } })).status, 200);
+    const abort = new AbortController();
+    try {
+      const res = await fetch(`${base}/api/events`, { headers: { cookie: laptop.cookie }, signal: abort.signal });
+      assert.equal(res.status, 200);
+      const stream = eventStream(res);
+      const changed = await phone.post('/api/me/password', {
+        json: { currentPassword: password, newPassword: 'a brand new password' },
+      });
+      assert.equal(changed.status, 204);
+      assert.equal(await stream.untilDone(1500), true);
+    } finally {
+      abort.abort();
+    }
+  });
+
+  test('deleting the account closes its live stream', async () => {
+    const { agent: a, user } = await registeredAgent();
+    const abort = new AbortController();
+    try {
+      const res = await fetch(`${base}/api/events`, { headers: { cookie: a.cookie }, signal: abort.signal });
+      assert.equal(res.status, 200);
+      const stream = eventStream(res);
+      assert.equal((await a.del('/api/me', { json: { email: user.email } })).status, 204);
+      assert.equal(await stream.untilDone(1500), true);
+    } finally {
+      abort.abort();
     }
   });
 

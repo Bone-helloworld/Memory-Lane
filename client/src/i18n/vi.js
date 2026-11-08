@@ -848,7 +848,7 @@ export default {
       TOO_LONG: 'Quá dài — tối đa {max} ký tự.',
       TOO_SHORT: 'Quá ngắn — tối thiểu {min} ký tự.',
       INVALID_EMAIL: 'Email chưa đúng định dạng.',
-      EMAIL_TAKEN: 'Email này đã có album.',
+      EMAIL_UNAVAILABLE: 'Không tạo được album với email này. Nếu bạn đã có album, hãy đăng nhập.',
       OUT_OF_RANGE: 'Phải nằm trong khoảng {min}–{max}.',
       INVALID_DATE: 'Ngày này không tồn tại.',
       FUTURE_DATE: 'Ký ức là chuyện đã qua — ngày này ở tương lai.',
