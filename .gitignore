@@ -2,5 +2,14 @@ node_modules/
 client/dist/
 data/
 .env
+.env.*
+!.env.example
 .DS_Store
 *.log
+.vite/
+coverage/
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3

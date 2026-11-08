@@ -20,6 +20,9 @@ dữ liệu SQLite, với đăng nhập thật (cả bằng Google), lưu ảnh/
 
 | Tài liệu | Nội dung |
 | --- | --- |
+| [docs/KIEN-TRUC.md](docs/KIEN-TRUC.md) | **Bản đồ cho người mới**: app làm gì, vì sao chọn từng công nghệ, thư mục nào chứa gì, một yêu cầu đi từ trình duyệt tới SQLite, và cách chạy trên máy. |
+| [docs/LO-TRINH-TU-XAY-LAI.md](docs/LO-TRINH-TU-XAY-LAI.md) | **Tự xây lại từ thư mục trống**: các mốc nhỏ, khái niệm cần học, tệp nên đọc, và phần nào của bản này là boilerplate có thể bỏ qua. |
+| [docs/DEPLOY-VA-VAN-HANH.md](docs/DEPLOY-VA-VAN-HANH.md) | **Lên production trên Render** (một máy chủ Node + ổ đĩa), tên miền, HTTPS, rồi checklist bảo mật và vận hành. |
 | [docs/PRESENTATION.md](docs/PRESENTATION.md) | **Thuyết trình toàn bộ dự án**: từng phần front-end, back-end, cơ sở dữ liệu, bảo mật, chia sẻ, luồng xử lý, kịch bản demo. Viết cho người vừa học xong lập trình web. |
 | [PLAN.md](PLAN.md) | **Kế hoạch & hướng dẫn**: chuyển dự án này sang một repo Git thật để tự phát triển tiếp; bản đồ mã nguồn; hướng dẫn **tự xây lại từ thư mục trống** qua 16 chặng (máy chủ, cơ sở dữ liệu, đăng nhập rồi mới tới giao diện; code đầy đủ, đã chạy thử); **Phần C: vận hành, bảo trì, xử lý sự cố** (sao lưu, công cụ quản trị, sổ tay theo triệu chứng); **Phần D: khi không còn ai để hỏi**; và **Phần E: xây lại từng tính năng còn lại của bản thật**, từng bước, code trích nguyên văn. Bắt đầu từ mục **"Đọc trước tiên"** và **"Bắt đầu nhanh"** (mở, chạy, tắt app, các cổng, đăng nhập, tình huống hay gặp). |
 | [docs/MO-RONG.md](docs/MO-RONG.md) | Khi có nhiều người dùng: nén ảnh/video giữ chất lượng (có số liệu đo), lưu trữ đám mây, bảo mật, thời gian thực. |
