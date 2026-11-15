@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { LIMITS } from '@shared/limits.js';
 import { ApiError, api, errorMessage } from '../../api.js';
 import { useAuth } from '../../auth.jsx';
-import { useI18n } from '../../i18n/index.jsx';
+import { fieldMessage, useI18n } from '../../i18n/index.jsx';
 import { UnreadableImageError, preparePhoto } from '../../lib/image.js';
 import { uploadFile } from '../../lib/upload.js';
 import { readVideo } from '../../lib/video.js';
@@ -147,6 +147,13 @@ export default function MemoryForm({ memory, onSaved, onCancel, onBusyChange }) 
         patch(key, { status: 'ready', prepared, size: prepared.file.size, thumb: objectUrl(prepared.preview) });
       } else {
         const info = await readVideo(file);
+        if (info.duration != null && info.duration > LIMITS.videoMaxSeconds) {
+          patch(key, {
+            status: 'error',
+            error: t('errors.field.VIDEO_TOO_LONG', { max: Math.round(LIMITS.videoMaxSeconds / 60) }),
+          });
+          return;
+        }
         patch(key, {
           status: 'ready',
           prepared: { file, preview: info.poster, width: info.width, height: info.height, duration: info.duration },
@@ -200,13 +207,16 @@ export default function MemoryForm({ memory, onSaved, onCancel, onBusyChange }) 
   // ---------- saving ----------
 
   function uploadMessage(err, kind) {
-    const field = err instanceof ApiError ? err.fields?.file : null;
+    const field = err instanceof ApiError ? (err.fields?.file ?? err.fields?.poster) : null;
     if (field?.code === 'FILE_TYPE') return t('upload.errors.type');
     if (field?.code === 'FILE_TOO_LARGE') {
       return t(kind === 'video' ? 'upload.errors.videoTooLarge' : 'upload.errors.imageTooLarge', { max: field.max });
     }
     if (field?.code === 'TOO_MANY_FILES') return t('upload.errors.tooMany', { max: field.max });
     if (field?.code === 'STORAGE_FULL') return t('upload.errors.storageFull');
+    if (field && ['EXPLICIT', 'MODERATION_UNAVAILABLE', 'UNREADABLE', 'VIDEO_TOO_LONG'].includes(field.code)) {
+      return fieldMessage(t, field);
+    }
     return errorMessage(t, err);
   }
 
@@ -392,7 +402,12 @@ export default function MemoryForm({ memory, onSaved, onCancel, onBusyChange }) 
               {t('upload.choose')}
             </button>
             <span className="dropzone-hint">
-              {t('upload.hint', { image: limits.maxImageMb, video: limits.maxVideoMb, max: LIMITS.maxFilesPerMemory })}
+              {t('upload.hint', {
+                image: limits.maxImageMb,
+                video: limits.maxVideoMb,
+                minutes: Math.round(LIMITS.videoMaxSeconds / 60),
+                max: LIMITS.maxFilesPerMemory,
+              })}
             </span>
           </div>
           <input ref={fileInput} type="file" accept={ACCEPT} multiple hidden onChange={(event) => addFiles(event.target.files)} />
@@ -467,7 +482,9 @@ export default function MemoryForm({ memory, onSaved, onCancel, onBusyChange }) 
           )}
           <p className="field-hint" style={{ display: 'flex', gap: 6, marginTop: 10 }}>
             <Icon name="shield" size={14} />
-            <span>{t('upload.privacy')}</span>
+            <span>
+              {t('upload.privacy', { video: limits.maxVideoMb, minutes: Math.round(LIMITS.videoMaxSeconds / 60) })}
+            </span>
           </p>
         </div>
 

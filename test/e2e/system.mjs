@@ -95,7 +95,7 @@ async function check(name, page, fn) {
   }
 }
 
-const prefs = (p, locale = 'vi', theme = 'notebook') => p.js(`localStorage.setItem('ml.locale', '${locale}'); localStorage.setItem('ml.theme', '${theme}')`);
+const prefs = (p, locale = 'vi') => p.js(`localStorage.setItem('ml.locale', '${locale}'); localStorage.removeItem('ml.theme')`);
 const go = async (p, route) => {
   await p.go(BASE + route);
   await p.settle();
@@ -114,13 +114,11 @@ try {
   const { A: a, B: b, C: c } = pages;
 
   // ------------------------------------------------------------------ public pages, account
-  await check('Trang giới thiệu: đổi giao diện, đổi ngôn ngữ', c, async () => {
+  await check('Trang giới thiệu: giao diện sáng, đổi ngôn ngữ', c, async () => {
     await go(c, '/');
     await c.until(`document.querySelector('h1')`);
-    await c.clickSel('[aria-label="Phòng tối"]');
-    await c.until(`document.documentElement.dataset.theme === 'darkroom'`);
-    await c.clickSel('[aria-label="Sổ tay ký ức"]');
-    await c.until(`document.documentElement.dataset.theme === 'notebook'`);
+    expect((await c.js(`document.documentElement.dataset.theme`)) === 'notebook', 'light theme only');
+    expect(!(await c.js(`!!document.querySelector('.theme-switch')`)), 'no theme toggle');
     await c.clickIn('button', 'EN');
     await c.until(`document.documentElement.lang === 'en'`);
     const enTitle = await c.js(`document.querySelector('h1').textContent`);
@@ -383,11 +381,9 @@ try {
   });
 
   // ------------------------------------------------------------------ settings (new account C)
-  await check('Cài đặt: giao diện, tên, ngôn ngữ', c, async () => {
+  await check('Cài đặt: tên, ngôn ngữ', c, async () => {
     await go(c, '/settings');
-    await c.clickIn('.theme-option', 'Phòng tối');
-    await c.until(`document.documentElement.dataset.theme === 'darkroom'`);
-    await c.clickIn('.theme-option', 'Sổ tay');
+    expect(!(await c.js(`!!document.querySelector('.theme-option')`)), 'no theme setting');
     await c.fill('input[autocomplete="nickname"]', 'Người Kiểm Thử Hai');
     await c.clickIn('main button', 'Lưu hồ sơ');
     await c.until(`fetch('/api/auth/session').then((r) => r.json()).then((d) => d.user.name === 'Người Kiểm Thử Hai')`, 5000, 'name saved');
@@ -494,8 +490,9 @@ try {
   // ------------------------------------------------------------------ cross-cutting
   const mainRoutes = () => ['/today', '/album', `/album/${state.memoryId}`, '/people', '/archive', '/artifacts', '/timeline', '/sharing', '/settings'];
 
-  await check('Giao diện Phòng tối: mọi trang không tràn', a, async () => {
-    await prefs(a, 'vi', 'darkroom');
+  await check('Giao diện sáng: mọi trang không tràn', a, async () => {
+    await prefs(a, 'vi');
+    expect((await a.js(`document.documentElement.dataset.theme`)) === 'notebook', 'stays light');
     const bad = [];
     for (const r of mainRoutes()) {
       await go(a, r);
@@ -505,7 +502,7 @@ try {
   });
 
   await check('Điện thoại (390 px): mọi trang không tràn, menu mở được', a, async () => {
-    await prefs(a, 'vi', 'notebook');
+    await prefs(a, 'vi');
     await a.setViewport(390, 844, true);
     const bad = [];
     for (const r of mainRoutes()) {
@@ -520,7 +517,7 @@ try {
   });
 
   await check('Tiếng Anh: không thiếu câu dịch nào', a, async () => {
-    await prefs(a, 'en', 'notebook');
+    await prefs(a, 'en');
     const before = a.consoleLines.length;
     const titles = [];
     for (const r of mainRoutes()) {
@@ -528,7 +525,7 @@ try {
       titles.push((await a.js(`document.querySelector('h1')?.textContent ?? ''`)).trim().slice(0, 18));
     }
     const missing = a.consoleLines.slice(before).filter((l) => l.includes('missing key'));
-    await prefs(a, 'vi', 'notebook');
+    await prefs(a, 'vi');
     expect(!missing.length, missing.join(' | '));
     return titles.join(' · ');
   });

@@ -13,9 +13,8 @@ import PageHeader from '../components/PageHeader.jsx';
 import { useToast } from '../components/Toast.jsx';
 import { useI18n } from '../i18n/index.jsx';
 import { useData, useDiscreetMode, useFetch, usePageTitle } from '../state.jsx';
-import { THEMES, useTheme } from '../theme.jsx';
 
-/** "Cài đặt riêng tư": look, profile, language, discreet mode, password, storage, sessions, export, delete. */
+/** "Cài đặt riêng tư": profile, language, discreet mode, password, storage, sessions, export, delete. */
 export default function Settings() {
   const { t } = useI18n();
   usePageTitle(t('settings.title'));
@@ -24,7 +23,6 @@ export default function Settings() {
     <>
       <PageHeader kicker={t('settings.sub')} title={t('settings.title')} />
       <div className="settings-grid">
-        <ThemePanel />
         <ProfilePanel />
         <PasswordPanel />
         <GooglePanel />
@@ -37,39 +35,6 @@ export default function Settings() {
         <DangerPanel />
       </div>
     </>
-  );
-}
-
-function ThemePanel() {
-  const { t } = useI18n();
-  const { theme, setTheme } = useTheme();
-  return (
-    <section className="panel panel--wide">
-      <div>
-        <h2 className="panel-title">{t('theme.title')}</h2>
-        <p style={{ marginTop: 6 }}>{t('theme.body')}</p>
-      </div>
-      <div className="theme-options" role="radiogroup" aria-label={t('theme.label')}>
-        {THEMES.map((name) => (
-          <button
-            key={name}
-            type="button"
-            role="radio"
-            aria-checked={theme === name}
-            className="theme-option"
-            onClick={() => setTheme(name)}
-          >
-            <span className={`theme-preview theme-preview--${name}`} aria-hidden="true">
-              <i />
-              <i />
-              <b />
-            </span>
-            <span className="theme-option-name">{t(`theme.${name}`)}</span>
-            <span className="theme-option-desc">{t(`theme.${name}Desc`)}</span>
-          </button>
-        ))}
-      </div>
-    </section>
   );
 }
 

@@ -5,12 +5,10 @@ import { toISODate } from '@shared/dates.js';
 import { useAuth } from '../auth.jsx';
 import { useI18n } from '../i18n/index.jsx';
 import { useFetch, useSeenShared } from '../state.jsx';
-import { useTheme } from '../theme.jsx';
 import Brand from './Brand.jsx';
 import Icon from './Icon.jsx';
 import LanguageToggle from './LanguageToggle.jsx';
 import { Avatar } from './People.jsx';
-import ThemeSwitch from './ThemeSwitch.jsx';
 import { useToast } from './Toast.jsx';
 
 export const NAV = [
@@ -25,10 +23,9 @@ export const NAV = [
 
 const pad = (n) => String(n).padStart(2, '0');
 
-/** The logged-in navigation: brand, seven spaces, search, "new memory", theme, language, account. */
+/** The logged-in navigation: brand, seven spaces, search, "new memory", language, account. */
 export default function TopBar({ onNew }) {
   const { t, locale } = useI18n();
-  const { theme } = useTheme();
   const location = useLocation();
   const [sheetOpen, setSheetOpen] = useState(false);
   const bar = useRef(null);
@@ -38,7 +35,7 @@ export default function TopBar({ onNew }) {
   const hasNewShared = Boolean(data?.latestSharedAt && data.latestSharedAt > seen);
 
   useEffect(() => setSheetOpen(false), [location.pathname]);
-  useNavFit(bar, [theme, locale, hasNewShared]);
+  useNavFit(bar, [locale, hasNewShared]);
 
   return (
     <header className="topbar">
@@ -53,7 +50,6 @@ export default function TopBar({ onNew }) {
             <Icon name="plus" size={16} strokeWidth={2} />
             <span className="label">{t('nav.newShort')}</span>
           </button>
-          <ThemeSwitch />
           <LanguageToggle />
           <UserMenu />
           <button
@@ -74,11 +70,10 @@ export default function TopBar({ onNew }) {
 
 /**
  * Chooses the roomiest top bar that fits on one line. How much room the tabs need depends on the
- * theme's fonts, the language and the window width, so it is measured instead of guessed with fixed
- * breakpoints (which is how tabs once ended up on top of the search box after a theme switch).
- * Steps are cumulative and written into data-fit, an attribute React does not manage:
+ * the language and the window width, so it is measured instead of guessed with fixed
+ * breakpoints. Steps are cumulative and written into data-fit, an attribute React does not manage:
  *   1 hide the tab numbers · 2 compact tabs + icon-only "new" button ·
- *   3 theme & language move into the account menu · 4 menu button only (as on phones).
+ *   3 language moves into the account menu · 4 menu button only (as on phones).
  */
 const FIT_STEPS = 4;
 
@@ -223,10 +218,6 @@ function UserMenu() {
           {/* Shown only when the top bar is too narrow for these two toggles (data-fit step 3). */}
           <div className="menu-prefs">
             <div className="menu-row">
-              <span>{t('theme.label')}</span>
-              <ThemeSwitch />
-            </div>
-            <div className="menu-row">
               <span>{t('lang.label')}</span>
               <LanguageToggle />
             </div>
@@ -290,10 +281,6 @@ function MobileSheet({ open, onClose, hasNewShared }) {
             <NavItems hasNewShared={hasNewShared} />
           </nav>
           <div className="sheet-tools">
-            <div className="row">
-              <span>{t('theme.label')}</span>
-              <ThemeSwitch />
-            </div>
             <div className="row">
               <span>{t('lang.label')}</span>
               <LanguageToggle />

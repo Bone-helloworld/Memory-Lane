@@ -41,7 +41,7 @@ function withBoldName(t, key, vars) {
 export default function Today() {
   const { t, todayLine, number } = useI18n();
   const { user } = useAuth();
-  const { openMemory } = useComposer();
+  const { openMemory, openInvite } = useComposer();
   const { data, error, retry } = useFetch(`/api/dashboard/today?today=${toISODate()}`);
   usePageTitle(t('nav.today'));
 
@@ -81,6 +81,23 @@ export default function Today() {
         <Featured memory={data.featured} />
       </section>
 
+      {data.circle === 0 && (
+        <section className="shared-nudge" aria-labelledby="shared-nudge-title">
+          <span className="kicker">{t('today.space.kicker')}</span>
+          <h2 id="shared-nudge-title">{t('today.space.title')}</h2>
+          <p>{t('today.space.body')}</p>
+          <div className="cta-row">
+            <button type="button" className="btn btn-primary" onClick={() => openInvite({})}>
+              <Icon name="userPlus" size={16} />
+              {t('today.space.invite')}
+            </button>
+            <button type="button" className="btn btn-secondary" onClick={() => openMemory()}>
+              {t('today.space.add')}
+            </button>
+          </div>
+        </section>
+      )}
+
       {data.years.length > 0 && (
         <div className="section" style={{ marginTop: 56 }}>
           <YearBar years={data.years} active={null} linkTo="/album" />
@@ -100,10 +117,16 @@ export default function Today() {
             title={t('today.film.emptyTitle')}
             body={t('today.film.emptyBody')}
             action={
-              <button type="button" className="btn btn-primary" onClick={() => openMemory()}>
-                <Icon name="plus" size={15} />
-                {t('album.emptyCta')}
-              </button>
+              <div className="cta-row">
+                <button type="button" className="btn btn-primary" onClick={() => openMemory()}>
+                  <Icon name="plus" size={15} />
+                  {t('album.emptyCta')}
+                </button>
+                <button type="button" className="btn btn-secondary" onClick={() => openInvite({})}>
+                  <Icon name="userPlus" size={15} />
+                  {t('today.space.invite')}
+                </button>
+              </div>
             }
           />
         ) : (

@@ -21,7 +21,10 @@ export const LIMITS = {
   yearMin: 1850,
   maxTaggedPeople: 50,
   maxFilesPerMemory: 20,
-  videoMaxSeconds: 36000,
+  // 10 minutes. The browser reports a duration and the server checks it again with
+  // ffmpeg while sampling frames (see server/lib/videoCheck.js). The file itself is
+  // not recompressed — that is still future work. The byte cap is MAX_VIDEO_MB.
+  videoMaxSeconds: 10 * 60,
 
   comment: 2000,
   inviteLabel: 80,

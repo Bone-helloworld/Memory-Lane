@@ -1,8 +1,8 @@
 /* ==========================================================================
    Memory Lane — shared foundation
    Layout, type scale and every control, written against design tokens.
-   The two looks live in notebook.css ("Sổ tay ký ức") and darkroom.css
-   ("Phòng tối"): they set the tokens and add their own details.
+   The light notebook look lives in notebook.css ("Sổ tay ký ức"):
+   it sets the tokens and adds its own details.
    ========================================================================== */
 
 :root {

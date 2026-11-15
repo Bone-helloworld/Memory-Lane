@@ -88,58 +88,6 @@
   transform: rotate(12deg);
 }
 
-/* Darkroom: the same four photos as a proof sheet under the safelight */
-[data-theme='darkroom'] .collage {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-content: center;
-  gap: 22px 0;
-  min-height: 0;
-  padding: 26px 22px;
-  background: #0d0c0b;
-  border: 1px solid #000;
-  box-shadow:
-    0 50px 100px -40px rgba(0, 0, 0, 0.95),
-    0 0 160px -30px rgba(224, 72, 58, 0.4);
-  transform: rotate(-1.2deg);
-}
-[data-theme='darkroom'] .collage-item {
-  position: relative;
-}
-[data-theme='darkroom'] .collage-item .print-film {
-  aspect-ratio: 3 / 2.3;
-}
-[data-theme='darkroom'] .collage-item .print-film img {
-  outline: 1px solid #000;
-}
-[data-theme='darkroom'] .collage-item figcaption {
-  padding: 6px 8px 0;
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text-3);
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-}
-[data-theme='darkroom'] .collage .c3 .print-film::after {
-  opacity: 0.95;
-  transform: scale(1) rotate(-1deg);
-}
-[data-theme='darkroom'] .collage-lens {
-  position: absolute;
-  z-index: 3;
-  display: block;
-  right: 9%;
-  top: 14%;
-  width: 118px;
-  height: 118px;
-  border-radius: 50%;
-  border: 2px solid rgba(236, 230, 216, 0.85);
-  background: url('/landing/hoian.jpg') 42% 46% / 420px auto no-repeat;
-  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.75);
-}
-
 /* ---------- Landing ---------- */
 .landing {
   min-height: 100vh;
@@ -224,15 +172,6 @@
   letter-spacing: var(--label-tracking);
   text-transform: var(--label-transform);
 }
-[data-theme='darkroom'] .landing-title {
-  font-stretch: 74%;
-  letter-spacing: -0.02em;
-  font-size: clamp(54px, 8.4vw, 116px);
-  line-height: 0.9;
-}
-[data-theme='darkroom'] .landing-title .mark {
-  display: block;
-}
 [data-theme='notebook'] .landing-title .mark {
   font-family: var(--font-note);
   font-size: 0.86em;
@@ -258,9 +197,6 @@
 }
 [data-theme='notebook'] .landing-section + .landing-section {
   border-top: 1.5px dashed var(--line-2);
-}
-[data-theme='darkroom'] .landing-section + .landing-section {
-  border-top: 1px solid var(--line);
 }
 
 .drawers {
@@ -300,10 +236,6 @@
   background: var(--surface);
   box-shadow: var(--shadow);
 }
-[data-theme='darkroom'] .drawer-art {
-  border: 1px solid var(--line);
-  background: rgba(0, 0, 0, 0.3);
-}
 .mini-prints {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -320,15 +252,6 @@
 }
 [data-theme='notebook'] .mini-prints .print-title {
   font-size: 13.5px;
-}
-[data-theme='darkroom'] .mini-prints {
-  gap: 0;
-}
-[data-theme='darkroom'] .mini-prints .print-cap {
-  padding: 6px 4px 0;
-}
-[data-theme='darkroom'] .mini-prints .print-title {
-  font-size: 12.5px;
 }
 .mini-prints .print-photo img {
   width: 100%;
@@ -456,15 +379,6 @@
   background: rgba(255, 224, 102, 0.4);
   border: 1.5px dashed rgba(35, 38, 47, 0.3);
 }
-[data-theme='darkroom'] .share-demo {
-  background: var(--surface);
-  border: 1px solid var(--line-2);
-  box-shadow: var(--shadow-l);
-}
-[data-theme='darkroom'] .share-demo-link {
-  background: #0d0c0b;
-  border: 1px solid rgba(224, 72, 58, 0.4);
-}
 
 .principles {
   display: grid;
@@ -493,11 +407,6 @@
 .principle p {
   color: var(--text-2);
 }
-[data-theme='darkroom'] .principle-num {
-  color: transparent;
-  -webkit-text-stroke: 1px var(--accent-text);
-  font-size: 64px;
-}
 
 .closing {
   display: grid;
@@ -520,10 +429,6 @@
   font-family: var(--font-note);
   font-weight: 600;
   color: var(--accent);
-}
-[data-theme='darkroom'] .closing h2 em {
-  font-style: normal;
-  color: var(--accent-text);
 }
 .landing-foot {
   display: flex;
@@ -595,10 +500,6 @@
 }
 [data-theme='notebook'] .auth-art {
   border-right: 1.5px dashed var(--line-2);
-}
-[data-theme='darkroom'] .auth-art {
-  border-right: 1px solid var(--line);
-  background: radial-gradient(ellipse 80% 60% at 30% 40%, rgba(224, 72, 58, 0.08), transparent 70%);
 }
 .auth-main {
   display: flex;
@@ -794,10 +695,6 @@
   font-family: var(--font-note);
   transform: rotate(-4deg);
 }
-[data-theme='darkroom'] .notfound-code {
-  color: transparent;
-  -webkit-text-stroke: 1.5px var(--accent-text);
-}
 .notfound h1 {
   font-family: var(--font-display);
   font-size: 30px;
@@ -807,6 +704,130 @@
 }
 .notfound p {
   color: var(--text-2);
+}
+
+/* The shared-space picture on the landing page and the login screen. */
+.space-stage {
+  display: grid;
+  justify-items: center;
+  width: 100%;
+}
+.space-card {
+  width: min(100%, 440px);
+  display: grid;
+  gap: 16px;
+  padding: 22px 22px 18px;
+  background: var(--surface);
+  border: var(--card-border);
+  border-radius: 18px;
+  box-shadow: var(--shadow-l);
+}
+.space-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.space-card-head strong {
+  font-family: var(--font-note);
+  font-size: 22px;
+  font-weight: 600;
+  text-align: right;
+}
+@media (max-width: 620px) {
+  .space-card-head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .space-card-head strong {
+    text-align: left;
+  }
+}
+.space-faces {
+  display: flex;
+  align-items: center;
+}
+.space-faces .avatar {
+  width: 36px;
+  height: 36px;
+  margin-left: -8px;
+  border: 2px solid var(--surface);
+  font-size: 13px;
+}
+.space-faces .avatar:first-child {
+  margin-left: 0;
+}
+.space-plus {
+  margin-left: 10px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 1.5px dashed var(--line-2);
+  border-radius: 999px;
+  color: var(--text-3);
+  font-family: var(--font-note);
+  font-size: 20px;
+}
+.space-prints {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.space-prints .print-photo {
+  aspect-ratio: 4 / 3;
+}
+.space-prints .print-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.space-feed {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.space-feed li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 14px 6px 6px;
+  background: var(--surface-2);
+  border-radius: 999px;
+  font-size: 14.5px;
+}
+.space-feed .avatar {
+  width: 28px;
+  height: 28px;
+  font-size: 11px;
+}
+
+/* Shown on Today until you have invited someone. */
+.shared-nudge {
+  display: grid;
+  gap: 8px;
+  margin-top: 36px;
+  padding: 22px 24px;
+  background: var(--surface);
+  border: var(--card-border);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow);
+}
+.shared-nudge h2 {
+  font-family: var(--font-display);
+  font-size: var(--h2-size);
+  font-weight: var(--display-weight);
+  letter-spacing: var(--display-tracking);
+}
+.shared-nudge p {
+  max-width: 62ch;
+  color: var(--text-2);
+}
+.shared-nudge .cta-row {
+  margin-top: 8px;
 }
 
 /* ---------- Responsive ---------- */
@@ -842,12 +863,8 @@
     padding-top: 14px;
   }
   .landing-tools .lang-toggle,
-  .landing-tools .theme-switch,
   .landing-tools .btn-quiet {
     display: none;
-  }
-  [data-theme='darkroom'] .collage {
-    padding: 18px 12px;
   }
   .cta-row .btn {
     flex: 1 1 100%;

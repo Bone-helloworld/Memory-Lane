@@ -1,6 +1,17 @@
 import { Router } from 'express';
 import { HttpError, notFound } from '../lib/errors.js';
+import {
+  FULL_MAX_EDGE,
+  FULL_QUALITY,
+  THUMB_MAX_EDGE,
+  THUMB_QUALITY,
+  UnreadableImageError,
+  transcodeImage,
+  transcodeImageTo,
+} from '../lib/images.js';
 import { scrubMetadata } from '../lib/metadata.js';
+import { reviewImage } from '../lib/moderate.js';
+import { reviewVideo } from '../lib/videoCheck.js';
 import { idParam, parseIdList, validator } from '../lib/validate.js';
 import { addDays, isValidDate, toISODate } from '../../shared/dates.js';
 import { CARD_KINDS, CARD_STYLES, LIMITS } from '../../shared/limits.js';
@@ -80,7 +91,7 @@ export function memoryRoutes({ config, memories, artifacts, social, files, live 
     try {
       const id = idParam(req.params.id);
       const v = validator(req.body);
-      const type = main ? files.inspect(main.path) : null;
+      let type = main ? files.inspect(main.path) : null;
       if (!main) v.fail('file', 'REQUIRED');
       else if (!type) v.fail('file', 'FILE_TYPE');
       else if (type.kind === 'image' && main.size > config.maxUploadMb * MB) {
@@ -90,22 +101,55 @@ export function memoryRoutes({ config, memories, artifacts, social, files, live 
       }
       // The "poster" is a small preview image made by the browser: a still frame for a video,
       // a thumbnail for a photo. Grids show it instead of downloading the full file.
-      const posterType = poster ? files.inspect(poster.path) : null;
+      let posterType = poster ? files.inspect(poster.path) : null;
       if (poster && (posterType?.kind !== 'image' || poster.size > 3 * MB)) v.fail('poster', 'FILE_TYPE');
-      const width = v.int('width', { min: 1, max: 20000 });
-      const height = v.int('height', { min: 1, max: 20000 });
-      const duration = v.number('duration', { min: 0, max: LIMITS.videoMaxSeconds });
+      const claimedWidth = v.int('width', { min: 1, max: 20000 });
+      const claimedHeight = v.int('height', { min: 1, max: 20000 });
+      // Duration is what the browser measured. ffmpeg measures it again while checking frames.
+      const duration = v.number('duration', { min: 0 });
+      if (type?.kind === 'video' && duration != null && duration > LIMITS.videoMaxSeconds) {
+        v.fail('file', 'VIDEO_TOO_LONG', { max: Math.round(LIMITS.videoMaxSeconds / 60) });
+      }
       v.check();
       if (memories.fileCount(id) >= LIMITS.maxFilesPerMemory) throw tooManyFiles();
       if (memories.storageUsed(req.user.id) + main.size > config.storageMb * MB) throw storageFull();
 
-      // GPS position, camera serial number… removed before the file is kept (see lib/metadata.js).
-      await scrubMetadata(main.path, type.ext);
-      if (poster) await scrubMetadata(poster.path, posterType.ext);
+      let width = claimedWidth;
+      let height = claimedHeight;
+      let storedSize = main.size;
+      let generatedThumb = null;
+
+      if (type.kind === 'image') {
+        // Decode, rotate, shrink, strip metadata, save as WebP, then ask the classifier.
+        const info = await keepImage(v, main.path, 'file', { maxEdge: FULL_MAX_EDGE, quality: FULL_QUALITY });
+        if (info) {
+          width = info.width;
+          height = info.height;
+          storedSize = info.size;
+          type = { kind: 'image', ext: 'webp' };
+        }
+      } else {
+        // Video bytes are stored as sent. GPS in the movie header is blanked in place,
+        // then a few frames are checked. The file is not recompressed.
+        await scrubMetadata(main.path, type.ext);
+        await keepVideo(v, main.path);
+      }
+
+      if (!v.hasErrors() && poster) {
+        const info = await keepImage(v, poster.path, 'poster', { maxEdge: THUMB_MAX_EDGE, quality: THUMB_QUALITY });
+        if (info) posterType = { kind: 'image', ext: 'webp' };
+      } else if (type.kind === 'image' && !v.hasErrors()) {
+        // Grids should not download the full photo. Make a small preview from the image we just kept.
+        generatedThumb = `${main.path}.thumb`;
+        await transcodeImageTo(main.path, generatedThumb, { maxEdge: THUMB_MAX_EDGE, quality: THUMB_QUALITY });
+      }
+      v.check();
 
       const name = files.adopt(main.path, type.ext);
       adopted.push(name);
-      const posterName = poster ? files.adopt(poster.path, posterType.ext) : null;
+      const posterPath = poster?.path ?? generatedThumb;
+      const posterExt = poster ? posterType.ext : 'webp';
+      const posterName = posterPath ? files.adopt(posterPath, posterExt) : null;
       if (posterName) adopted.push(posterName);
 
       memories.addFile(req.user.id, id, {
@@ -115,7 +159,7 @@ export function memoryRoutes({ config, memories, artifacts, social, files, live 
         width,
         height,
         duration: type.kind === 'video' ? duration : null,
-        size: main.size,
+        size: storedSize,
       });
       adopted = [];
       res.status(201).json({ memory: memories.get(req.user.id, id) });
@@ -123,6 +167,7 @@ export function memoryRoutes({ config, memories, artifacts, social, files, live 
       // Whatever was not kept is removed: temp files of a refused upload, or files whose DB insert failed.
       files.discard(main?.path);
       files.discard(poster?.path);
+      files.discard(main ? `${main.path}.thumb` : null);
       adopted.forEach((name) => files.remove(name));
     }
   });
@@ -153,8 +198,8 @@ export function memoryRoutes({ config, memories, artifacts, social, files, live 
       const line = v.text('line', { max: LIMITS.cardLine });
       const message = v.text('message', { max: LIMITS.cardMessage });
       const recipient = v.text('recipient', { max: LIMITS.cardRecipient });
-      const width = v.int('width', { min: 1, max: 20000 });
-      const height = v.int('height', { min: 1, max: 20000 });
+      v.int('width', { min: 1, max: 20000 });
+      v.int('height', { min: 1, max: 20000 });
       const type = main ? files.inspect(main.path) : null;
       if (!main) v.fail('file', 'REQUIRED');
       else if (type?.kind !== 'image') v.fail('file', 'FILE_TYPE');
@@ -165,14 +210,30 @@ export function memoryRoutes({ config, memories, artifacts, social, files, live 
       const size = main.size + (poster?.size ?? 0);
       if (memories.storageUsed(req.user.id) + size > config.storageMb * MB) throw storageFull();
 
-      await scrubMetadata(main.path, type.ext);
-      if (poster) await scrubMetadata(poster.path, posterType.ext);
-      const file = files.adopt(main.path, type.ext);
+      // Same treatment as a photo: WebP, no metadata, and the explicit-image check.
+      const image = await keepImage(v, main.path, 'file', { maxEdge: FULL_MAX_EDGE, quality: FULL_QUALITY });
+      let previewInfo = null;
+      if (poster) previewInfo = await keepImage(v, poster.path, 'poster', { maxEdge: THUMB_MAX_EDGE, quality: THUMB_QUALITY });
+      v.check();
+      const file = files.adopt(main.path, 'webp');
       adopted.push(file);
-      const preview = poster ? files.adopt(poster.path, posterType.ext) : null;
+      const preview = poster ? files.adopt(poster.path, 'webp') : null;
       if (preview) adopted.push(preview);
 
-      const id = artifacts.create(req.user.id, { memoryId, kind, style, title, line, message, recipient, file, preview, width, height, size });
+      const id = artifacts.create(req.user.id, {
+        memoryId,
+        kind,
+        style,
+        title,
+        line,
+        message,
+        recipient,
+        file,
+        preview,
+        width: image.width,
+        height: image.height,
+        size: image.size + (previewInfo?.size ?? 0),
+      });
       adopted = [];
       res.status(201).json({ artifact: artifacts.get(req.user.id, id) });
     } finally {
@@ -252,6 +313,47 @@ export function memoryRoutes({ config, memories, artifacts, social, files, live 
   });
 
   return router;
+}
+
+/**
+ * Re-encode an image with sharp, then refuse it when it is explicit or when the
+ * classifier cannot run. Records a field error and returns null instead of throwing
+ * for those two cases; anything else (a bug) still throws.
+ */
+/** Same explicit-image rule as a photo, on frames taken from the video. Fail closed. */
+async function keepVideo(v, filePath) {
+  try {
+    const verdict = await reviewVideo(filePath);
+    if (verdict.explicit) v.fail('file', 'EXPLICIT');
+  } catch (err) {
+    if (err?.code === 'VIDEO_TOO_LONG') {
+      v.fail('file', 'VIDEO_TOO_LONG', { max: err.max });
+      return;
+    }
+    console.error(`[${new Date().toISOString()}] VIDEO_CHECK ${err instanceof Error ? err.message : err}`);
+    v.fail('file', 'MODERATION_UNAVAILABLE');
+  }
+}
+
+async function keepImage(v, filePath, field, options) {
+  let info;
+  try {
+    info = await transcodeImage(filePath, options);
+  } catch (err) {
+    if (err instanceof UnreadableImageError) {
+      v.fail(field, 'UNREADABLE');
+      return null;
+    }
+    throw err;
+  }
+  try {
+    if ((await reviewImage(filePath)).explicit) v.fail(field, 'EXPLICIT');
+  } catch (err) {
+    // Fail closed: a photo we could not check is not stored.
+    console.error(`[${new Date().toISOString()}] IMAGE_CHECK ${err instanceof Error ? err.message : err}`);
+    v.fail(field, 'MODERATION_UNAVAILABLE');
+  }
+  return info;
 }
 
 /** ?year=2019 → { exact: 2019 } · ?year=before-2009 → { before: 2009 } */

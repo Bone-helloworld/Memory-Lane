@@ -72,7 +72,6 @@ test('every translation key used in the client exists', () => {
 test('keys built at runtime exist too (tabs, themes, statuses, samples)', () => {
   const dynamic = [
     ...['today', 'album', 'people', 'sharing', 'archive', 'artifacts', 'timeline'].map((k) => `nav.tabs.${k}`),
-    ...['notebook', 'darkroom'].flatMap((k) => [`theme.${k}`, `theme.${k}Desc`]),
     ...['pending', 'accepted', 'expired', 'revoked'].map((k) => `sharing.status.${k}`),
     ...['frame1', 'frame2', 'frame4', 'frame5', 'frame6'].map((k) => `landing.sample.${k}`),
     ...['one', 'two', 'three'].flatMap((k) => [`landing.principle.${k}Title`, `landing.principle.${k}Body`]),

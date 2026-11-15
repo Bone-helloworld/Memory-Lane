@@ -34,6 +34,7 @@ export function dashboardRoutes({ memories, people, media, social }) {
       people: people.list(userId, { limit: 3 }),
       media: media.list(userId, { limit: 3 }),
       sharedWithMe: memories.sharedWith(userId, { limit: 4 }),
+      circle: social.connections(userId).length,
       suggestion: people.suggestion(userId, today),
       years: memories.years(userId),
     });
