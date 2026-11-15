@@ -4,9 +4,8 @@ import { useAuth } from '../auth.jsx';
 import Brand from '../components/Brand.jsx';
 import Icon from '../components/Icon.jsx';
 import LanguageToggle from '../components/LanguageToggle.jsx';
-import { Collage } from '../components/Memories.jsx';
 import { Avatar } from '../components/People.jsx';
-import ThemeSwitch from '../components/ThemeSwitch.jsx';
+import SharedSpace from '../components/SharedSpace.jsx';
 import { useToast } from '../components/Toast.jsx';
 import { useI18n } from '../i18n/index.jsx';
 import { usePageTitle } from '../state.jsx';
@@ -54,14 +53,20 @@ export default function Landing() {
 
   const ctas = (
     <div className="cta-row">
-      <Link to="/register" className="btn btn-primary">
-        {t('landing.start')}
-        <Icon name="arrowRight" size={16} />
-      </Link>
-      {demoEnabled && (
-        <button type="button" className="btn btn-secondary" onClick={() => tryDemo()}>
+      {demoEnabled ? (
+        <button type="button" className="btn btn-primary" onClick={() => tryDemo()}>
           {t('landing.demo')}
         </button>
+      ) : (
+        <Link to="/register" className="btn btn-primary">
+          {t('landing.invite')}
+          <Icon name="arrowRight" size={16} />
+        </Link>
+      )}
+      {demoEnabled && (
+        <Link to="/register" className="btn btn-secondary">
+          {t('landing.invite')}
+        </Link>
       )}
     </div>
   );
@@ -76,7 +81,6 @@ export default function Landing() {
           <a href="#privacy">{t('landing.navPrivacy')}</a>
         </nav>
         <div className="landing-tools">
-          <ThemeSwitch />
           <LanguageToggle />
           <Link to="/login" className="btn btn-quiet">
             {t('landing.login')}
@@ -102,7 +106,7 @@ export default function Landing() {
           )}
           <p className="promise">{t('landing.promise')}</p>
         </div>
-        <Collage />
+        <SharedSpace />
       </section>
 
       <section className="landing-section" id="features">

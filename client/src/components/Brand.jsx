@@ -2,7 +2,7 @@ import { Link } from 'react-router';
 
 /**
  * The mark: a tilted print of a little lane winding back towards the hills, under a sun —
- * "Memory Lane". Drawn in the theme's ink (blue) or safelight (red). Same drawing as public/favicon.svg.
+ * "Memory Lane". Drawn in ballpoint blue. Same drawing as public/favicon.svg.
  */
 export function BrandMark() {
   return (

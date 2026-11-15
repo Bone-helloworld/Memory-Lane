@@ -12,8 +12,10 @@ import fs from 'node:fs/promises';
  *   MP4/MOV  blank every ISO-6709 location ("+21.0285+105.8542/") in the movie header, byte for
  *            byte, so the file keeps its exact layout and every offset inside it stays valid
  *
- * The web app also re-draws photos on a canvas before uploading (see client/src/lib/image.js);
- * this is the safety net for everything else.
+ * Photos uploaded through the app are re-encoded by sharp (see lib/images.js), which
+ * drops this metadata by writing a new WebP. The image helpers below remain the
+ * exact, in-place cleaners, and videos still go through blankVideoLocation —
+ * there is no ffmpeg step that would rebuild a video.
  */
 export async function scrubMetadata(file, ext) {
   if (ext === 'mp4' || ext === 'mov') return blankVideoLocation(file);

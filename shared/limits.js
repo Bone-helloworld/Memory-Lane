@@ -21,7 +21,10 @@ export const LIMITS = {
   yearMin: 1850,
   maxTaggedPeople: 50,
   maxFilesPerMemory: 20,
-  videoMaxSeconds: 36000,
+  // 10 minutes. The upload size (MAX_VIDEO_MB) is the cap the server can measure
+  // itself. Duration is reported by the browser; this app does not ship ffmpeg,
+  // so it cannot time or recompress a video. That is left as future work.
+  videoMaxSeconds: 10 * 60,
 
   comment: 2000,
   inviteLabel: 80,

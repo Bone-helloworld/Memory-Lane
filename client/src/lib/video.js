@@ -1,6 +1,8 @@
 import { makePreview } from './image.js';
 
-// Videos are uploaded as they are (re-encoding video in the browser is slow), but first the
+// Videos are uploaded as they are. The server does not recompress them (no ffmpeg);
+// it only checks the size and the duration measured here. Compressing video is future work.
+// First the
 // browser measures them and takes a still frame: the poster shown before playing and in grids.
 // If the browser cannot decode the format (e.g. some iPhone HEVC .mov files on Windows),
 // the upload still works — just without a poster or duration.

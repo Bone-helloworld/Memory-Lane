@@ -1,4 +1,6 @@
-// Photos are re-drawn on a <canvas> before upload. This
+// Photos are re-drawn on a <canvas> before upload, so the phone sends less.
+// The server does this again with sharp (rotate, 2000 px, WebP, no metadata) and
+// refuses nude or explicit photos. This client step is only a head start. It:
 //  1. removes ALL metadata — EXIF, camera model and especially GPS coordinates
 //     (the server strips it again, in case anything slips through),
 //  2. applies the phone's rotation so portrait photos stay upright,

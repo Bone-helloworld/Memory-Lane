@@ -9,6 +9,10 @@ import { once } from 'node:events';
 import { createApp } from '../server/app.js';
 import { loadConfig } from '../server/config.js';
 import { openDb } from '../server/db.js';
+import { setImageReviewer } from '../server/lib/moderate.js';
+
+// These tests check storage and access, not the nude-photo model. See test/images.test.js.
+setImageReviewer(async () => ({ explicit: false }));
 import { toISODate } from '../shared/dates.js';
 
 // A real 1×1 PNG.
@@ -311,18 +315,19 @@ describe('photos and videos', () => {
     const memory = await createMemory(a);
     const first = await upload(a, memory.id, PNG, { poster: PNG, fields: { width: 1, height: 1 } });
     assert.equal(first.status, 201);
-    assert.match(first.body.memory.files[0].posterUrl, /^\/api\/files\/[a-f0-9]{32}\.png$/, 'photos can carry a small preview');
+    assert.match(first.body.memory.files[0].posterUrl, /^\/api\/files\/[a-f0-9]{32}\.webp$/, 'photos can carry a small preview');
     const second = await upload(a, memory.id, PNG);
     const files = second.body.memory.files;
     assert.equal(files.length, 2);
-    assert.match(files[0].url, /^\/api\/files\/[a-f0-9]{32}\.png$/);
+    assert.match(files[0].url, /^\/api\/files\/[a-f0-9]{32}\.webp$/);
     assert.equal(files[0].kind, 'image');
     assert.equal(files[0].width, 1);
     assert.equal(second.body.memory.cover.id, files[0].id);
+    assert.match(files[1].posterUrl, /\.webp$/, 'a photo with no preview still gets a small one');
 
     const photo = await a.get(files[0].url);
     assert.equal(photo.status, 200);
-    assert.equal(photo.headers.get('content-type'), 'image/png');
+    assert.equal(photo.headers.get('content-type'), 'image/webp');
     assert.equal(photo.headers.get('cache-control'), 'private, no-cache');
 
     const reordered = await a.put(`/api/memories/${memory.id}/files/order`, { json: { ids: [files[1].id, files[0].id] } });
@@ -367,7 +372,7 @@ describe('photos and videos', () => {
     const [video] = res.body.memory.files;
     assert.equal(video.kind, 'video');
     assert.match(video.url, /\.mp4$/);
-    assert.match(video.posterUrl, /^\/api\/files\/[a-f0-9]{32}\.png$/);
+    assert.match(video.posterUrl, /^\/api\/files\/[a-f0-9]{32}\.webp$/);
     assert.equal(video.duration, 12.5);
 
     const part = await a.get(video.url, { headers: { range: 'bytes=0-15' } });
@@ -393,19 +398,16 @@ describe('photos and videos', () => {
     const app1 = Buffer.concat([Buffer.from([0xff, 0xe1, 0, exif.length + 2]), exif]);
     const scan = Buffer.from([0xff, 0xda, 0x00, 0x08, 1, 2, 3, 4, 5, 6, 0x11, 0x22, 0xff, 0xd9]);
     const jpeg = Buffer.concat([Buffer.from([0xff, 0xd8]), app1, scan]);
-    const photo = (await upload(a, memory.id, jpeg, { type: 'image/jpeg', name: 'IMG_0001.jpg' })).body.memory.files[1];
-    assert.match(photo.url, /\.jpg$/);
-    const storedPhoto = fs.readFileSync(onDisk(photo.url));
-    assert.ok(!storedPhoto.includes('GPS'), 'the EXIF segment is gone');
-    assert.deepEqual(storedPhoto, Buffer.concat([Buffer.from([0xff, 0xd8]), scan]));
+    // Not a real JPEG (the bytes only look like one). sharp refuses it, and nothing is stored.
+    const unreadable = await upload(a, memory.id, jpeg, { type: 'image/jpeg', name: 'IMG_0001.jpg' });
+    assert.equal(unreadable.status, 400);
+    assert.equal(unreadable.body.fields.file.code, 'UNREADABLE');
 
-    // PNG: a text chunk with a location is dropped; the image itself is untouched.
-    const text = Buffer.from('Comment\0taken at 21.0285N 105.8542E', 'latin1');
-    const chunk = Buffer.concat([Buffer.alloc(4), Buffer.from('tEXt'), text, Buffer.alloc(4)]);
-    chunk.writeUInt32BE(text.length, 0);
-    const png = Buffer.concat([PNG.subarray(0, 33), chunk, PNG.subarray(33)]);
-    const cleanPng = (await upload(a, memory.id, png)).body.memory.files[2];
-    assert.deepEqual(fs.readFileSync(onDisk(cleanPng.url)), PNG);
+    // A real PNG is re-encoded as WebP (metadata stripping of a real photo is in test/images.test.js).
+    const cleanPng = (await upload(a, memory.id, PNG)).body.memory.files[1];
+    const storedPng = fs.readFileSync(onDisk(cleanPng.url));
+    assert.match(cleanPng.url, /\.webp$/);
+    assert.equal(storedPng.subarray(0, 4).toString('latin1'), 'RIFF');
   });
 
   test('files are recognised by their bytes, not by their name or type', async () => {
@@ -866,7 +868,7 @@ describe('artifacts (kỷ vật): keepsake cards kept from your own memories', (
     assert.equal(card.kind, 'postcard');
     assert.equal(card.recipient, 'Bố mẹ');
     assert.deepEqual(card.memory, { id: memory.id, title: 'Vịnh Hạ Long', year: 2022, month: null, day: null });
-    assert.match(card.imageUrl, /^\/api\/files\/[a-f0-9]{32}\.png$/);
+    assert.match(card.imageUrl, /^\/api\/files\/[a-f0-9]{32}\.webp$/);
     assert.equal((await an.get(card.imageUrl)).status, 200);
 
     await an.post(`/api/memories/${memory.id}/artifacts`, { form: cardForm({ kind: 'stamp', style: 'darkroom', title: 'Hạ Long 2022' }) });
@@ -902,7 +904,8 @@ describe('artifacts (kỷ vật): keepsake cards kept from your own memories', (
 
     const usedBefore = (await an.get('/api/me/storage')).body.used;
     const card = (await an.post(`/api/memories/${memory.id}/artifacts`, { form: cardForm() })).body.artifact;
-    assert.equal((await an.get('/api/me/storage')).body.used, usedBefore + PNG.length * 2, 'counted in the storage quota');
+    const storedBytes = fs.statSync(onDisk(card.imageUrl)).size + fs.statSync(onDisk(card.previewUrl)).size;
+    assert.equal((await an.get('/api/me/storage')).body.used, usedBefore + storedBytes, 'counted in the storage quota');
     assert.deepEqual((await ha.get('/api/artifacts')).body.artifacts, []);
     assert.equal((await ha.get(`/api/artifacts/${card.id}`)).status, 404);
     assert.equal((await ha.get(card.imageUrl)).status, 404, 'not even for someone the memory is shared with');
@@ -1044,7 +1047,7 @@ describe('privacy & security', () => {
     const data = res.body;
     assert.equal(data.user.email, user.email);
     assert.deepEqual(data.memories.map((m) => m.title), ['Của tôi']);
-    assert.match(data.memories[0].files[0].file, /^[a-f0-9]{32}\.png$/);
+    assert.match(data.memories[0].files[0].file, /^[a-f0-9]{32}\.webp$/);
     assert.deepEqual(data.circle.map((c) => c.name), ['Other']);
     assert.deepEqual(data.commentsOnSharedMemories.map((c) => c.body), ['Đẹp quá']);
     assert.equal(JSON.stringify(data).includes('Không phải của tôi'), false);

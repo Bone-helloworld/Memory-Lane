@@ -1,4 +1,4 @@
-# Runs on every push and pull request: install exactly the locked packages, run the 72 tests,
+# Runs on every push and pull request: install exactly the locked packages, run the tests,
 # and check that the React app still builds. A red ❌ on GitHub means: do not merge yet.
 name: CI
 

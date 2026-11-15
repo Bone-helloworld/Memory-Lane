@@ -5,14 +5,13 @@ A private web app for keeping **old family photos and videos, people you have lo
 - **Sharing:** only with **the people you choose**, through a private invite link. Notes show up **live**.
 - **Keepsake cards and Keepsakes:** turn a memory into a postcard, a stamp, or a photo card to send to someone, then file the ones you want to keep under **Keepsakes**.
 - **Two languages:** **Tiếng Việt ⇄ English** in one tap.
-- **Two themes:** *Notebook* and *Darkroom*.
+- **One look:** the light notebook. (A keepsake card can still be drawn on paper or in a darkroom style.)
 - **Devices:** works on a computer, iPhone, and Android.
 
 This is the MVP of a graduation project. The app is a React interface, an Express REST API, and a SQLite database, with real sign-in (including Google), private photo and video storage, sharing, automated tests, and deploy files.
 
 <p>
-  <img src="docs/screenshots/01-landing-notebook.jpg" width="49%" alt="Landing page — Notebook theme" />
-  <img src="docs/screenshots/02-landing-darkroom.jpg" width="49%" alt="Landing page — Darkroom theme" />
+  <img src="docs/screenshots/01-landing-notebook.jpg" width="70%" alt="Landing page" />
 </p>
 
 | Document | What it is |
@@ -70,13 +69,13 @@ Vite prints an address like `http://192.168.x.x:5173`. Open that on an iPhone or
 
 | Part | What you can do |
 | --- | --- |
-| **Two themes** | **Notebook:** dotted paper, photos taped down, handwriting, blue ballpoint. **Darkroom:** charcoal, a red safelight, a contact sheet, a loupe on hover, photos that "develop". Switch from the nav bar or from Settings. |
+| **Look** | Light notebook only: dotted paper, photos taped down, handwriting, blue ballpoint. There is no dark theme and no theme switch. |
 | **Today** | A greeting, a featured memory, counts, a year bar, the **"On this day, years ago"** film strip, memories **shared with you**, people you have not contacted in a long time, films and music. |
 | **Album** | Each memory holds **up to 20 photos and videos**, a title, a place, a story, and a date that can be **incomplete** (year only, or year and month). Portrait photos and videos keep their shape. |
-| **Photos and video** | Drag and drop many files, one progress bar each, pick a cover. Photos are processed **in the browser**: GPS removed, orientation fixed, max 2000 px, saved as **WebP** (about 30% smaller than JPEG, almost the same quality) plus a 560 px preview. Video (MP4/MOV/WebM, up to 100 MB) gets a poster frame. **The server strips GPS again**, including the location stored in a video. Video starts playing immediately and can be seeked. |
+| **Photos and video** | Drag and drop many files, one progress bar each, pick a cover. The browser prepares a photo first; the **server does it again with sharp**: auto-rotate, long edge at most 2000 px, metadata (including GPS) removed, stored as **WebP**, plus a small preview. Nude or explicit photos are refused. Video (MP4/MOV/WebM, up to 100 MB and 10 minutes) is **not** recompressed — there is no ffmpeg — and only its poster still is checked. |
 | **Sharing** | A **one-time invite link**, expiring after 7 days, revocable, sent via Zalo or Messenger. Accepting puts that person in your **circle**. You choose who can see a memory **in the memory form itself**, and you can create the invite before saving. People you share with can view the memory and leave a **note**. |
 | **Live updates** | A new note **appears on its own** for anyone who has the memory open. A small notice when someone shares or accepts an invite (Server-Sent Events). |
-| **Keepsake cards** | From a memory, make a **postcard, stamp, or photo card** (Paper or Darkroom style), download it, or share it to Zalo/Messenger on a phone. The card is drawn on the device. The image is uploaded, privately, only when the owner clicks **Save to Keepsakes**. |
+| **Keepsake cards** | From a memory, make a **postcard, stamp, or photo card** (Paper or Darkroom *card* style — this is the card, not a site theme), download it, or share it to Zalo/Messenger on a phone. The card is drawn on the device. The image is uploaded, privately, only when the owner clicks **Save to Keepsakes**. |
 | **Keepsakes (Artifacts)** | The **cards you saved from your own memories**, laid out like a small family museum: a catalogue number in the order you saved them, filters for postcard / stamp / photo card, a large view, download, share, and a link back to the memory. Save from the memory page, or from the tab ("Make one from a memory"). Only the owner sees them. Delete the memory and its cards go with it. |
 | **Old friends** | Relationship, last contact, closeness, a "5 years out of touch" label, a private log, shared memories, and an **"Invite to Memory Lane"** button. |
 | **Films and music** | A film or a song the family loved, whose it was, when, the story, and a link to watch or hear it again. |
@@ -86,17 +85,14 @@ Vite prints an address like `http://192.168.x.x:5173`. Open that on an iPhone or
 | **Phones** | Checked on iPhone (Safari) and Android/Samsung: input text at least 16 px (so iPhone does not zoom in), large tap targets, the notch safe area, swiping photos, tap-to-reveal in discreet mode, and a home-screen icon. |
 
 <p>
-  <img src="docs/screenshots/03-today-notebook.jpg" width="49%" alt="Today — Notebook" />
-  <img src="docs/screenshots/04-today-darkroom.jpg" width="49%" alt="Today — Darkroom" />
+  <img src="docs/screenshots/03-today-notebook.jpg" width="49%" alt="Today" />
   <img src="docs/screenshots/11-artifacts-notebook.jpg" width="49%" alt="Keepsakes tab" />
   <img src="docs/screenshots/14-card-studio-notebook.jpg" width="49%" alt="Making a keepsake card" />
   <img src="docs/screenshots/08-memory-form-share-notebook.jpg" width="49%" alt="Sharing inside the new-memory form" />
-  <img src="docs/screenshots/10-sharing-page-darkroom.jpg" width="49%" alt="Sharing page" />
 </p>
 
 <p>
   <img src="docs/screenshots/19-mobile-today-notebook.jpg" width="32%" alt="Phone — Today" />
-  <img src="docs/screenshots/20-mobile-memory-darkroom.jpg" width="32%" alt="Phone — one memory" />
   <img src="docs/screenshots/21-mobile-menu-notebook.jpg" width="32%" alt="Phone — menu" />
 </p>
 
@@ -108,17 +104,17 @@ Vite prints an address like `http://192.168.x.x:5173`. Open that on an iPhone or
 | --- | --- | --- |
 | Interface | **React 19** + **React Router 8** | Split the UI into components. Move between pages without a full reload. |
 | Build | **Vite 8** | A fast dev server, an optimized production build, and one file per page. |
-| CSS | **Plain CSS** and CSS variables (design tokens), one token set per theme | Two themes on the same HTML (`<html data-theme="notebook\|darkroom">`), no CSS framework. Fonts are **bundled** with `@fontsource` (Be Vietnam Pro, Playpen Sans, Bricolage Grotesque, IBM Plex Mono), including Vietnamese diacritics. No request goes to Google Fonts. |
+| CSS | **Plain CSS** and CSS variables (design tokens) | One light look (`<html data-theme="notebook">`), no CSS framework and no dark theme. Fonts are **bundled** with `@fontsource` (Be Vietnam Pro, Playpen Sans, and — for keepsake cards — Bricolage Grotesque and IBM Plex Mono), including Vietnamese diacritics. No request goes to Google Fonts. |
 | Languages | A small layer in `client/src/i18n` plus the browser's **Intl** | Dictionaries `vi.js` / `en.js`, plurals, and dates in the active language. |
 | Photos, video, cards | **Canvas**, `<video>`, and **XMLHttpRequest**, all built into the browser | WebP compression, a video poster frame, upload progress, and drawing postcards and stamps. No extra library. |
 | API | **Node.js** + **Express 5** | A plain REST API. Express 5 forwards errors thrown inside `async` functions. |
 | Database | **SQLite** through **`node:sqlite`**, built into Node | Real SQL (foreign keys, indexes, migrations) with no database server to install. |
-| Uploads | **multer** (straight to disk) plus magic-byte checks and metadata stripping | A 100 MB video is never held in RAM. The file type comes from the bytes, not the name. |
+| Uploads | **multer** (straight to disk), **sharp**, and **nsfwjs** | A video is never held in RAM. The file type comes from the bytes, not the name. Photos are re-encoded to WebP. The explicit-image model loads on the first photo, not at startup. |
 | Sign-in | Server-side sessions and **scrypt**; **Google OAuth 2.0 / OpenID Connect** (PKCE, state, nonce) | A session can be revoked immediately. Google sign-in loads no Google script on the page. |
 | Live updates | **Server-Sent Events** (`EventSource`) | The server pushes new notes and shares to the browser. No WebSocket library. |
-| Tests | Built-in **node:test**, plus real Chrome over the DevTools Protocol | 72 server tests: API, privacy, sharing, uploads, keepsakes, Google (a fake Google plus `setup:google`), SSE, metadata stripping, translations, the admin tool, `/api/health`. And `npm run test:e2e`: **35 features** exercised in real Chrome the way a person would click. |
+| Tests | Built-in **node:test**, plus real Chrome over the DevTools Protocol | 85 server tests: API, privacy, sharing, uploads, keepsakes, Google (a fake Google plus `setup:google`), SSE, metadata stripping, translations, the admin tool, `/api/health`. And `npm run test:e2e`: **35 features** exercised in real Chrome the way a person would click. |
 
-The server depends on three packages: `express`, `multer`, `compression`.
+The server depends on `express`, `multer`, `compression`, `sharp`, `nsfwjs`, and `@tensorflow/tfjs` (CPU backend only — not the native TensorFlow build).
 
 ---
 
@@ -128,25 +124,25 @@ The server depends on three packages: `express`, `multer`, `compression`.
 memory-lane/
 ├── client/                    React UI (Vite's project root)
 │   ├── index.html             the only HTML page (phone meta: theme-color, color-scheme, safe area)
-│   ├── public/                theme-init.js · favicon.svg · apple-touch-icon.png · landing photos
+│   ├── public/                favicon.svg · apple-touch-icon.png · landing photos
 │   └── src/
 │       ├── main.jsx           entry: fonts, CSS, providers
 │       ├── App.jsx            the route list (private pages load on demand)
 │       ├── api.js             the only place that calls the server (+ lib/upload.js for progress)
-│       ├── auth.jsx · theme.jsx · state.jsx   sign-in · theme · shared data
+│       ├── auth.jsx · state.jsx   sign-in · shared data
 │       ├── i18n/              vi.js · en.js · index.jsx
 │       ├── components/        TopBar, Memories, Gallery, Comments, SharePanel, InviteLink, GoogleButton,
 │       │                      CardStudio, LiveUpdates, forms/ (MemoryForm, ShareFields, PersonForm…)
 │       ├── pages/             one file per screen (Today, Album, MemoryDetail, Artifacts, Sharing, Join…)
 │       ├── lib/               image.js (WebP) · video.js · upload.js · cards.js (draws cards) · artifacts.js
-│       └── styles/            base · layout · components · pages · notebook · darkroom
+│       └── styles/            base · layout · components · pages · notebook
 ├── server/                    Express API
 │   ├── index.js · app.js      start the server · wire middleware, routes, and errors
 │   ├── config.js · db.js      env config · SQLite and migrations
 │   ├── migrations/            001_init · 002_media_sharing · 003_google_login · 004_artifacts · 005_card_artifacts
 │   ├── models/                EVERY SQL statement (users, memories, people, media, social, artifacts)
 │   ├── routes/                auth, google, me, dashboard, memories, files, invites, sharing, people, media, artifacts, search
-│   ├── lib/                   files, metadata (strip GPS), google (OAuth), live (SSE), validate, sessions, security…
+│   ├── lib/                   files, images (sharp → WebP), moderate (nsfwjs), metadata (video GPS), google, live, validate…
 │   ├── seed.js                the demo world: An and 5 friends
 │   ├── setup-google.js        npm run setup:google — writes your OAuth client into .env
 │   ├── admin.js               npm run admin — look up accounts, a temporary password, check files, backup
@@ -265,7 +261,7 @@ Five migrations run in order at startup (`PRAGMA user_version` remembers how far
 | `npm run setup:google` | Turn on "Continue with Google" on this machine: paste your Client ID and Client secret; the command writes `.env` |
 | `npm run start:demo` | Seed, then start (what the hosting blueprint uses) |
 | `npm run admin -- <command>` | Admin tool: `stats`, `users`, `user <email>`, `memory <id>`, `sessions`, `reset-password`, `check-files`, `backup` |
-| `npm test` | The 72 server tests |
+| `npm test` | The 85 server tests |
 | `npm run test:e2e` | Full-system check in real Chrome (35 features, 1–2 minutes; it builds its own server and data). Needs Google Chrome |
 
 Configuration is optional. Copy `.env.example` to `.env` to change the port, the data directory, file limits, the quota, how long an invite lasts, or to turn on Google sign-in (`npm run setup:google`, or set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` yourself; see [docs/DEPLOY.md](docs/DEPLOY.md#bật-tiếp-tục-với-google), in Vietnamese).

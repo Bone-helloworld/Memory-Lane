@@ -74,11 +74,12 @@ export default {
     login: 'Đăng nhập',
     start: 'Bắt đầu lưu giữ',
     demo: 'Dùng thử bản demo',
-    eyebrow: 'một cuốn album không thuật toán',
-    titleA: 'Những gì',
-    titleB: 'không nỡ quên',
-    sub: 'Nơi lưu lại ảnh cũ, người cũ, và những bản nhạc ba mẹ từng nghe — theo cách chủ động, riêng tư, không phải lướt vô định lúc nửa đêm.',
-    promise: 'Không bảng tin · Không quảng cáo · Chỉ mình bạn xem',
+    invite: 'Mời một người bạn',
+    eyebrow: 'một album, cùng nhau giữ',
+    titleA: 'Không gian chung',
+    titleB: 'cho những người đã ở đó',
+    sub: 'Mời một người vào vòng của bạn. Cả hai cùng thêm ảnh, lời nhắn và bài hát vào một album riêng — không phải bảng tin.',
+    promise: 'Không bảng tin · Không quảng cáo · Chỉ người bạn mời',
     sampleCaption: 'Nhà cũ, trước sân', // (giao diện mới không còn dùng)
     featuresEyebrow: 'những gì bạn lưu ở đây',
     featuresTitle: 'Ba ngăn kéo cho những ngày đã qua',
@@ -138,14 +139,20 @@ export default {
       step3Body: 'Đánh dấu ai được xem từng kỷ niệm. Bỏ đánh dấu là họ không còn thấy nữa.',
       demoLine: 'An mời bạn vào Memory Lane và chia sẻ kỷ niệm “Hội An”.',
     },
+    space: {
+      kicker: 'không gian chung',
+      name: 'Hè với cả lớp',
+      added1: 'Thu Hà thêm ảnh Hội An',
+      added2: 'Minh Khoa để lại vài dòng',
+    },
   },
 
   // ── Đăng nhập (/login) và Tạo tài khoản (/register) ──
   auth: {
     loginTitle: 'Chào mừng trở lại',
-    loginSub: 'Ký ức vẫn ở nguyên chỗ bạn để.',
+    loginSub: 'Không gian chung vẫn ở nguyên chỗ bạn để.',
     registerTitle: 'Bắt đầu album của bạn',
-    registerSub: 'Riêng tư ngay từ tấm ảnh đầu tiên. Không bảng tin, không quảng cáo.',
+    registerSub: 'Một không gian riêng cho bạn và những người đã ở đó. Không bảng tin, không quảng cáo.',
     name: 'Bạn muốn được gọi là gì?',
     namePlaceholder: 'ví dụ: An',
     email: 'Email',
@@ -163,8 +170,8 @@ export default {
     or: 'hoặc',
     demo: 'Dùng thử tài khoản demo',
     backHome: 'Trang chủ',
-    quoteA: 'Ký ức không cần thuật toán —',
-    quoteB: 'chỉ cần một chỗ để trở về.',
+    quoteA: 'Một album, cùng nhau giữ —',
+    quoteB: 'bởi những người đã ở đó.',
     note: 'Mật khẩu được băm bằng scrypt · ảnh không bao giờ công khai',
     // ✎ MỚI — bản nháp, cần duyệt (bạn sửa thoải mái)
     demoFriend: 'hoặc thử với vai Thu Hà — người được chia sẻ',
@@ -230,7 +237,7 @@ export default {
       randomTitle: 'Từ kho ký ức của bạn',
       emptyEyebrow: 'cuộn phim của bạn',
       emptyTitle: 'Máy chiếu đang chờ',
-      emptyBody: 'Lưu ký ức đầu tiên, và nó sẽ quay lại đây đúng ngày kỷ niệm.',
+      emptyBody: 'Lưu một kỷ niệm, rồi mời người đã ở đó. Đúng ngày kỷ niệm, nó sẽ quay lại đây.',
       seeAlbum: 'xem cả album →',
       addFrame: 'Thêm ký ức',
     },
@@ -254,6 +261,13 @@ export default {
       kicker: 'từ những người thân của bạn',
       title: 'Được chia sẻ với bạn',
       all: 'xem tất cả →',
+    },
+    space: {
+      kicker: 'không gian chung của bạn',
+      title: 'Mời một người vào cuốn album này',
+      body: 'Vòng bạn bè là không gian riêng giữa bạn và người bạn mời. Bạn chọn từng kỷ niệm cho họ xem, và họ có thể để lại lời nhắn.',
+      invite: 'Mời một người bạn',
+      add: 'Lưu một kỷ niệm',
     },
   },
 
@@ -618,17 +632,6 @@ export default {
     footerNote: 'Album của bạn là riêng tư, trừ khi bạn chủ động chia sẻ.',
   },
 
-  // ── Hai giao diện: Sổ tay / Phòng tối (nút trên thanh điều hướng + trang Cài đặt) ── ✎ MỚI — bản nháp, cần duyệt (bạn sửa thoải mái)
-  theme: {
-    label: 'Giao diện',
-    title: 'Giao diện album',
-    body: 'Hai giao diện cho cùng một album. Lựa chọn chỉ được lưu trên thiết bị này.',
-    notebook: 'Sổ tay ký ức',
-    darkroom: 'Phòng tối',
-    notebookDesc: 'Giấy trắng, mực bút bi, ảnh dán băng keo như trong một cuốn sổ.',
-    darkroomDesc: 'Nền than chì, đèn an toàn màu đỏ và những tờ in thử phim.',
-  },
-
   // ── Bộ ảnh / video trong trang một ký ức (/album/…) ── ✎ MỚI — bản nháp, cần duyệt (bạn sửa thoải mái)
   gallery: {
     label: 'bộ ảnh',
@@ -646,8 +649,8 @@ export default {
     label: 'Ảnh & video',
     drop: 'Kéo ảnh hoặc video vào đây',
     choose: 'Chọn tệp',
-    hint: 'Ảnh JPG, PNG, WEBP, GIF tối đa {image} MB · video MP4, MOV, WebM tối đa {video} MB · tối đa {max} tệp',
-    privacy: 'Toạ độ GPS được xoá khỏi ảnh ngay trên trình duyệt, rồi xoá thêm một lần nữa ở máy chủ cho cả ảnh và video trước khi lưu.',
+    hint: 'Ảnh JPG, PNG, WEBP, GIF tối đa {image} MB · video MP4, MOV, WebM tối đa {video} MB và {minutes} phút · tối đa {max} tệp',
+    privacy: 'Ảnh được xoay đúng chiều, thu nhỏ và lưu dạng WebP; dữ liệu vị trí bị xóa. Ảnh khỏa thân hoặc nhạy cảm sẽ không được lưu. Video được giữ nguyên, tối đa {video} MB và {minutes} phút.',
     cover: 'Ảnh bìa',
     makeCover: 'Đặt làm ảnh bìa',
     moveUp: 'Đưa lên trên',
@@ -862,6 +865,10 @@ export default {
       // ✎ MỚI — bản nháp, cần duyệt (bạn sửa thoải mái)
       TOO_MANY_FILES: 'Mỗi ký ức có tối đa {max} ảnh và video.',
       STORAGE_FULL: 'Hết dung lượng — tối đa {max} MB.',
+      EXPLICIT: 'Ảnh này có vẻ khỏa thân hoặc nhạy cảm, nên không được lưu.',
+      MODERATION_UNAVAILABLE: 'Không kiểm tra được ảnh này, nên không lưu. Bạn thử lại sau một lát.',
+      UNREADABLE: 'Không mở được ảnh này.',
+      VIDEO_TOO_LONG: 'Video dài tối đa {max} phút.',
     },
     // ✎ MỚI — bản nháp, cần duyệt (bạn sửa thoải mái)
     INVITE_INVALID: 'Link mời này không còn hiệu lực.',

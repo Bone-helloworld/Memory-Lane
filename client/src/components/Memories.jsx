@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback } from 'react';
 import { Link } from 'react-router';
 import { useI18n } from '../i18n/index.jsx';
 import { useComposer } from '../state.jsx';
@@ -24,8 +24,7 @@ export function formatDuration(seconds) {
 const frameNumber = (index) => String(index + 1).padStart(2, '0');
 
 /**
- * A private photo. It fades in once loaded (in the darkroom it "develops" from overexposed)
- * and is blurred by discreet mode until hovered.
+ * A private photo. It fades in once loaded and is blurred by discreet mode until hovered.
  */
 export function Photo({ src, alt = '', eager = false, className = '' }) {
   // A cached image may already be complete before React attaches onLoad.
@@ -45,42 +44,9 @@ export function Photo({ src, alt = '', eager = false, className = '' }) {
   );
 }
 
-/*
- * The darkroom loupe: a lens that follows the mouse over a frame and magnifies it 2.2×.
- * Works out where the cropped (object-fit: cover) picture really sits so the lens shows
- * exactly the spot under the pointer. Touch screens and the notebook theme skip it.
- */
-const ZOOM = 2.2;
-const LENS_RADIUS = 64;
-
-function useLoupe() {
-  const lens = useRef(null);
-  const onPointerMove = useCallback((event) => {
-    const el = lens.current;
-    if (!el || event.pointerType !== 'mouse' || document.documentElement.dataset.theme !== 'darkroom') return;
-    const box = event.currentTarget.getBoundingClientRect();
-    const img = event.currentTarget.querySelector('img');
-    if (!img?.naturalWidth) return;
-    const x = event.clientX - box.left;
-    const y = event.clientY - box.top;
-    const scale = Math.max(box.width / img.naturalWidth, box.height / img.naturalHeight);
-    const shownW = img.naturalWidth * scale;
-    const shownH = img.naturalHeight * scale;
-    const offsetX = (box.width - shownW) / 2;
-    const offsetY = (box.height - shownH) / 2;
-    el.style.left = `${x}px`;
-    el.style.top = `${y}px`;
-    el.style.backgroundSize = `${shownW * ZOOM}px ${shownH * ZOOM}px`;
-    el.style.backgroundPosition = `${LENS_RADIUS - (x - offsetX) * ZOOM}px ${LENS_RADIUS - (y - offsetY) * ZOOM}px`;
-    el.classList.add('is-ready');
-  }, []);
-  return { lens, onPointerMove };
-}
-
-/** A memory as a print: taped into the notebook, or a frame on a strip of film in the darkroom. */
+/** A memory as a print taped into the notebook. */
 export function MemoryCard({ memory, index = 0, showOwner = false }) {
   const { t, memoryDate } = useI18n();
-  const { lens, onPointerMove } = useLoupe();
   const preview = previewOf(memory.cover);
   const video = memory.files.find((file) => file.kind === 'video');
 
@@ -91,12 +57,9 @@ export function MemoryCard({ memory, index = 0, showOwner = false }) {
         <span className="edge edge-top" aria-hidden="true">
           MEMORY LANE 400
         </span>
-        <div className={`print-photo scene${memory.scene}`} onPointerMove={preview ? onPointerMove : undefined}>
+        <div className={`print-photo scene${memory.scene}`}>
           {preview ? (
-            <>
-              <Photo src={preview} />
-              <span ref={lens} className="loupe" aria-hidden="true" style={{ backgroundImage: `url("${preview}")` }} />
-            </>
+            <Photo src={preview} />
           ) : (
             <span className="print-blank">{t('album.noPhoto')}</span>
           )}
@@ -195,7 +158,7 @@ export function Strip({ items, slots = 5 }) {
   );
 }
 
-/** Hand-drawn loop around the chosen year (notebook theme; hidden in the darkroom). */
+/** Hand-drawn loop around the chosen year. */
 const PEN_CIRCLE = 'M9 28C8 11 47 4 71 5c30 1 45 11 41 25-4 14-42 17-68 15C18 43 4 36 10 22c4-9 19-13 31-14';
 
 /**

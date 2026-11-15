@@ -2,8 +2,7 @@ import { Link } from 'react-router';
 import Brand from '../components/Brand.jsx';
 import Icon from '../components/Icon.jsx';
 import LanguageToggle from '../components/LanguageToggle.jsx';
-import { Collage } from '../components/Memories.jsx';
-import ThemeSwitch from '../components/ThemeSwitch.jsx';
+import SharedSpace from '../components/SharedSpace.jsx';
 import { useI18n } from '../i18n/index.jsx';
 
 /** Split screen used by login, register and the invite page: photos on the left, the form on the right. */
@@ -13,7 +12,7 @@ export default function AuthLayout({ children }) {
     <div className="auth">
       <aside className="auth-art">
         <Brand />
-        <Collage />
+        <SharedSpace />
         <div>
           <p className="auth-quote">
             {t('auth.quoteA')} <em>{t('auth.quoteB')}</em>
@@ -28,7 +27,6 @@ export default function AuthLayout({ children }) {
             {t('auth.backHome')}
           </Link>
           <div className="auth-tools">
-            <ThemeSwitch />
             <LanguageToggle />
           </div>
         </div>

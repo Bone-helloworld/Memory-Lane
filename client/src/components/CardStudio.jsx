@@ -5,7 +5,6 @@ import { ARTIFACT_ICONS } from '../lib/artifacts.js';
 import { CARD_KINDS, CARD_STYLES, cardFile, cardFileName, loadCardFonts, loadCardImage, renderCard } from '../lib/cards.js';
 import { makePreview } from '../lib/image.js';
 import { uploadTo } from '../lib/upload.js';
-import { useTheme } from '../theme.jsx';
 import { Segmented } from './Controls.jsx';
 import Icon from './Icon.jsx';
 import Modal from './Modal.jsx';
@@ -37,7 +36,6 @@ export default function CardStudio({ memory, open, onClose, canKeep = false, onK
 
 function Studio({ memory, onClose, canKeep, onKept }) {
   const { t, memoryDate } = useI18n();
-  const { theme } = useTheme();
   const toast = useToast();
   // Photos, and the still frames of videos, are the pictures a card can use.
   const pictures = useMemo(
@@ -48,7 +46,7 @@ function Studio({ memory, onClose, canKeep, onKept }) {
     [memory.files],
   );
   const [kind, setKind] = useState('postcard');
-  const [style, setStyle] = useState(theme === 'darkroom' ? 'darkroom' : 'paper');
+  const [style, setStyle] = useState('paper');
   const [picture, setPicture] = useState(0);
   const [title, setTitle] = useState(memory.title);
   const [line, setLine] = useState([memory.place, memoryDate(memory)].filter(Boolean).join(' · '));
@@ -136,7 +134,7 @@ function Studio({ memory, onClose, canKeep, onKept }) {
       toast(t('cards.kept'));
       onKept?.(artifact);
     } catch (err) {
-      const field = err.fields?.title ?? err.fields?.file;
+      const field = err.fields?.title ?? err.fields?.file ?? err.fields?.poster;
       toast(field ? fieldMessage(t, field) : `${t('cards.keepFailed')} ${errorMessage(t, err)}`, 'error');
     } finally {
       setBusy(false);
