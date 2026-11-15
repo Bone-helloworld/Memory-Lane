@@ -3,6 +3,7 @@ import { Navigate, Route, Routes, useLocation } from 'react-router';
 import { useAuth } from './auth.jsx';
 import { GuestOnly, RequireAuth } from './components/RouteGuards.jsx';
 import { FullPageLoading, Skeleton } from './components/States.jsx';
+import Contact from './pages/Contact.jsx';
 import Join from './pages/Join.jsx';
 import Landing from './pages/Landing.jsx';
 import Login from './pages/Login.jsx';
@@ -49,8 +50,9 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
 
-        {/* Invite links work whether or not you are logged in. */}
+        {/* Invite links and the contact form work whether or not you are logged in. */}
         <Route path="/join/:token" element={<Join />} />
+        <Route path="/contact" element={<Contact />} />
 
         <Route element={<GuestOnly />}>
           <Route path="/login" element={<Login />} />

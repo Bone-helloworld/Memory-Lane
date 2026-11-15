@@ -8,6 +8,8 @@ export const MEDIA_KINDS = ['film', 'music'];
 // Keepsake cards ("thẻ kỷ niệm") made from a memory. Saved ones are the artifacts ("Kỷ vật") of the album.
 export const CARD_KINDS = ['postcard', 'stamp', 'photo'];
 export const CARD_STYLES = ['paper', 'darkroom'];
+// Public contact form. The same three values are stored and shown in both languages.
+export const CONTACT_KINDS = ['feedback', 'suggestion', 'collaboration'];
 
 export const LIMITS = {
   userName: 60,
@@ -46,4 +48,7 @@ export const LIMITS = {
   cardRecipient: 40,
 
   searchQuery: 100,
+
+  contactName: 80,
+  contactMessage: 4000,
 };

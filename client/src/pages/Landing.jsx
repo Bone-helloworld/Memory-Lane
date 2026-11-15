@@ -79,6 +79,7 @@ export default function Landing() {
           <a href="#features">{t('landing.navFeatures')}</a>
           <a href="#sharing">{t('landing.navSharing')}</a>
           <a href="#privacy">{t('landing.navPrivacy')}</a>
+          <Link to="/contact">{t('contact.nav')}</Link>
         </nav>
         <div className="landing-tools">
           <LanguageToggle />
@@ -261,6 +262,7 @@ export default function Landing() {
         <span>{t('landing.footer')}</span>
         <nav aria-label={t('landing.footerNav')}>
           <a href="#privacy">{t('landing.navPrivacy')}</a>
+          <Link to="/contact">{t('contact.nav')}</Link>
           <span>{t('landing.photoCredit')}</span>
         </nav>
       </footer>

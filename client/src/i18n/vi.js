@@ -37,9 +37,9 @@ export default {
   nav: {
     spaces: 'Không gian', // (giao diện mới không còn dùng)
     more: 'Khác', // (giao diện mới không còn dùng)
-    today: 'Hôm nay gợi lại',
+    today: 'Hôm nay',
     album: 'Album ảnh',
-    people: 'Người quen cũ',
+    people: 'Người quen',
     archive: 'Kho phim & nhạc', // (giao diện mới không còn dùng)
     timeline: 'Dòng thời gian', // (giao diện mới không còn dùng)
     settings: 'Cài đặt riêng tư',
@@ -121,7 +121,7 @@ export default {
     },
     closingA: 'Bắt đầu bằng tấm ảnh',
     closingB: 'bạn thương nhất.',
-    footer: 'MVP đồ án cuối kỳ · 2026',
+    footer: '© 2026 MemoryLane - Bone-helloworld copyright',
     // ✎ MỚI — bản nháp, cần duyệt (bạn sửa thoải mái)
     navSharing: 'Chia sẻ',
     demoFriend: 'hoặc vào vai Thu Hà, người được An chia sẻ →',
@@ -152,7 +152,7 @@ export default {
     loginTitle: 'Chào mừng trở lại',
     loginSub: 'Không gian chung vẫn ở nguyên chỗ bạn để.',
     registerTitle: 'Bắt đầu album của bạn',
-    registerSub: 'Một không gian riêng cho bạn và những người đã ở đó. Không bảng tin, không quảng cáo.',
+    registerSub: 'Một không gian riêng cho bạn và những người đã cùng ở đó. Không bảng tin mới, khônmớig gợi ý quảng cáo.',
     name: 'Bạn muốn được gọi là gì?',
     namePlaceholder: 'ví dụ: An',
     email: 'Email',
@@ -184,7 +184,7 @@ export default {
     orEmail: 'hoặc dùng email',
     off: 'Máy chủ này chưa bật đăng nhập Google (cần GOOGLE_CLIENT_ID và GOOGLE_CLIENT_SECRET).',
     // ✎ MỚI — bản nháp, cần duyệt (vòng 4): chỉ hiện khi chạy npm run dev trên máy, không bao giờ hiện ở bản online
-    setupHint: 'Bạn là chủ dự án? Chạy lệnh npm run setup:google, dán mã OAuth của bạn vào là xong (hướng dẫn ở docs/DEPLOY.md).',
+    setupHint: 'Bạn là chủ dự án? Chạy lệnh npm run setup:google, dán mã OAuth của bạn (hướng dẫn ở docs/DEPLOY.md).',
     settingsTitle: 'Đăng nhập bằng Google',
     linkedTo: 'Đã liên kết với {email}',
     notLinked: 'Liên kết tài khoản Google để đăng nhập chỉ với một chạm. Memory Lane chỉ nhận tên và email của bạn.',
@@ -817,6 +817,31 @@ export default {
     how2: 'Khi người nhận đồng ý, hai bạn được kết nối — lúc này chưa có gì được chia sẻ.',
     how3: 'Trong từng kỷ niệm, chọn ai được xem. Họ có thể xem và để lại lời nhắn.',
     how4: 'Bỏ chọn, thu hồi hay ngừng kết nối bất cứ lúc nào: quyền xem mất ngay lập tức.',
+  },
+
+  // ── Liên hệ (/contact) — khách và người đã đăng nhập đều gửi được ──
+  contact: {
+    nav: 'Liên hệ',
+    title: 'Liên hệ',
+    sub: 'Một lời nhắn cho người làm Memory Lane — phản hồi, ý tưởng, hoặc đề xuất hợp tác.',
+    type: 'Bạn muốn gửi gì?',
+    kinds: {
+      feedback: 'Phản hồi',
+      suggestion: 'Gợi ý',
+      collaboration: 'Đề xuất hợp tác',
+    },
+    name: 'Tên',
+    namePlaceholder: 'Tên của bạn',
+    email: 'Email',
+    emailPlaceholder: 'ban@example.com',
+    message: 'Lời nhắn',
+    messagePlaceholder: 'Viết vài dòng…',
+    submit: 'Gửi',
+    sending: 'Đang gửi…',
+    successTitle: 'Đã gửi',
+    successBody: 'Cảm ơn bạn. Lời nhắn đã đến tác giả.',
+    another: 'Gửi thêm',
+    backToAlbum: 'Về album của bạn',
   },
 
   // ── Trang không tồn tại (404) ──
