@@ -72,7 +72,7 @@ Vite prints an address like `http://192.168.x.x:5173`. Open that on an iPhone or
 | **Look** | Light notebook only: dotted paper, photos taped down, handwriting, blue ballpoint. There is no dark theme and no theme switch. |
 | **Today** | A greeting, a featured memory, counts, a year bar, the **"On this day, years ago"** film strip, memories **shared with you**, people you have not contacted in a long time, films and music. |
 | **Album** | Each memory holds **up to 20 photos and videos**, a title, a place, a story, and a date that can be **incomplete** (year only, or year and month). Portrait photos and videos keep their shape. |
-| **Photos and video** | Drag and drop many files, one progress bar each, pick a cover. The browser prepares a photo first; the **server does it again with sharp**: auto-rotate, long edge at most 2000 px, metadata (including GPS) removed, stored as **WebP**, plus a small preview. Nude or explicit photos are refused. Video (MP4/MOV/WebM, up to 100 MB and 10 minutes) is **not** recompressed — there is no ffmpeg — and only its poster still is checked. |
+| **Photos and video** | Drag and drop many files, one progress bar each, pick a cover. The browser prepares a photo first; the **server does it again with sharp**: auto-rotate, long edge at most 2000 px, metadata (including GPS) removed, stored as **WebP**, plus a small preview. Nude or explicit photos are refused. Video (MP4/MOV/WebM, up to 100 MB and 10 minutes) is **not** recompressed. A bundled ffmpeg pulls a few small frames (about every 3 seconds, at most 40, spread across the whole file) and the same checker refuses the video if any frame is explicit. |
 | **Sharing** | A **one-time invite link**, expiring after 7 days, revocable, sent via Zalo or Messenger. Accepting puts that person in your **circle**. You choose who can see a memory **in the memory form itself**, and you can create the invite before saving. People you share with can view the memory and leave a **note**. |
 | **Live updates** | A new note **appears on its own** for anyone who has the memory open. A small notice when someone shares or accepts an invite (Server-Sent Events). |
 | **Keepsake cards** | From a memory, make a **postcard, stamp, or photo card** (Paper or Darkroom *card* style — this is the card, not a site theme), download it, or share it to Zalo/Messenger on a phone. The card is drawn on the device. The image is uploaded, privately, only when the owner clicks **Save to Keepsakes**. |
@@ -109,12 +109,12 @@ Vite prints an address like `http://192.168.x.x:5173`. Open that on an iPhone or
 | Photos, video, cards | **Canvas**, `<video>`, and **XMLHttpRequest**, all built into the browser | WebP compression, a video poster frame, upload progress, and drawing postcards and stamps. No extra library. |
 | API | **Node.js** + **Express 5** | A plain REST API. Express 5 forwards errors thrown inside `async` functions. |
 | Database | **SQLite** through **`node:sqlite`**, built into Node | Real SQL (foreign keys, indexes, migrations) with no database server to install. |
-| Uploads | **multer** (straight to disk), **sharp**, and **nsfwjs** | A video is never held in RAM. The file type comes from the bytes, not the name. Photos are re-encoded to WebP. The explicit-image model loads on the first photo, not at startup. |
+| Uploads | **multer** (straight to disk), **sharp**, **ffmpeg-static**, and **nsfwjs** | A video is never held in RAM. The file type comes from the bytes, not the name. Photos are re-encoded to WebP. ffmpeg is the binary inside the npm package, so the host does not need `apt install ffmpeg`. The explicit-image model loads on the first photo or video, not at startup. |
 | Sign-in | Server-side sessions and **scrypt**; **Google OAuth 2.0 / OpenID Connect** (PKCE, state, nonce) | A session can be revoked immediately. Google sign-in loads no Google script on the page. |
 | Live updates | **Server-Sent Events** (`EventSource`) | The server pushes new notes and shares to the browser. No WebSocket library. |
-| Tests | Built-in **node:test**, plus real Chrome over the DevTools Protocol | 85 server tests: API, privacy, sharing, uploads, keepsakes, Google (a fake Google plus `setup:google`), SSE, metadata stripping, translations, the admin tool, `/api/health`. And `npm run test:e2e`: **35 features** exercised in real Chrome the way a person would click. |
+| Tests | Built-in **node:test**, plus real Chrome over the DevTools Protocol | 89 server tests: API, privacy, sharing, uploads, keepsakes, Google (a fake Google plus `setup:google`), SSE, metadata stripping, translations, the admin tool, `/api/health`. And `npm run test:e2e`: **35 features** exercised in real Chrome the way a person would click. |
 
-The server depends on `express`, `multer`, `compression`, `sharp`, `nsfwjs`, and `@tensorflow/tfjs` (CPU backend only — not the native TensorFlow build).
+The server depends on `express`, `multer`, `compression`, `sharp`, `ffmpeg-static`, `nsfwjs`, and `@tensorflow/tfjs` (CPU backend only — not the native TensorFlow build).
 
 ---
 
@@ -142,7 +142,7 @@ memory-lane/
 │   ├── migrations/            001_init · 002_media_sharing · 003_google_login · 004_artifacts · 005_card_artifacts
 │   ├── models/                EVERY SQL statement (users, memories, people, media, social, artifacts)
 │   ├── routes/                auth, google, me, dashboard, memories, files, invites, sharing, people, media, artifacts, search
-│   ├── lib/                   files, images (sharp → WebP), moderate (nsfwjs), metadata (video GPS), google, live, validate…
+│   ├── lib/                   files, images (sharp → WebP), moderate (nsfwjs), videoCheck (ffmpeg frames), metadata (video GPS), google, live…
 │   ├── seed.js                the demo world: An and 5 friends
 │   ├── setup-google.js        npm run setup:google — writes your OAuth client into .env
 │   ├── admin.js               npm run admin — look up accounts, a temporary password, check files, backup
@@ -261,7 +261,7 @@ Five migrations run in order at startup (`PRAGMA user_version` remembers how far
 | `npm run setup:google` | Turn on "Continue with Google" on this machine: paste your Client ID and Client secret; the command writes `.env` |
 | `npm run start:demo` | Seed, then start (what the hosting blueprint uses) |
 | `npm run admin -- <command>` | Admin tool: `stats`, `users`, `user <email>`, `memory <id>`, `sessions`, `reset-password`, `check-files`, `backup` |
-| `npm test` | The 85 server tests |
+| `npm test` | The 89 server tests |
 | `npm run test:e2e` | Full-system check in real Chrome (35 features, 1–2 minutes; it builds its own server and data). Needs Google Chrome |
 
 Configuration is optional. Copy `.env.example` to `.env` to change the port, the data directory, file limits, the quota, how long an invite lasts, or to turn on Google sign-in (`npm run setup:google`, or set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` yourself; see [docs/DEPLOY.md](docs/DEPLOY.md#bật-tiếp-tục-với-google), in Vietnamese).

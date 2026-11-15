@@ -650,7 +650,7 @@ export default {
     drop: 'Kéo ảnh hoặc video vào đây',
     choose: 'Chọn tệp',
     hint: 'Ảnh JPG, PNG, WEBP, GIF tối đa {image} MB · video MP4, MOV, WebM tối đa {video} MB và {minutes} phút · tối đa {max} tệp',
-    privacy: 'Ảnh được xoay đúng chiều, thu nhỏ và lưu dạng WebP; dữ liệu vị trí bị xóa. Ảnh khỏa thân hoặc nhạy cảm sẽ không được lưu. Video được giữ nguyên, tối đa {video} MB và {minutes} phút.',
+    privacy: 'Ảnh được xoay đúng chiều, thu nhỏ và lưu dạng WebP; dữ liệu vị trí bị xóa. Ảnh hoặc video khỏa thân hoặc nhạy cảm sẽ không được lưu. Video được giữ nguyên, tối đa {video} MB và {minutes} phút, sau khi vài khung hình được kiểm tra.',
     cover: 'Ảnh bìa',
     makeCover: 'Đặt làm ảnh bìa',
     moveUp: 'Đưa lên trên',
@@ -865,7 +865,7 @@ export default {
       // ✎ MỚI — bản nháp, cần duyệt (bạn sửa thoải mái)
       TOO_MANY_FILES: 'Mỗi ký ức có tối đa {max} ảnh và video.',
       STORAGE_FULL: 'Hết dung lượng — tối đa {max} MB.',
-      EXPLICIT: 'Ảnh này có vẻ khỏa thân hoặc nhạy cảm, nên không được lưu.',
+      EXPLICIT: 'Ảnh hoặc video này có vẻ khỏa thân hoặc nhạy cảm, nên không được lưu.',
       MODERATION_UNAVAILABLE: 'Không kiểm tra được ảnh này, nên không lưu. Bạn thử lại sau một lát.',
       UNREADABLE: 'Không mở được ảnh này.',
       VIDEO_TOO_LONG: 'Video dài tối đa {max} phút.',

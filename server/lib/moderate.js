@@ -6,9 +6,9 @@ import sharp from 'sharp';
  * sharp cannot tell a nude photo from a landscape, so this asks nsfwjs:
  * a small MobileNetV2 model that runs inside Node on the CPU build of
  * TensorFlow.js (not the native tfjs-node build, which is far too heavy
- * for a 512 MB Render instance). The weights ship inside the nsfwjs
- * package (~4 MB). They are loaded the first time someone uploads a photo,
- * not when the server boots, so a cold start stays a normal Node start.
+ * for a small host). The weights ship inside the nsfwjs
+ * package (~4 MB). They are loaded the first time someone uploads a photo
+ * or a video, not when the server boots, so a cold start stays a normal Node start.
  * After that the model stays in memory for the life of the process.
  *
  * Fail closed. If the model cannot load, or the check throws, the photo
@@ -22,9 +22,8 @@ import sharp from 'sharp';
  *   Sexy   ≥ 0.85 and Neutral < 0.20
  * "Sexy" on its own is often a beach photo. Those stay.
  *
- * Videos are not opened here. There is no ffmpeg. The upload route can
- * hand us the poster still the browser attached, which is one frame, not
- * the whole video. A program that skips the poster is not checked.
+ * Videos are sampled by server/lib/videoCheck.js (a few small frames via ffmpeg).
+ * Each frame is passed to reviewImage below, one at a time.
  */
 
 export const EXPLICIT_THRESHOLDS = {

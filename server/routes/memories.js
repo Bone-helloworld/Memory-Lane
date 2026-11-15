@@ -11,6 +11,7 @@ import {
 } from '../lib/images.js';
 import { scrubMetadata } from '../lib/metadata.js';
 import { reviewImage } from '../lib/moderate.js';
+import { reviewVideo } from '../lib/videoCheck.js';
 import { idParam, parseIdList, validator } from '../lib/validate.js';
 import { addDays, isValidDate, toISODate } from '../../shared/dates.js';
 import { CARD_KINDS, CARD_STYLES, LIMITS } from '../../shared/limits.js';
@@ -104,8 +105,7 @@ export function memoryRoutes({ config, memories, artifacts, social, files, live 
       if (poster && (posterType?.kind !== 'image' || poster.size > 3 * MB)) v.fail('poster', 'FILE_TYPE');
       const claimedWidth = v.int('width', { min: 1, max: 20000 });
       const claimedHeight = v.int('height', { min: 1, max: 20000 });
-      // Duration is what the browser measured. Without ffmpeg we cannot time the file
-      // ourselves; the byte cap above is the limit that cannot be skipped.
+      // Duration is what the browser measured. ffmpeg measures it again while checking frames.
       const duration = v.number('duration', { min: 0 });
       if (type?.kind === 'video' && duration != null && duration > LIMITS.videoMaxSeconds) {
         v.fail('file', 'VIDEO_TOO_LONG', { max: Math.round(LIMITS.videoMaxSeconds / 60) });
@@ -129,11 +129,13 @@ export function memoryRoutes({ config, memories, artifacts, social, files, live 
           type = { kind: 'image', ext: 'webp' };
         }
       } else {
-        // Video bytes are stored as sent. GPS in the movie header is blanked in place.
+        // Video bytes are stored as sent. GPS in the movie header is blanked in place,
+        // then a few frames are checked. The file is not recompressed.
         await scrubMetadata(main.path, type.ext);
+        await keepVideo(v, main.path);
       }
 
-      if (poster) {
+      if (!v.hasErrors() && poster) {
         const info = await keepImage(v, poster.path, 'poster', { maxEdge: THUMB_MAX_EDGE, quality: THUMB_QUALITY });
         if (info) posterType = { kind: 'image', ext: 'webp' };
       } else if (type.kind === 'image' && !v.hasErrors()) {
@@ -318,6 +320,21 @@ export function memoryRoutes({ config, memories, artifacts, social, files, live 
  * classifier cannot run. Records a field error and returns null instead of throwing
  * for those two cases; anything else (a bug) still throws.
  */
+/** Same explicit-image rule as a photo, on frames taken from the video. Fail closed. */
+async function keepVideo(v, filePath) {
+  try {
+    const verdict = await reviewVideo(filePath);
+    if (verdict.explicit) v.fail('file', 'EXPLICIT');
+  } catch (err) {
+    if (err?.code === 'VIDEO_TOO_LONG') {
+      v.fail('file', 'VIDEO_TOO_LONG', { max: err.max });
+      return;
+    }
+    console.error(`[${new Date().toISOString()}] VIDEO_CHECK ${err instanceof Error ? err.message : err}`);
+    v.fail('file', 'MODERATION_UNAVAILABLE');
+  }
+}
+
 async function keepImage(v, filePath, field, options) {
   let info;
   try {

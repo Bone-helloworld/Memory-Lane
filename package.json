@@ -30,6 +30,7 @@
     "@tensorflow/tfjs-backend-cpu": "^4.22.0",
     "compression": "^1.8.2",
     "express": "^5.3.0",
+    "ffmpeg-static": "^5.3.0",
     "multer": "^2.4.0",
     "nsfwjs": "^4.3.0",
     "react": "^19.3.0",

@@ -13,7 +13,8 @@ import sharp from 'sharp';
  *     free Render instance, so WebP is the format we store.
  *
  * Animated GIFs become a single frame. The album is for stills.
- * Videos are not passed through here — there is no ffmpeg in this app.
+ * Videos are not re-encoded here. Frames for the explicit check are pulled
+ * out by server/lib/videoCheck.js.
  */
 
 export const FULL_MAX_EDGE = 2000;

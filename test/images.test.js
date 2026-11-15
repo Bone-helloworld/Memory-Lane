@@ -12,6 +12,7 @@ import { createApp } from '../server/app.js';
 import { loadConfig } from '../server/config.js';
 import { openDb } from '../server/db.js';
 import { isExplicit, setImageReviewer } from '../server/lib/moderate.js';
+import { frameTimestamps, FRAME_EVERY_SEC, MAX_FRAMES, setVideoReviewer } from '../server/lib/videoCheck.js';
 
 const PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
@@ -25,6 +26,7 @@ let config;
 
 before(async () => {
   setImageReviewer(async () => ({ explicit: false }));
+  setVideoReviewer(async () => ({ explicit: false }));
   tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'memorylane-images-'));
   config = {
     ...loadConfig({ DATA_DIR: tmp, AUTH_RATE_LIMIT: '1000', MAX_UPLOAD_MB: '8', MAX_VIDEO_MB: '2', STORAGE_MB: '50' }),
@@ -38,6 +40,7 @@ before(async () => {
 
 after(() => {
   setImageReviewer(undefined);
+  setVideoReviewer(undefined);
   server?.close();
   fs.rmSync(tmp, { recursive: true, force: true });
 });
@@ -87,6 +90,20 @@ function form(bytes, { name = 'photo.jpg', type = 'image/jpeg', fields = {} } = 
   data.set('file', new Blob([bytes], { type }), name);
   return data;
 }
+
+describe('which frames of a video are checked', () => {
+  test('about every 3 seconds, and never more than the cap', () => {
+    assert.deepEqual(frameTimestamps(0), []);
+    assert.equal(frameTimestamps(3).length, 1);
+    const halfMinute = frameTimestamps(30);
+    assert.equal(halfMinute.length, Math.ceil(30 / FRAME_EVERY_SEC));
+    assert.ok(halfMinute.every((t, i) => i === 0 || t - halfMinute[i - 1] >= FRAME_EVERY_SEC - 0.01));
+    const tenMinutes = frameTimestamps(10 * 60);
+    assert.equal(tenMinutes.length, MAX_FRAMES);
+    assert.ok(tenMinutes[0] > 0 && tenMinutes.at(-1) < 10 * 60);
+    assert.ok(tenMinutes.at(-1) - tenMinutes[0] > 8 * 60, 'a long video is sampled across its length, not only the start');
+  });
+});
 
 describe('what counts as explicit', () => {
   const row = (className, probability) => ({ className, probability });
@@ -154,15 +171,62 @@ describe('upload pipeline', () => {
     setImageReviewer(async () => ({ explicit: false }));
   });
 
-  test('a video longer than 10 minutes is refused; the file itself is not recompressed', async () => {
-    const { a, memoryId } = await owner();
-    // A tiny file the sniffer accepts as MP4: size, "ftyp", brand. Not a playable movie.
+  function tinyMp4() {
+    // A file the sniffer accepts as MP4. It is not a movie ffmpeg can decode.
     const head = Buffer.alloc(8);
     const brand = Buffer.from('isom');
     const rest = Buffer.concat([Buffer.alloc(4), Buffer.from('isom')]);
     head.writeUInt32BE(8 + brand.length + rest.length, 0);
     head.write('ftyp', 4, 'latin1');
-    const video = Buffer.concat([head, brand, rest, Buffer.alloc(64, 1)]);
+    return Buffer.concat([head, brand, rest, Buffer.alloc(64, 1)]);
+  }
+
+  test('an explicit video frame is refused and not kept on disk', async () => {
+    setVideoReviewer(async () => ({ explicit: true }));
+    const { a, memoryId } = await owner();
+    const before = fs.readdirSync(config.uploadDir);
+    const res = await a.post(`/api/memories/${memoryId}/files`, {
+      form: form(tinyMp4(), { name: 'clip.mp4', type: 'video/mp4', fields: { duration: 12 } }),
+    });
+    assert.equal(res.status, 400);
+    assert.equal(res.body.fields.file.code, 'EXPLICIT');
+    assert.deepEqual(fs.readdirSync(config.uploadDir), before);
+    setVideoReviewer(async () => ({ explicit: false }));
+  });
+
+  test('when ffmpeg or the model cannot check a video, it is refused (fail closed)', async () => {
+    setVideoReviewer(async () => {
+      throw new Error('ffmpeg binary is missing');
+    });
+    const { a, memoryId } = await owner();
+    const before = fs.readdirSync(config.uploadDir);
+    const res = await a.post(`/api/memories/${memoryId}/files`, {
+      form: form(tinyMp4(), { name: 'clip.mp4', type: 'video/mp4', fields: { duration: 12 } }),
+    });
+    assert.equal(res.status, 400);
+    assert.equal(res.body.fields.file.code, 'MODERATION_UNAVAILABLE');
+    assert.deepEqual(fs.readdirSync(config.uploadDir), before);
+    setVideoReviewer(async () => ({ explicit: false }));
+  });
+
+  test('a video ffmpeg cannot read is refused, and no frame files are left behind', async () => {
+    setVideoReviewer(undefined);
+    const { a, memoryId } = await owner();
+    const before = fs.readdirSync(config.uploadDir);
+    const res = await a.post(`/api/memories/${memoryId}/files`, {
+      form: form(tinyMp4(), { name: 'clip.mp4', type: 'video/mp4', fields: { duration: 12 } }),
+    });
+    assert.equal(res.status, 400, JSON.stringify(res.body));
+    assert.equal(res.body.fields.file.code, 'MODERATION_UNAVAILABLE');
+    assert.deepEqual(fs.readdirSync(config.uploadDir), before);
+    const leftovers = fs.readdirSync(os.tmpdir()).filter((name) => name.startsWith('ml-frames-'));
+    assert.deepEqual(leftovers, []);
+    setVideoReviewer(async () => ({ explicit: false }));
+  });
+
+  test('a video longer than 10 minutes is refused; the file itself is not recompressed', async () => {
+    const { a, memoryId } = await owner();
+    const video = tinyMp4();
 
     const tooLong = await a.post(`/api/memories/${memoryId}/files`, {
       form: form(video, { name: 'clip.mp4', type: 'video/mp4', fields: { duration: 11 * 60 } }),

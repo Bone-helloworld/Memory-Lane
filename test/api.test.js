@@ -10,9 +10,11 @@ import { createApp } from '../server/app.js';
 import { loadConfig } from '../server/config.js';
 import { openDb } from '../server/db.js';
 import { setImageReviewer } from '../server/lib/moderate.js';
+import { setVideoReviewer } from '../server/lib/videoCheck.js';
 
 // These tests check storage and access, not the nude-photo model. See test/images.test.js.
 setImageReviewer(async () => ({ explicit: false }));
+setVideoReviewer(async () => ({ explicit: false }));
 import { toISODate } from '../shared/dates.js';
 
 // A real 1×1 PNG.
