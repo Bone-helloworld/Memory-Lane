@@ -6,6 +6,8 @@
 -- Cascades follow the memory and the person. Anything that also points at the user is removed
 -- by trg_users_delete before the user row itself goes, so deleting an account still deletes
 -- every row that belongs to it.
+--
+-- FILE is a reserved keyword, so the photo/card column is written [file].
 
 SET QUOTED_IDENTIFIER ON;
 SET ANSI_NULLS ON;
@@ -124,7 +126,7 @@ CREATE TABLE dbo.memory_files (
   memory_id  INT NOT NULL CONSTRAINT FK_memory_files_memory REFERENCES dbo.memories (id) ON DELETE CASCADE,
   user_id    INT NOT NULL CONSTRAINT FK_memory_files_user REFERENCES dbo.users (id),
   kind       NVARCHAR(16) NOT NULL,
-  file       NVARCHAR(80) NOT NULL,
+  [file]     NVARCHAR(80) NOT NULL,
   poster     NVARCHAR(80) NULL,
   width      INT NULL,
   height     INT NULL,
@@ -132,7 +134,7 @@ CREATE TABLE dbo.memory_files (
   size       BIGINT NOT NULL CONSTRAINT DF_memory_files_size DEFAULT 0,
   position   INT NOT NULL CONSTRAINT DF_memory_files_position DEFAULT 0,
   created_at NVARCHAR(40) NOT NULL CONSTRAINT DF_memory_files_created DEFAULT (CONVERT(varchar(23), SYSUTCDATETIME(), 126) + 'Z'),
-  CONSTRAINT UQ_memory_files_file UNIQUE (file),
+  CONSTRAINT UQ_memory_files_file UNIQUE ([file]),
   CONSTRAINT UQ_memory_files_poster UNIQUE (poster),
   CONSTRAINT CK_memory_files_kind CHECK (kind IN (N'image', N'video'))
 );
@@ -204,13 +206,13 @@ CREATE TABLE dbo.artifacts (
   line       NVARCHAR(400) NOT NULL CONSTRAINT DF_artifacts_line DEFAULT N'',
   message    NVARCHAR(MAX) NOT NULL CONSTRAINT DF_artifacts_message DEFAULT N'',
   recipient  NVARCHAR(400) NOT NULL CONSTRAINT DF_artifacts_recipient DEFAULT N'',
-  file       NVARCHAR(80) NOT NULL,
+  [file]     NVARCHAR(80) NOT NULL,
   preview    NVARCHAR(80) NULL,
   width      INT NULL,
   height     INT NULL,
   size       BIGINT NOT NULL CONSTRAINT DF_artifacts_size DEFAULT 0,
   created_at NVARCHAR(40) NOT NULL CONSTRAINT DF_artifacts_created DEFAULT (CONVERT(varchar(23), SYSUTCDATETIME(), 126) + 'Z'),
-  CONSTRAINT UQ_artifacts_file UNIQUE (file),
+  CONSTRAINT UQ_artifacts_file UNIQUE ([file]),
   CONSTRAINT UQ_artifacts_preview UNIQUE (preview),
   CONSTRAINT CK_artifacts_kind CHECK (kind IN (N'postcard', N'stamp', N'photo')),
   CONSTRAINT CK_artifacts_style CHECK (style IN (N'paper', N'darkroom'))

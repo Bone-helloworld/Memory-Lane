@@ -2,7 +2,10 @@
  * Rewrites the app's SQLite statements into T-SQL for Azure SQL.
  * The model files keep one statement; `prepare` on the SQL Server driver runs this first.
  * SQLite itself never sees the rewritten text.
+ * Reserved words used as names (`file`, and any other bare T-SQL keyword used as an identifier)
+ * are bracketed at the end, so SQL Server accepts the column SQLite already allowed.
  */
+import { quoteReservedIdentifiers } from './reserved.js';
 
 const FILES_JSON =
   `(SELECT f.id AS [id], f.kind AS [kind], f.[file] AS [file], f.poster AS [poster], f.width AS [width], f.height AS [height], f.duration AS [duration] FROM memory_files f WHERE f.memory_id = m.id ORDER BY f.position, f.id FOR JSON PATH) AS files_json`;
@@ -83,7 +86,7 @@ export function translateSql(sql) {
   if (leftover) {
     throw new Error(`SQL Server translation still contains ${leftover[1]}: ${text.slice(0, 240)}`);
   }
-  return text;
+  return quoteReservedIdentifiers(text);
 }
 
 /**
