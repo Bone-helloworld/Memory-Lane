@@ -866,6 +866,7 @@ export default {
     NOT_FOUND: 'Không tồn tại — hoặc không phải của bạn.',
     INVALID_CREDENTIALS: 'Email hoặc mật khẩu không đúng.',
     RATE_LIMITED: 'Thử quá nhiều lần. Đợi vài phút rồi thử lại nhé.',
+    CONTACT_LIMIT: 'Bạn đã gửi tối đa 2 góp ý hôm nay, vui lòng thử lại vào ngày mai.',
     DEMO_MISSING: 'Chưa có tài khoản demo. Hãy chạy “npm run seed”.',
     CROSS_SITE: 'Yêu cầu này bị chặn để bảo vệ bạn.',
     VALIDATION: 'Vui lòng kiểm tra các ô được đánh dấu.',

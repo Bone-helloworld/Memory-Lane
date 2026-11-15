@@ -1,7 +1,10 @@
 import { Router } from 'express';
-import { rateLimit, clientAddress } from '../lib/rateLimit.js';
+import { HttpError } from '../lib/errors.js';
+import { clientAddress } from '../lib/rateLimit.js';
 import { validator } from '../lib/validate.js';
 import { CONTACT_KINDS, LIMITS } from '../../shared/limits.js';
+
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 const oneLine = (value) => String(value).replace(/[\r\n]+/g, ' ');
 
@@ -14,9 +17,8 @@ function honeypotFilled(body) {
 
 export function contactRoutes({ config, contact }) {
   const router = Router();
-  const limiter = rateLimit({ windowMs: 15 * 60_000, max: config.contactRateLimit });
 
-  router.post('/', limiter, (req, res) => {
+  router.post('/', (req, res) => {
     if (honeypotFilled(req.body)) {
       console.log(`[${new Date().toISOString()}] CONTACT discarded honeypot from ${clientAddress(req)}`);
       return res.status(201).json({ ok: true });
@@ -29,9 +31,16 @@ export function contactRoutes({ config, contact }) {
     const message = v.text('message', { required: true, max: LIMITS.contactMessage });
     v.check();
 
-    const id = contact.create({ kind, name, email, message });
+    const ip = clientAddress(req);
+    const since = new Date(Date.now() - DAY_MS).toISOString();
+    const { byEmail, byIp } = contact.recentCounts(email, ip, since);
+    if (byEmail >= config.contactRateLimit || byIp >= config.contactRateLimit) {
+      throw new HttpError(429, 'CONTACT_LIMIT');
+    }
+
+    const id = contact.create({ kind, name, email, message, ip });
     console.log(
-      `[${new Date().toISOString()}] CONTACT stored #${id} kind=${kind} name=${oneLine(name)} email=${email}\n${message}`,
+      `[${new Date().toISOString()}] CONTACT stored #${id} kind=${kind} name=${oneLine(name)} email=${email} ip=${ip}\n${message}`,
     );
     res.status(201).json({ ok: true });
   });

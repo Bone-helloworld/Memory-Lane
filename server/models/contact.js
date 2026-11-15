@@ -7,12 +7,25 @@
  */
 export function contactModel(db) {
   const insert = db.prepare(
-    'INSERT INTO contact_messages (kind, name, email, message) VALUES (?, ?, ?, ?)',
+    'INSERT INTO contact_messages (kind, name, email, message, ip) VALUES (?, ?, ?, ?, ?)',
+  );
+  // lower() and CASE exist in both SQLite and T-SQL, so this is not rewritten.
+  const recent = db.prepare(
+    `SELECT COALESCE(SUM(CASE WHEN lower(email) = ? THEN 1 ELSE 0 END), 0) AS by_email,
+            COALESCE(SUM(CASE WHEN ip = ? THEN 1 ELSE 0 END), 0) AS by_ip
+       FROM contact_messages
+      WHERE created_at >= ?`,
   );
 
   return {
-    create({ kind, name, email, message }) {
-      const info = insert.run(kind, name, email, message);
+    /** Notes since `since` (ISO-8601) for this email and this IP, counted separately. */
+    recentCounts(email, ip, since) {
+      const row = recent.get(email, ip, since) ?? {};
+      return { byEmail: Number(row.by_email ?? 0), byIp: Number(row.by_ip ?? 0) };
+    },
+
+    create({ kind, name, email, message, ip }) {
+      const info = insert.run(kind, name, email, message, ip || '');
       return Number(info.lastInsertRowid);
     },
   };

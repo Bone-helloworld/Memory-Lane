@@ -1,22 +1,22 @@
-// Contact form: validation (including the 500-character cap), per-IP rate limit, honeypot, and the log.
+// Contact form: validation (including the 500-character cap), the 24-hour email and IP cap, honeypot, and the log.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { once } from 'node:events';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import en from '../client/src/i18n/en.js';
+import vi from '../client/src/i18n/vi.js';
 import { createApp } from '../server/app.js';
 import { loadConfig } from '../server/config.js';
 import { openDb } from '../server/db.js';
 
-async function withApp({ contactRateLimit = 8, captureLog = false } = {}, fn) {
+async function withApp({ contactRateLimit, captureLog = false, isProd = false } = {}, fn) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'memorylane-contact-'));
+  const env = { DATA_DIR: tmp, NODE_ENV: isProd ? 'production' : 'test' };
+  if (contactRateLimit != null) env.CONTACT_RATE_LIMIT = String(contactRateLimit);
   const config = {
-    ...loadConfig({
-      DATA_DIR: tmp,
-      CONTACT_RATE_LIMIT: String(contactRateLimit),
-      NODE_ENV: 'test',
-    }),
+    ...loadConfig(env),
     clientDist: path.join(tmp, 'no-client'),
   };
   const db = openDb(config.dbFile);
@@ -36,16 +36,17 @@ async function withApp({ contactRateLimit = 8, captureLog = false } = {}, fn) {
   }
 }
 
-async function post(base, json) {
+async function post(base, json, headers = {}) {
   const res = await fetch(base + '/api/contact', {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    headers: { 'content-type': 'application/json', ...headers },
     body: JSON.stringify(json),
   });
-  const retryAfter = res.headers.get('retry-after');
   const raw = await res.text();
-  return { status: res.status, body: raw ? JSON.parse(raw) : null, retryAfter };
+  return { status: res.status, body: raw ? JSON.parse(raw) : null };
 }
+
+const fromIp = (n) => ({ 'x-forwarded-for': `203.0.113.${n}` });
 
 const valid = {
   kind: 'feedback',
@@ -111,18 +112,45 @@ test('the honeypot answers success and stores nothing', async () => {
   });
 });
 
-test('the fourth submission from one IP is rate limited', async () => {
-  await withApp({ contactRateLimit: 3 }, async (base, { db }) => {
-    for (let n = 1; n <= 3; n += 1) {
-      const res = await post(base, { ...valid, kind: n === 2 ? 'suggestion' : 'collaboration' });
-      assert.equal(res.status, 201, `attempt ${n}`);
-    }
-    const limited = await post(base, valid);
+test('the daily limit message is the bilingual sentence', () => {
+  assert.equal(en.errors.CONTACT_LIMIT, 'You have reached the limit of 2 messages today, please try again tomorrow.');
+  assert.equal(vi.errors.CONTACT_LIMIT, 'Bạn đã gửi tối đa 2 góp ý hôm nay, vui lòng thử lại vào ngày mai.');
+});
+
+test('the same email can store 2 notes in 24 hours, from any IP, and the third is refused', async () => {
+  await withApp({ isProd: true }, async (base, { db }) => {
+    assert.equal((await post(base, valid, fromIp(1))).status, 201);
+    assert.equal((await post(base, { ...valid, email: 'AN@EXAMPLE.COM' }, fromIp(2))).status, 201);
+    const limited = await post(base, { ...valid, email: 'an@example.com' }, fromIp(3));
     assert.equal(limited.status, 429);
-    assert.equal(limited.body.error, 'RATE_LIMITED');
-    const retry = Number(limited.retryAfter);
-    assert.equal(Number.isInteger(retry), true);
-    assert.ok(retry >= 1 && retry <= 15 * 60);
+    assert.equal(limited.body.error, 'CONTACT_LIMIT');
+    assert.equal(db.prepare('SELECT COUNT(*) AS n FROM contact_messages').get().n, 2);
+  });
+});
+
+test('the same IP can store 2 notes in 24 hours, for any email, and the third is refused', async () => {
+  await withApp({ isProd: true }, async (base, { db }) => {
+    assert.equal((await post(base, { ...valid, email: 'a@example.com' }, fromIp(8))).status, 201);
+    assert.equal((await post(base, { ...valid, email: 'b@example.com' }, fromIp(8))).status, 201);
+    const limited = await post(base, { ...valid, email: 'c@example.com' }, fromIp(8));
+    assert.equal(limited.status, 429);
+    assert.equal(limited.body.error, 'CONTACT_LIMIT');
+    // A different IP is its own bucket.
+    assert.equal((await post(base, { ...valid, email: 'c@example.com' }, fromIp(9))).status, 201);
+    assert.equal(db.prepare('SELECT COUNT(*) AS n FROM contact_messages').get().n, 3);
+  });
+});
+
+test('notes older than 24 hours no longer count, because the cap reads the stored rows', async () => {
+  await withApp({ isProd: true }, async (base, { db }) => {
+    const old = new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString();
+    const insert = db.prepare(
+      'INSERT INTO contact_messages (kind, name, email, message, ip, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+    );
+    insert.run('feedback', 'An', 'old@example.com', 'earlier', '203.0.113.4', old);
+    insert.run('feedback', 'An', 'old@example.com', 'earlier still', '203.0.113.4', old);
+    const res = await post(base, { ...valid, email: 'old@example.com' }, fromIp(4));
+    assert.equal(res.status, 201);
     assert.equal(db.prepare('SELECT COUNT(*) AS n FROM contact_messages').get().n, 3);
   });
 });

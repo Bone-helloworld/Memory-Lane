@@ -84,7 +84,7 @@ Set secrets in the App Service **Configuration** blade. Do not commit them.
 | `GOOGLE_CLIENT_ID` | from Google Cloud | Turns on "Continue with Google" |
 | `GOOGLE_CLIENT_SECRET` | *(secret)* | OAuth client secret |
 | `ALLOW_DEMO` | `true` for a class demo, `false` for real use | Shows "Try the demo". The start command seeds only when this is `true` |
-| `CONTACT_RATE_LIMIT` | `8` | Contact posts per IP per 15 minutes |
+| `CONTACT_RATE_LIMIT` | `2` | Contact notes per email and per IP in each rolling 24 hours. Counted from `contact_messages`, so a restart does not reset it |
 | `SESSION_DAYS` | `30` | How long a login lasts |
 | `MAX_UPLOAD_MB` | `15` | Largest photo |
 | `MAX_VIDEO_MB` | `100` | Largest video |
@@ -97,14 +97,14 @@ Leave every `AZURE_SQL_*` and `AZURE_STORAGE_*` variable unset to stay on SQLite
 
 ## Contact form
 
-`/contact` stores a feedback note, a suggestion, or a collaboration proposal. The server does not send email. It inserts a row into `contact_messages` and prints `CONTACT stored` to the process log, including the kind, name, email, and message. A message longer than 500 characters is rejected. The page also shows `bonenguyen.19@gmail.com` as a mailto link.
+`/contact` stores a feedback note, a suggestion, or a collaboration proposal. The server does not send email. It inserts a row into `contact_messages` and prints `CONTACT stored` to the process log, including the kind, name, email, IP, and message. A message longer than 500 characters is rejected. The same address, ignoring case, and the same IP may each store at most 2 notes in a rolling 24 hours (`CONTACT_RATE_LIMIT`). Older rows stop counting once they fall outside that window. The page also shows `bonenguyen.19@gmail.com` as a mailto link.
 
 The same insert runs on both databases. Locally, with the Azure SQL variables unset, the row is in the SQLite file under `DATA_DIR`. In production it is in Azure SQL; the driver adds `OUTPUT INSERTED.id` so the new id comes back the same way.
 
 To read production rows: Azure Portal → SQL database `memorylane-db` → **Query editor**. Sign in as `mladmin`, then run:
 
 ```sql
-SELECT id, kind, name, email, message, created_at
+SELECT id, kind, name, email, ip, message, created_at
 FROM dbo.contact_messages
 ORDER BY id DESC;
 ```
