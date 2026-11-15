@@ -26,6 +26,12 @@ nhưng không dùng thật được.
 | `STORAGE_MB` | tuỳ ổ đĩa, ví dụ `500` | Dung lượng ảnh, video và thẻ đã lưu vào Kỷ vật cho mỗi tài khoản |
 | `INVITE_DAYS` | `7` | Thời hạn của một link mời |
 | `AUTH_RATE_LIMIT` | `20` | Số lần thử đăng nhập/đăng ký mỗi IP trong 15 phút |
+| `SMTP_HOST` | `smtp.gmail.com` | Máy chủ SMTP để gửi thư từ trang Liên hệ. Bỏ trống thì thư vẫn được lưu và ghi vào log, không gửi email |
+| `SMTP_PORT` | `587` | Cổng SMTP (`587` dùng STARTTLS; `465` dùng TLS ngay từ đầu) |
+| `SMTP_USER` | địa chỉ Gmail | Tài khoản đăng nhập SMTP, đồng thời là địa chỉ **From** |
+| `SMTP_PASS` | App Password | **Bí mật**: mật khẩu ứng dụng 16 ký tự, không có dấu cách. Không dùng mật khẩu đăng nhập Gmail |
+| `FEEDBACK_TO` | `bonenguyen.19@gmail.com` | Hộp thư nhận phản hồi. Không đặt thì mặc định là địa chỉ này. Reply-To của thư là email người gửi |
+| `CONTACT_RATE_LIMIT` | `8` | Số lần gửi form Liên hệ mỗi IP trong 15 phút |
 | `GOOGLE_CLIENT_ID` | lấy từ Google Cloud | Bật "Tiếp tục với Google" (xem phần dưới) |
 | `GOOGLE_CLIENT_SECRET` | lấy từ Google Cloud | **Bí mật**: chỉ đặt trong mục biến môi trường của nơi hosting, không bao giờ commit |
 | `PUBLIC_URL` | `https://ten-mien-cua-ban` | Địa chỉ người dùng gõ để vào app, dùng để tạo địa chỉ quay về của Google |
@@ -127,6 +133,38 @@ Trên **Fly.io**:
 
 4. Đặt bí mật: `fly secrets set GOOGLE_CLIENT_ID=… GOOGLE_CLIENT_SECRET=… PUBLIC_URL=https://….fly.dev`.
 5. Chạy `fly deploy`.
+
+---
+
+## Thư từ trang Liên hệ (SMTP)
+
+Trang `/contact` nhận phản hồi, gợi ý và đề xuất hợp tác. Máy chủ luôn **lưu** lời nhắn vào bảng `contact_messages`.
+Khi có `SMTP_HOST`, nó còn gửi email tới `FEEDBACK_TO` (mặc định `bonenguyen.19@gmail.com`) bằng [nodemailer](https://nodemailer.com/).
+Địa chỉ **Reply-To** là email người gửi, nên bấm Trả lời là viết thẳng cho họ. Không đặt `SMTP_HOST` thì không gửi email:
+lời nhắn vẫn được lưu và in ra log của tiến trình (`CONTACT stored …`).
+
+### Gmail — tạo App Password
+
+Gmail không nhận mật khẩu đăng nhập thường cho SMTP. Cần bật xác minh 2 bước, rồi tạo mật khẩu ứng dụng:
+
+1. Đăng nhập tài khoản sẽ gửi thư (ví dụ `bonenguyen.19@gmail.com`).
+2. Mở [Bảo mật tài khoản Google](https://myaccount.google.com/security). Bật **Xác minh 2 bước** (2-Step Verification) nếu chưa bật.
+3. Mở [Mật khẩu ứng dụng](https://myaccount.google.com/apppasswords). Nếu không thấy trang này, xác minh 2 bước chưa bật, hoặc tài khoản là Google Workspace do quản trị viên khóa App Password.
+4. Đặt tên, ví dụ `Memory Lane`, rồi bấm tạo. Google hiện 16 ký tự (dạng `abcd efgh ijkl mnop`).
+5. Chép 16 ký tự đó, **bỏ hết dấu cách**, vào `SMTP_PASS`.
+
+Biến cho Gmail:
+
+```bash
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=bonenguyen.19@gmail.com
+SMTP_PASS=abcdefghijklmnop
+FEEDBACK_TO=bonenguyen.19@gmail.com
+```
+
+Đặt các biến này trong mục biến môi trường của nơi hosting (Render: **Environment**; Fly: `fly secrets set`). Không commit `SMTP_PASS`.
+Trên máy, bỏ dấu `#` ở các dòng tương ứng trong `.env` rồi chạy lại `npm run dev`.
 
 ---
 

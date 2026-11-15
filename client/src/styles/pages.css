@@ -119,6 +119,9 @@
   color: var(--text);
   background: var(--hover);
 }
+.landing-nav a[aria-current='page'] {
+  color: var(--text);
+}
 .landing-tools {
   display: flex;
   align-items: center;
@@ -450,6 +453,65 @@
 }
 .landing-foot a:hover {
   color: var(--text);
+}
+
+/* ---------- Contact (/contact) ---------- */
+.contact-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+.contact-main {
+  flex: 1;
+  width: min(640px, 100%);
+  margin: 0 auto;
+  padding: var(--s6) var(--gutter) var(--s7);
+}
+.contact-main h1 {
+  margin-top: 8px;
+  font-family: var(--font-display);
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 800;
+  font-stretch: var(--display-stretch);
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+}
+.contact-sub {
+  max-width: 46ch;
+  margin-top: 12px;
+  color: var(--text-2);
+}
+.contact-card {
+  position: relative;
+  display: grid;
+  gap: 16px;
+  margin-top: 28px;
+  padding: 26px 24px 22px;
+  background: var(--surface);
+  border: var(--card-border);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow);
+}
+.contact-success {
+  justify-items: start;
+}
+.contact-success h2 {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.contact-success p {
+  color: var(--text-2);
+}
+.hp-field {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
 }
 
 /* ---------- Auth (login / register / join) ---------- */
@@ -865,6 +927,9 @@
   .landing-tools .lang-toggle,
   .landing-tools .btn-quiet {
     display: none;
+  }
+  .contact-page .landing-tools .lang-toggle {
+    display: inline-flex;
   }
   .cta-row .btn {
     flex: 1 1 100%;

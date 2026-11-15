@@ -227,6 +227,10 @@ function UserMenu() {
             <Icon name="lock" size={16} />
             {t('nav.settings')}
           </Link>
+          <Link role="menuitem" className="menu-item" to="/contact">
+            <Icon name="mail" size={16} />
+            {t('contact.nav')}
+          </Link>
           {/* A normal link: the browser downloads the JSON file with the session cookie. */}
           <a role="menuitem" className="menu-item" href="/api/me/export" download>
             <Icon name="download" size={16} />
@@ -296,6 +300,10 @@ function MobileSheet({ open, onClose, hasNewShared }) {
             <Link className="menu-item" to="/settings">
               <Icon name="lock" size={16} />
               {t('nav.settings')}
+            </Link>
+            <Link className="menu-item" to="/contact">
+              <Icon name="mail" size={16} />
+              {t('contact.nav')}
             </Link>
             <a className="menu-item" href="/api/me/export" download>
               <Icon name="download" size={16} />

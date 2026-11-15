@@ -7,15 +7,18 @@ import multer from 'multer';
 import { HttpError } from './lib/errors.js';
 import { createFileStore } from './lib/files.js';
 import { createLive } from './lib/live.js';
+import { createMailer } from './lib/mail.js';
 import { blockCrossSiteWrites, noStore, securityHeaders } from './lib/security.js';
 import { createSessions, requireAuth } from './lib/sessions.js';
 import { artifactsModel } from './models/artifacts.js';
+import { contactModel } from './models/contact.js';
 import { mediaModel } from './models/media.js';
 import { memoriesModel } from './models/memories.js';
 import { peopleModel } from './models/people.js';
 import { socialModel } from './models/social.js';
 import { usersModel } from './models/users.js';
 import { artifactRoutes } from './routes/artifacts.js';
+import { contactRoutes } from './routes/contact.js';
 import { authRoutes } from './routes/auth.js';
 import { dashboardRoutes } from './routes/dashboard.js';
 import { fileRoutes } from './routes/files.js';
@@ -32,7 +35,7 @@ import { sharingRoutes } from './routes/sharing.js';
  * Builds the Express application. It receives its database and config instead of
  * creating them, so tests can run the real app against a throw-away database.
  */
-export function createApp({ db, config }) {
+export function createApp({ db, config, mailer }) {
   const app = express();
   const live = createLive();
   const sessions = createSessions(db, config);
@@ -49,6 +52,8 @@ export function createApp({ db, config }) {
     media: mediaModel(db),
     artifacts: artifactsModel(db),
     social: socialModel(db),
+    contact: contactModel(db),
+    mailer: mailer === undefined ? createMailer(config) : mailer,
     live,
   };
 
@@ -83,6 +88,7 @@ export function createApp({ db, config }) {
   api.use(blockCrossSiteWrites);
   api.use(ctx.sessions.loadUser);
 
+  api.use('/contact', contactRoutes(ctx)); // public: visitors can write before they have an account
   api.use('/auth/google', googleRoutes(ctx)); // "Continue with Google" (full-page redirects, not JSON)
   api.use('/auth', authRoutes(ctx));
   api.use('/me', requireAuth, meRoutes(ctx));

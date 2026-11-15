@@ -30,6 +30,18 @@ export function loadConfig(env = process.env) {
     inviteDays: Number(env.INVITE_DAYS) || 7,
     // Login/register attempts allowed per IP in each 15-minute window.
     authRateLimit: Number(env.AUTH_RATE_LIMIT) || 20,
+    // Contact-form submissions allowed per IP in each 15-minute window.
+    contactRateLimit: Number(env.CONTACT_RATE_LIMIT) || 8,
+    // Where contact-form mail goes. Used only when SMTP_HOST is set.
+    feedbackTo: env.FEEDBACK_TO || 'bonenguyen.19@gmail.com',
+    smtp: env.SMTP_HOST
+      ? {
+          host: env.SMTP_HOST,
+          port: Number(env.SMTP_PORT) || 587,
+          user: env.SMTP_USER || '',
+          pass: env.SMTP_PASS || '',
+        }
+      : null,
     // Render sets RENDER=true. Its edge is Cloudflare, which overwrites CF-Connecting-IP
     // with the visitor address — a client cannot choose that value. Anywhere else the
     // header would just be forwarded, so a caller could pick a fresh key and skip the limit.
