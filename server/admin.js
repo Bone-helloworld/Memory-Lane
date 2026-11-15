@@ -133,7 +133,7 @@ function users() {
   const word = args[0] ?? '';
   const rows = db
     .prepare(
-      `SELECT u.id, u.email, u.name, u.created_at, u.google_email IS NOT NULL AS google, u.password_hash <> '' AS has_password,
+      `SELECT u.id, u.email, u.name, u.created_at, CASE WHEN u.google_email IS NOT NULL THEN 1 ELSE 0 END AS google, CASE WHEN u.password_hash <> '' THEN 1 ELSE 0 END AS has_password,
               (SELECT COUNT(*) FROM memories m WHERE m.user_id = u.id) AS memories,
               (SELECT COALESCE(SUM(size), 0) FROM memory_files f WHERE f.user_id = u.id)
                 + (SELECT COALESCE(SUM(size), 0) FROM artifacts a WHERE a.user_id = u.id) AS bytes,

@@ -32,7 +32,7 @@ export function createSessions(db, config) {
   const removeUser = db.prepare('DELETE FROM sessions WHERE user_id = ?');
   // req.user never carries the password hash — only whether the account has a password.
   const lookup = db.prepare(`
-    SELECT u.id, u.email, u.name, u.locale, u.created_at, u.password_hash <> '' AS has_password, u.google_email
+    SELECT u.id, u.email, u.name, u.locale, u.created_at, CASE WHEN u.password_hash <> '' THEN 1 ELSE 0 END AS has_password, u.google_email
       FROM sessions s JOIN users u ON u.id = s.user_id
      WHERE s.token_hash = ? AND s.expires_at > ?`);
 
