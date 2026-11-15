@@ -65,8 +65,15 @@ test('search, paging, ignore-inserts and identity use SQL Server forms', () => {
   assert.match(shares, /CAST\(value AS INT\)/);
   assert.match(shares, /MERGE shares AS t/);
 
-  const contact = withIdentity("INSERT INTO contact_messages (kind, name, email, message) VALUES (?, ?, ?, ?)");
-  assert.match(contact, /INSERT INTO contact_messages \(kind, name, email, message\) OUTPUT INSERTED\.id VALUES/);
+  const contact = withIdentity("INSERT INTO contact_messages (kind, name, email, message, ip) VALUES (?, ?, ?, ?, ?)");
+  assert.match(contact, /INSERT INTO contact_messages \(kind, name, email, message, ip\) OUTPUT INSERTED\.id VALUES/);
+  const recent = translateSql(
+    `SELECT COALESCE(SUM(CASE WHEN lower(email) = ? THEN 1 ELSE 0 END), 0) AS by_email,
+            COALESCE(SUM(CASE WHEN ip = ? THEN 1 ELSE 0 END), 0) AS by_ip
+       FROM contact_messages WHERE created_at >= ?`,
+  );
+  assert.match(recent, /lower\(email\)/);
+  assert.match(recent, /contact_messages/);
 
   const inserted = withIdentity('INSERT INTO users (email, name) VALUES (?, ?)');
   assert.match(inserted, /INSERT INTO users \(email, name\) OUTPUT INSERTED\.id VALUES/);
@@ -219,7 +226,7 @@ test('demo reset deletes only @memorylane.local rows', () => {
 
 test('the Azure SQL script is idempotent and splits the trigger into its own batch', () => {
   const files = mssqlMigrationFiles();
-  assert.deepEqual(files, ['001_schema.sql']);
+  assert.deepEqual(files, ['001_schema.sql', '002_contact_ip.sql']);
   const script = fs.readFileSync(new URL('../server/migrations/mssql/001_schema.sql', import.meta.url), 'utf8');
   const batches = splitBatches(script);
   assert.equal(batches.length, 2);

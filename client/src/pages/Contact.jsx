@@ -12,6 +12,7 @@ import { useI18n } from '../i18n/index.jsx';
 import { usePageTitle } from '../state.jsx';
 
 const EMPTY = { kind: 'feedback', name: '', email: '', message: '', website: '' };
+const AUTHOR_EMAIL = 'bonenguyen.19@gmail.com';
 
 /** Public contact page. Logged-out visitors and signed-in people use the same form. */
 export default function Contact() {
@@ -28,7 +29,8 @@ export default function Contact() {
 
   function set(field) {
     return (event) => {
-      const value = event.target.value;
+      const raw = event.target.value;
+      const value = field === 'message' ? raw.slice(0, LIMITS.contactMessage) : raw;
       setForm((current) => ({ ...current, [field]: value }));
       setErrors((current) => ({ ...current, [field]: undefined }));
     };
@@ -79,6 +81,10 @@ export default function Contact() {
         <span className="kicker">{t('contact.nav')}</span>
         <h1>{t('contact.title')}</h1>
         <p className="contact-sub">{t('contact.sub')}</p>
+        <p className="contact-direct">
+          {t('contact.direct')}{' '}
+          <a href={`mailto:${AUTHOR_EMAIL}`}>{AUTHOR_EMAIL}</a>
+        </p>
 
         {sent ? (
           <div className="contact-card contact-success" role="status">
@@ -151,16 +157,21 @@ export default function Contact() {
 
             <Field label={t('contact.message')} error={errors.message}>
               {(props) => (
-                <textarea
-                  {...props}
-                  className="textarea"
-                  name="message"
-                  maxLength={LIMITS.contactMessage}
-                  value={form.message}
-                  onChange={set('message')}
-                  placeholder={t('contact.messagePlaceholder')}
-                  required
-                />
+                <>
+                  <textarea
+                    {...props}
+                    className="textarea"
+                    name="message"
+                    maxLength={LIMITS.contactMessage}
+                    value={form.message}
+                    onChange={set('message')}
+                    placeholder={t('contact.messagePlaceholder')}
+                    required
+                  />
+                  <span className="char-count" aria-live="polite">
+                    {t('contact.counter', { count: form.message.length, max: LIMITS.contactMessage })}
+                  </span>
+                </>
               )}
             </Field>
 

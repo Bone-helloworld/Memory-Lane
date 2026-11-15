@@ -79,18 +79,9 @@ export function loadConfig(env = process.env) {
     inviteDays: Number(env.INVITE_DAYS) || 7,
     // Login/register attempts allowed per IP in each 15-minute window.
     authRateLimit: Number(env.AUTH_RATE_LIMIT) || 20,
-    // Contact-form submissions allowed per IP in each 15-minute window.
-    contactRateLimit: Number(env.CONTACT_RATE_LIMIT) || 8,
-    // Where contact-form mail goes. Used only when SMTP_HOST is set.
-    feedbackTo: env.FEEDBACK_TO || 'bonenguyen.19@gmail.com',
-    smtp: env.SMTP_HOST
-      ? {
-          host: env.SMTP_HOST,
-          port: Number(env.SMTP_PORT) || 587,
-          user: env.SMTP_USER || '',
-          pass: env.SMTP_PASS || '',
-        }
-      : null,
+    // Contact notes allowed per email and per IP in each rolling 24 hours.
+    // Counted from contact_messages, so a restart does not clear it.
+    contactRateLimit: Number(env.CONTACT_RATE_LIMIT) || 2,
     // Render sets RENDER=true. Its edge is Cloudflare, which overwrites CF-Connecting-IP
     // with the visitor address — a client cannot choose that value. Azure App Service has no
     // Cloudflare in front, so that header is ignored there and the visitor is the address
