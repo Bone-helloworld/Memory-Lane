@@ -12,11 +12,11 @@ function honeypotFilled(body) {
   return text.trim() !== '';
 }
 
-export function contactRoutes({ config, contact, mailer }) {
+export function contactRoutes({ config, contact }) {
   const router = Router();
   const limiter = rateLimit({ windowMs: 15 * 60_000, max: config.contactRateLimit });
 
-  router.post('/', limiter, async (req, res) => {
+  router.post('/', limiter, (req, res) => {
     if (honeypotFilled(req.body)) {
       console.log(`[${new Date().toISOString()}] CONTACT discarded honeypot from ${clientAddress(req)}`);
       return res.status(201).json({ ok: true });
@@ -30,19 +30,9 @@ export function contactRoutes({ config, contact, mailer }) {
     v.check();
 
     const id = contact.create({ kind, name, email, message });
-    const stamp = new Date().toISOString();
-    if (mailer) {
-      try {
-        await mailer.send({ kind, name, email, message });
-        console.log(`[${stamp}] CONTACT stored #${id} emailed to ${config.feedbackTo}`);
-      } catch (err) {
-        console.error(`[${stamp}] CONTACT stored #${id} but email failed: ${err.message}`);
-      }
-    } else {
-      console.log(
-        `[${stamp}] CONTACT stored #${id} kind=${kind} name=${oneLine(name)} email=${email} (SMTP not configured)\n${message}`,
-      );
-    }
+    console.log(
+      `[${new Date().toISOString()}] CONTACT stored #${id} kind=${kind} name=${oneLine(name)} email=${email}\n${message}`,
+    );
     res.status(201).json({ ok: true });
   });
 

@@ -84,11 +84,6 @@ Set secrets in the App Service **Configuration** blade. Do not commit them.
 | `GOOGLE_CLIENT_ID` | from Google Cloud | Turns on "Continue with Google" |
 | `GOOGLE_CLIENT_SECRET` | *(secret)* | OAuth client secret |
 | `ALLOW_DEMO` | `true` for a class demo, `false` for real use | Shows "Try the demo". The start command seeds only when this is `true` |
-| `SMTP_HOST` | `smtp.gmail.com` or empty | Contact form email. Empty: the note is stored and written to the log, and no mail is sent |
-| `SMTP_PORT` | `587` | `587` is STARTTLS. `465` is TLS from the start |
-| `SMTP_USER` | the Gmail address | SMTP login, and the **From** address |
-| `SMTP_PASS` | *(secret)* | Gmail App Password, 16 characters, spaces removed. Not the Gmail login password |
-| `FEEDBACK_TO` | `bonenguyen.19@gmail.com` | Inbox for contact notes. This is the default when unset. **Reply-To** is the visitor |
 | `CONTACT_RATE_LIMIT` | `8` | Contact posts per IP per 15 minutes |
 | `SESSION_DAYS` | `30` | How long a login lasts |
 | `MAX_UPLOAD_MB` | `15` | Largest photo |
@@ -100,27 +95,19 @@ Set secrets in the App Service **Configuration** blade. Do not commit them.
 
 Leave every `AZURE_SQL_*` and `AZURE_STORAGE_*` variable unset to stay on SQLite and local files.
 
-## Contact form mail
+## Contact form
 
-`/contact` accepts feedback, a suggestion, or a collaboration note. The server always inserts a row in `contact_messages` (SQLite locally, Azure SQL in production). With `SMTP_HOST` set it also sends mail to `FEEDBACK_TO` through nodemailer. **Reply-To** is the address the visitor typed.
+`/contact` stores a feedback note, a suggestion, or a collaboration proposal. The server does not send email. It inserts a row into `contact_messages` and prints `CONTACT stored` to the process log, including the kind, name, email, and message. A message longer than 500 characters is rejected. The page also shows `bonenguyen.19@gmail.com` as a mailto link.
 
-Gmail will not accept the normal account password for SMTP. Turn on 2-Step Verification, then create an App Password:
+The same insert runs on both databases. Locally, with the Azure SQL variables unset, the row is in the SQLite file under `DATA_DIR`. In production it is in Azure SQL; the driver adds `OUTPUT INSERTED.id` so the new id comes back the same way.
 
-1. Sign in as the account that sends the mail (for example `bonenguyen.19@gmail.com`).
-2. Open [Google Account security](https://myaccount.google.com/security) and turn on **2-Step Verification**.
-3. Open [App passwords](https://myaccount.google.com/apppasswords). If that page is missing, 2-Step Verification is off, or a Workspace admin has blocked app passwords.
-4. Name it `Memory Lane` and create it. Google shows 16 characters (`abcd efgh ijkl mnop`).
-5. Copy them into `SMTP_PASS` with the spaces removed.
+To read production rows: Azure Portal → SQL database `memorylane-db` → **Query editor**. Sign in as `mladmin`, then run:
 
-```bash
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=bonenguyen.19@gmail.com
-SMTP_PASS=abcdefghijklmnop
-FEEDBACK_TO=bonenguyen.19@gmail.com
+```sql
+SELECT id, kind, name, email, message, created_at
+FROM dbo.contact_messages
+ORDER BY id DESC;
 ```
-
-Put `SMTP_PASS` in App Service configuration, not in git. Locally, uncomment the same lines in `.env` and restart `npm run dev`.
 
 ## Continue with Google
 
@@ -146,7 +133,7 @@ The button is on the sign-in page. Without `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT
 - `https://memorylane.azurewebsites.net/api/health` returns `{"ok":true}` once SQL answers. During a cold resume it can be `503` for about a minute.
 - Register, upload a photo and a short video, restart the app, and confirm the account and the files are still there.
 - Open an image URL in a private window: **401**. Another signed-in person who was not given that memory: **404**.
-- Submit `/contact`. The row is in `contact_messages`. With SMTP set, the inbox receives it.
+- Submit `/contact`. The row is in `contact_messages` (Query editor on Azure SQL, or the SQLite file locally) and the log has a `CONTACT stored` line. No email is sent.
 - Sign in with Google. The redirect URI is the one in the table above.
 
 `npm run admin` uses the same database. `stats`, `users`, `reset-password`, and `check-files` work against Azure SQL and the blob container. `backup` does not download them: Azure SQL has its own point-in-time restore, and the blobs stay in the storage account.

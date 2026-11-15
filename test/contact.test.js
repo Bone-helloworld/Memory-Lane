@@ -1,4 +1,4 @@
-// Contact form: validation, per-IP rate limit, honeypot, and the SMTP mailer (mocked).
+// Contact form: validation (including the 500-character cap), per-IP rate limit, honeypot, and the log.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { once } from 'node:events';
@@ -8,9 +8,8 @@ import path from 'node:path';
 import { createApp } from '../server/app.js';
 import { loadConfig } from '../server/config.js';
 import { openDb } from '../server/db.js';
-import { createMailer } from '../server/lib/mail.js';
 
-async function withApp({ contactRateLimit = 8, mailer, captureLog = false } = {}, fn) {
+async function withApp({ contactRateLimit = 8, captureLog = false } = {}, fn) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'memorylane-contact-'));
   const config = {
     ...loadConfig({
@@ -24,7 +23,7 @@ async function withApp({ contactRateLimit = 8, mailer, captureLog = false } = {}
   const logs = [];
   const original = console.log;
   if (captureLog) console.log = (...args) => logs.push(args.map(String).join(' '));
-  const server = createApp({ db, config, mailer }).listen(0, '127.0.0.1');
+  const server = createApp({ db, config }).listen(0, '127.0.0.1');
   await once(server, 'listening');
   try {
     await fn(`http://127.0.0.1:${server.address().port}`, { db, config, logs });
@@ -67,7 +66,8 @@ test('a valid note is stored, and the address is lower-cased', async () => {
       email: 'an@example.com',
       message: 'The album feels like home.',
     });
-    assert.ok(logs.some((line) => line.includes('SMTP not configured') && line.includes(valid.message)));
+    assert.ok(logs.some((line) => line.includes('CONTACT stored') && line.includes(valid.message)));
+    assert.equal(logs.some((line) => /smtp|nodemailer/i.test(line)), false);
   });
 });
 
@@ -89,10 +89,10 @@ test('missing fields, a bad email, a bad type and an over-long message are rejec
     assert.equal(kind.status, 400);
     assert.equal(kind.body.fields.kind.code, 'INVALID_CHOICE');
 
-    const long = await post(base, { ...valid, message: 'x'.repeat(4001) });
+    const long = await post(base, { ...valid, message: 'x'.repeat(501) });
     assert.equal(long.status, 400);
     assert.equal(long.body.fields.message.code, 'TOO_LONG');
-    assert.equal(long.body.fields.message.max, 4000);
+    assert.equal(long.body.fields.message.max, 500);
 
     assert.equal(db.prepare('SELECT COUNT(*) AS n FROM contact_messages').get().n, 0);
   });
@@ -127,53 +127,12 @@ test('the fourth submission from one IP is rate limited', async () => {
   });
 });
 
-test('when SMTP is configured the mailer is called with Reply-To set to the sender', async () => {
-  const sent = [];
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'memorylane-contact-mail-'));
-  const config = {
-    ...loadConfig({ DATA_DIR: tmp, NODE_ENV: 'test', FEEDBACK_TO: 'bonenguyen.19@gmail.com' }),
-    clientDist: path.join(tmp, 'no-client'),
-    smtp: { host: 'smtp.gmail.com', port: 587, user: 'lane@gmail.com', pass: 'app-password' },
-  };
-  const mailer = createMailer(config, { sendMail: async (message) => sent.push(message) });
-  const db = openDb(config.dbFile);
-  const server = createApp({ db, config, mailer }).listen(0, '127.0.0.1');
-  await once(server, 'listening');
-  try {
-    const base = `http://127.0.0.1:${server.address().port}`;
-    const res = await post(base, { ...valid, kind: 'collaboration', message: 'Let us build this together.' });
+test('a message of exactly 500 characters is stored', async () => {
+  const message = 'x'.repeat(500);
+  await withApp({}, async (base, { db }) => {
+    const res = await post(base, { ...valid, message });
     assert.equal(res.status, 201);
-    assert.equal(sent.length, 1);
-    const message = sent[0];
-    assert.equal(message.to, 'bonenguyen.19@gmail.com');
-    assert.equal(message.replyTo, 'an@example.com');
-    assert.equal(message.from, 'lane@gmail.com');
-    assert.equal(message.subject, 'Memory Lane contact: collaboration — An Nguyễn');
-    assert.match(message.text, /Let us build this together\./);
-    assert.match(message.text, /Type: collaboration/);
-    assert.equal(db.prepare('SELECT COUNT(*) AS n FROM contact_messages').get().n, 1);
-  } finally {
-    server.closeAllConnections?.();
-    await new Promise((resolve) => server.close(resolve));
-    db.close();
-    fs.rmSync(tmp, { recursive: true, force: true });
-  }
-});
-
-test('a mailer that throws still stores the note and answers success', async () => {
-  const mailer = {
-    send: async () => {
-      throw new Error('smtp down');
-    },
-  };
-  await withApp({ mailer }, async (base, { db }) => {
-    const res = await post(base, valid);
-    assert.equal(res.status, 201);
-    assert.equal(db.prepare('SELECT COUNT(*) AS n FROM contact_messages').get().n, 1);
+    const row = db.prepare('SELECT message FROM contact_messages').get();
+    assert.equal(row.message.length, 500);
   });
-});
-
-test('createMailer does nothing until SMTP_HOST is set', () => {
-  const config = loadConfig({ DATA_DIR: os.tmpdir() });
-  assert.equal(createMailer(config), null);
 });

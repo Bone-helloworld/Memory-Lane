@@ -50,5 +50,5 @@ export const LIMITS = {
   searchQuery: 100,
 
   contactName: 80,
-  contactMessage: 4000,
+  contactMessage: 500,
 };

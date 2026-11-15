@@ -7,7 +7,6 @@ import multer from 'multer';
 import { HttpError } from './lib/errors.js';
 import { createFileStore } from './lib/files.js';
 import { createLive } from './lib/live.js';
-import { createMailer } from './lib/mail.js';
 import { blockCrossSiteWrites, noStore, securityHeaders } from './lib/security.js';
 import { createSessions, requireAuth } from './lib/sessions.js';
 import { artifactsModel } from './models/artifacts.js';
@@ -35,7 +34,7 @@ import { sharingRoutes } from './routes/sharing.js';
  * Builds the Express application. It receives its database and config instead of
  * creating them, so tests can run the real app against a throw-away database.
  */
-export function createApp({ db, config, mailer }) {
+export function createApp({ db, config }) {
   const app = express();
   const live = createLive();
   const sessions = createSessions(db, config);
@@ -53,7 +52,6 @@ export function createApp({ db, config, mailer }) {
     artifacts: artifactsModel(db),
     social: socialModel(db),
     contact: contactModel(db),
-    mailer: mailer === undefined ? createMailer(config) : mailer,
     live,
   };
 

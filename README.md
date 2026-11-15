@@ -114,7 +114,7 @@ Vite prints an address like `http://192.168.x.x:5173`. Open that on an iPhone or
 | Live updates | **Server-Sent Events** (`EventSource`) | The server pushes new notes and shares to the browser. No WebSocket library. |
 | Tests | Built-in **node:test**, plus real Chrome over the DevTools Protocol | 109 server tests: API, privacy, sharing, uploads, keepsakes, Google (a fake Google plus `setup:google`), SSE, metadata stripping, translations, the admin tool, `/api/health`. And `npm run test:e2e`: **35 features** exercised in real Chrome the way a person would click. |
 
-The server depends on `express`, `multer`, `compression`, `sharp`, `ffmpeg-static`, `nsfwjs`, `@tensorflow/tfjs` (CPU backend only — not the native TensorFlow build), `mssql`, `@azure/storage-blob`, and `nodemailer`.
+The server depends on `express`, `multer`, `compression`, `sharp`, `ffmpeg-static`, `nsfwjs`, `@tensorflow/tfjs` (CPU backend only — not the native TensorFlow build), `mssql`, and `@azure/storage-blob`.
 
 ---
 

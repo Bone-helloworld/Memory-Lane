@@ -836,6 +836,8 @@ export default {
     emailPlaceholder: 'ban@example.com',
     message: 'Lời nhắn',
     messagePlaceholder: 'Viết vài dòng…',
+    counter: '{count}/{max}',
+    direct: 'Hoặc gửi email trực tiếp cho tác giả:',
     submit: 'Gửi',
     sending: 'Đang gửi…',
     successTitle: 'Đã gửi',

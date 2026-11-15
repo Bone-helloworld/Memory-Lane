@@ -770,6 +770,8 @@ export default {
     emailPlaceholder: 'you@example.com',
     message: 'Message',
     messagePlaceholder: 'Write a few lines…',
+    counter: '{count}/{max}',
+    direct: 'Or email the author directly:',
     submit: 'Send',
     sending: 'Sending…',
     successTitle: 'Sent',
