@@ -8,7 +8,7 @@ A private web app for keeping **old family photos and videos, people you have lo
 - **One look:** the light notebook. (A keepsake card can still be drawn on paper or in a darkroom style.)
 - **Devices:** works on a computer, iPhone, and Android.
 
-This is the MVP of a graduation project. The app is a React interface, an Express REST API, and a SQLite database, with real sign-in (including Google), private photo and video storage, sharing, automated tests, and deploy files.
+This is the MVP of a graduation project. The app is a React interface and an Express REST API, with real sign-in (including Google), private photo and video storage, sharing, a contact form, automated tests, and deploy files. Locally the database is SQLite. Production uses Azure SQL and private blob storage.
 
 <p>
   <img src="docs/screenshots/01-landing-notebook.jpg" width="70%" alt="Landing page" />
@@ -16,7 +16,7 @@ This is the MVP of a graduation project. The app is a React interface, an Expres
 
 | Document | What it is |
 | --- | --- |
-| [docs/DEPLOY.md](docs/DEPLOY.md) | Putting the app online (Render, Railway, Fly.io / Docker) and setting up **Google sign-in** (Vietnamese). |
+| [docs/DEPLOY.md](docs/DEPLOY.md) | Putting the app on Azure App Service, the environment variables, and **Google sign-in**. |
 | [docs/CREDITS.md](docs/CREDITS.md) | Unsplash photos and Pexels videos used as demo media. |
 
 ---
@@ -108,13 +108,13 @@ Vite prints an address like `http://192.168.x.x:5173`. Open that on an iPhone or
 | Languages | A small layer in `client/src/i18n` plus the browser's **Intl** | Dictionaries `vi.js` / `en.js`, plurals, and dates in the active language. |
 | Photos, video, cards | **Canvas**, `<video>`, and **XMLHttpRequest**, all built into the browser | WebP compression, a video poster frame, upload progress, and drawing postcards and stamps. No extra library. |
 | API | **Node.js** + **Express 5** | A plain REST API. Express 5 forwards errors thrown inside `async` functions. |
-| Database | **SQLite** through **`node:sqlite`**, built into Node | Real SQL (foreign keys, indexes, migrations) with no database server to install. |
-| Uploads | **multer** (straight to disk), **sharp**, **ffmpeg-static**, and **nsfwjs** | A video is never held in RAM. The file type comes from the bytes, not the name. Photos are re-encoded to WebP. ffmpeg is the binary inside the npm package, so the host does not need `apt install ffmpeg`. The explicit-image model loads on the first photo or video, not at startup. |
+| Database | **SQLite** through **`node:sqlite`** locally; **Azure SQL** in production | The same queries. No database to install on a laptop. Production keeps accounts across restarts. |
+| Uploads | **multer**, **sharp**, **ffmpeg-static**, and **nsfwjs**; files on disk locally and in **Azure Blob Storage** in production | A video is never held in RAM. The file type comes from the bytes, not the name. Photos are re-encoded to WebP. ffmpeg is the binary inside the npm package, so the host does not need `apt install ffmpeg`. The explicit-image model loads on the first photo or video, not at startup. The blob container stays private. |
 | Sign-in | Server-side sessions and **scrypt**; **Google OAuth 2.0 / OpenID Connect** (PKCE, state, nonce) | A session can be revoked immediately. Google sign-in loads no Google script on the page. |
 | Live updates | **Server-Sent Events** (`EventSource`) | The server pushes new notes and shares to the browser. No WebSocket library. |
 | Tests | Built-in **node:test**, plus real Chrome over the DevTools Protocol | 89 server tests: API, privacy, sharing, uploads, keepsakes, Google (a fake Google plus `setup:google`), SSE, metadata stripping, translations, the admin tool, `/api/health`. And `npm run test:e2e`: **35 features** exercised in real Chrome the way a person would click. |
 
-The server depends on `express`, `multer`, `compression`, `sharp`, `ffmpeg-static`, `nsfwjs`, and `@tensorflow/tfjs` (CPU backend only — not the native TensorFlow build).
+The server depends on `express`, `multer`, `compression`, `sharp`, `ffmpeg-static`, `nsfwjs`, `@tensorflow/tfjs` (CPU backend only — not the native TensorFlow build), `mssql`, `@azure/storage-blob`, and `nodemailer`.
 
 ---
 

@@ -45,7 +45,7 @@ export function createApp({ db, config, mailer }) {
   const ctx = {
     config,
     sessions,
-    files: createFileStore(config.uploadDir),
+    files: createFileStore(config.uploadDir, config.azureStorage),
     users: usersModel(db),
     memories: memoriesModel(db),
     people: peopleModel(db),
@@ -58,9 +58,10 @@ export function createApp({ db, config, mailer }) {
   };
 
   app.disable('x-powered-by');
-  // Exactly one proxy hop in production — Render's load balancer, which terminates HTTPS.
-  // `true` would trust the whole X-Forwarded-For chain. The visitor can prepend addresses,
-  // so the login limiter would see a new IP on every attempt and never return 429.
+  // Exactly one proxy hop in production. On Azure App Service that hop is the front end,
+  // which appends the visitor to X-Forwarded-For and sets X-Forwarded-Proto. Render's load
+  // balancer is the same shape. `true` would trust the whole chain: the visitor can prepend
+  // addresses, so the login limiter would see a new IP on every attempt and never return 429.
   // The visitor address itself is chosen in lib/rateLimit.js (one hop, or Cloudflare's
   // overwritten CF-Connecting-IP when this process is actually running on Render).
   if (config.isProd) app.set('trust proxy', 1);

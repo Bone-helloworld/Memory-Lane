@@ -13,18 +13,26 @@ import { notFound } from '../lib/errors.js';
 export function fileRoutes({ memories, artifacts, files }) {
   const router = Router();
 
-  router.get('/:name', (req, res) => {
-    const { name } = req.params;
-    const allowed = memories.canViewFile(req.user.id, name) || artifacts.canViewFile(req.user.id, name);
-    if (!files.isValidName(name) || !allowed) throw notFound();
-    res.sendFile(name, {
-      root: files.dir,
-      // private: no shared proxy may keep a copy. no-cache: the browser must ask again each
-      // time (a cheap 304 thanks to the ETag), so once a share is withdrawn — or after logging
-      // out on a shared computer — the file cannot be reopened from the cache.
-      cacheControl: false,
-      headers: { 'Cache-Control': 'private, no-cache' },
-    });
+  router.get('/:name', async (req, res, next) => {
+    try {
+      const { name } = req.params;
+      const allowed = memories.canViewFile(req.user.id, name) || artifacts.canViewFile(req.user.id, name);
+      if (!files.isValidName(name) || !allowed) throw notFound();
+      if (files.backend === 'blob') {
+        await files.send(name, req, res);
+        return;
+      }
+      await res.sendFile(name, {
+        root: files.dir,
+        // private: no shared proxy may keep a copy. no-cache: the browser must ask again each
+        // time (a cheap 304 thanks to the ETag), so once a share is withdrawn — or after logging
+        // out on a shared computer — the file cannot be reopened from the cache.
+        cacheControl: false,
+        headers: { 'Cache-Control': 'private, no-cache' },
+      });
+    } catch (err) {
+      next(err);
+    }
   });
 
   return router;

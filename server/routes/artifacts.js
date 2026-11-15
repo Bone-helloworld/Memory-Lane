@@ -22,10 +22,10 @@ export function artifactRoutes({ artifacts, files }) {
     res.json({ artifact });
   });
 
-  router.delete('/:id', (req, res) => {
+  router.delete('/:id', async (req, res) => {
     const names = artifacts.remove(req.user.id, idParam(req.params.id));
     if (!names) throw notFound();
-    names.forEach((name) => files.remove(name));
+    await Promise.all(names.map((name) => files.remove(name)));
     res.status(204).end();
   });
 

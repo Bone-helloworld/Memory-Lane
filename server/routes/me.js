@@ -89,7 +89,7 @@ export function meRoutes({ config, users, memories, people, media, artifacts, so
   });
 
   // Deleting an account is permanent; the user must type their email to confirm.
-  router.delete('/', (req, res) => {
+  router.delete('/', async (req, res) => {
     const confirmation = String(req.body?.email ?? '').trim().toLowerCase();
     if (confirmation !== req.user.email.toLowerCase()) {
       throw new HttpError(400, 'VALIDATION', { email: { code: 'CONFIRM_MISMATCH' } });
@@ -98,7 +98,7 @@ export function meRoutes({ config, users, memories, people, media, artifacts, so
     // Close every live stream and drop every session before the rows disappear with the account.
     sessions.revokeAll(req.user.id);
     users.remove(req.user.id); // ON DELETE CASCADE: memories, shares, comments, circle, invites…
-    names.forEach((name) => files.remove(name));
+    await Promise.all(names.map((name) => files.remove(name)));
     sessions.end(req, res);
     res.status(204).end();
   });

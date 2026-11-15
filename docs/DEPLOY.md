@@ -1,159 +1,116 @@
-# Đưa Memory Lane lên mạng
+# Deploy Memory Lane
 
-Ứng dụng là **một tiến trình Node.js** phục vụ cả API lẫn giao diện React đã build. Nó giữ hai thứ trên đĩa, đều nằm trong `DATA_DIR`:
+Production runs on **Azure App Service** (Linux, Node 22 LTS, B1) at [https://memorylane.azurewebsites.net](https://memorylane.azurewebsites.net).
 
-- `memorylane.db`: cơ sở dữ liệu SQLite.
-- `uploads/`: ảnh, video và bản xem trước.
+Accounts, sessions, memories, and contact-form notes live in **Azure SQL**. Photos, videos, posters, and keepsake images live in a **private** blob container. A restart or a new deploy does not wipe them.
 
-Vì vậy, yêu cầu thật sự duy nhất với nơi hosting là **một ổ đĩa bền vững** (persistent disk / volume) gắn vào `DATA_DIR`. Thiếu ổ
-đĩa này, mỗi lần khởi động lại hay triển khai lại là mất hết tài khoản, ảnh và video. Như thế vẫn ổn cho một buổi demo nhanh,
-nhưng không dùng thật được.
+On a laptop, with those settings unset, the same process uses **SQLite** and `DATA_DIR/uploads`. Tests do that too. Nothing in Azure is required to run `npm test` or `npm run dev`.
 
-> Gói dịch vụ và giá của các nơi hosting thay đổi thường xuyên. Hãy xem trang giá hiện tại trước khi chọn. Ổ đĩa bền vững thường
-> là tính năng trả phí (vài USD mỗi tháng).
+The data that was on Render's free disk is gone on every restart. There is nothing to copy across. New production data starts empty.
 
-## Biến môi trường
+## App Service
 
-| Biến | Giá trị khi chạy thật | Ý nghĩa |
-| --- | --- | --- |
-| `NODE_ENV` | `production` | Cookie `Secure`, tin header HTTPS của proxy, bật HSTS |
-| `PORT` | do nơi hosting đặt | Cổng lắng nghe (mặc định 3001) |
-| `DATA_DIR` | đường dẫn ổ đĩa, ví dụ `/data` | Cơ sở dữ liệu + tệp tải lên |
-| `ALLOW_DEMO` | `true` khi demo cho lớp, `false` khi dùng thật | Hiện nút "Dùng thử bản demo" (An / Thu Hà) |
-| `SESSION_DAYS` | `30` | Thời hạn một lần đăng nhập |
-| `MAX_UPLOAD_MB` | `15` | Ảnh lớn nhất (ảnh đã nén trong trình duyệt thường < 1 MB) |
-| `MAX_VIDEO_MB` | `100` | Video lớn nhất |
-| `STORAGE_MB` | tuỳ ổ đĩa, ví dụ `500` | Dung lượng ảnh, video và thẻ đã lưu vào Kỷ vật cho mỗi tài khoản |
-| `INVITE_DAYS` | `7` | Thời hạn của một link mời |
-| `AUTH_RATE_LIMIT` | `20` | Số lần thử đăng nhập/đăng ký mỗi IP trong 15 phút |
-| `SMTP_HOST` | `smtp.gmail.com` | Máy chủ SMTP để gửi thư từ trang Liên hệ. Bỏ trống thì thư vẫn được lưu và ghi vào log, không gửi email |
-| `SMTP_PORT` | `587` | Cổng SMTP (`587` dùng STARTTLS; `465` dùng TLS ngay từ đầu) |
-| `SMTP_USER` | địa chỉ Gmail | Tài khoản đăng nhập SMTP, đồng thời là địa chỉ **From** |
-| `SMTP_PASS` | App Password | **Bí mật**: mật khẩu ứng dụng 16 ký tự, không có dấu cách. Không dùng mật khẩu đăng nhập Gmail |
-| `FEEDBACK_TO` | `bonenguyen.19@gmail.com` | Hộp thư nhận phản hồi. Không đặt thì mặc định là địa chỉ này. Reply-To của thư là email người gửi |
-| `CONTACT_RATE_LIMIT` | `8` | Số lần gửi form Liên hệ mỗi IP trong 15 phút |
-| `GOOGLE_CLIENT_ID` | lấy từ Google Cloud | Bật "Tiếp tục với Google" (xem phần dưới) |
-| `GOOGLE_CLIENT_SECRET` | lấy từ Google Cloud | **Bí mật**: chỉ đặt trong mục biến môi trường của nơi hosting, không bao giờ commit |
-| `PUBLIC_URL` | `https://ten-mien-cua-ban` | Địa chỉ người dùng gõ để vào app, dùng để tạo địa chỉ quay về của Google |
+Already created:
 
-**Tính ổ đĩa cho video.** Riêng dữ liệu demo đã khoảng 34 MB. Vài tài khoản thử tải video từ điện thoại là đầy 1 GB rất nhanh.
-Vì vậy hãy cấp ổ đĩa rộng hơn hoặc giảm `STORAGE_MB`. App chưa nén video trên máy chủ.
+| Resource | Value |
+| --- | --- |
+| App | `memorylane` → `https://memorylane.azurewebsites.net` |
+| Plan | Linux, Node 22 LTS, **B1** |
+| Azure SQL | server `memorylane-sql-29823.database.windows.net`, database `memorylane-db`, user `mladmin` |
+| Storage | account `memorylanest2555`, private container `media` |
 
-**Tải tệp lớn qua proxy.** Một video 100 MB là một yêu cầu HTTP:
+The SQL firewall already allows the App Service outbound addresses. The blob container has no public access. The app checks who may see a file, then streams it (including `Range` for video).
 
-- Proxy của Render, Railway, Fly.io đều nhận được.
-- Nếu đặt **nginx** phía trước, phải nâng giới hạn mặc định 1 MB: `client_max_body_size 110m;`.
-- **Cloudflare** gói miễn phí giới hạn mỗi yêu cầu 100 MB, nên đặt `MAX_VIDEO_MB=95`.
+### Build and start
 
-**Luồng sự kiện trực tiếp (SSE).** `GET /api/events` là một kết nối mở lâu:
+In **Configuration → Application settings**:
 
-- Máy chủ đã gửi header `X-Accel-Buffering: no`, nên nginx không giữ sự kiện lại.
-- Nếu tự cấu hình nginx, đặt `proxy_read_timeout` ≥ 60 giây. Máy chủ gửi tín hiệu "ping" 25 giây một lần.
-- Chạy sau **HTTP/2** (có sẵn ở các nền tảng kể trên) để không bị giới hạn 6 kết nối mỗi tên miền của HTTP/1.1.
+| Name | Value |
+| --- | --- |
+| `SCM_DO_BUILD_DURING_DEPLOYMENT` | `true` |
+| `WEBSITE_NODE_DEFAULT_VERSION` | `~22` |
 
-Lệnh mọi nơi hosting đều cần:
+Oryx then runs `npm install` during deploy and, because `package.json` has a `build` script, `npm run build` (the Vite client). `sharp`, `ffmpeg-static`, and `nsfwjs` publish Linux x64 binaries, so the image does not need `apt install ffmpeg`.
 
-```bash
-npm ci && npm run build
-```
+**Startup command** (Configuration → General settings):
 
 ```bash
 npm run start:demo
 ```
 
-`start:demo` tạo lại các tài khoản demo (không bao giờ đụng tài khoản khác) cùng ảnh và video, rồi bật máy chủ. Dùng `npm start`
-nếu đặt `ALLOW_DEMO=false`.
+That listens on `process.env.PORT` (App Service sets it; do not hard-code a port). When `ALLOW_DEMO=true` it recreates only the demo accounts (`*@memorylane.local`) and their files. Real accounts are not deleted. When `ALLOW_DEMO=false` the same command skips the seed and only starts the server.
 
----
+`npm start` is the same process with no seed. Use it only if you do not want the demo button's data refreshed on boot.
 
-## Cách A — Render (Blueprint, vài cú bấm)
+The server trusts **one** proxy hop. App Service appends the visitor to `X-Forwarded-For` and sets `X-Forwarded-Proto`. There is no Cloudflare in front, so `CF-Connecting-IP` is ignored. Secure cookies follow `X-Forwarded-Proto`.
 
-Chuẩn bị: dự án đã nằm trên GitHub; `.gitignore` đã loại sẵn `node_modules`,
-`data/` và `.env`. Thư mục `server/seed-media/` (ảnh và video demo, khoảng 34 MB) **được** commit có chủ ý. Mở sẵn tệp `.env`
-trên máy (`open -e .env` trong thư mục dự án) để lấy hai mã Google.
+`PUBLIC_URL` is what Google's redirect URI is built from. Set it to `https://memorylane.azurewebsites.net` (no trailing slash).
 
-1. **Tạo tài khoản Render** ở render.com → **Get Started** → đăng nhập bằng GitHub. Khi GitHub hỏi quyền, chọn **Only select
-   repositories** và chọn đúng repo của dự án.
-2. Bảng điều khiển Render → **New → Blueprint** → chọn repo. Render đọc [`render.yaml`](../render.yaml): một dịch vụ Node tên
-   `memory-lane`, build `npm ci && npm run build`, chạy `npm run start:demo`, ổ đĩa 3 GB gắn ở `/var/data`, kiểm tra sức khoẻ
-   ở `/api/health`. Ổ đĩa bền vững cần gói trả phí (`plan: starter`); gói miễn phí sẽ xoá dữ liệu mỗi lần khởi động lại.
-3. Render hỏi giá trị cho ba biến đánh dấu `sync: false`:
-   - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`: chép từ `.env` trên máy (không có dấu cách, không có dấu nháy).
-   - `PUBLIC_URL`: điền `https://memory-lane.onrender.com` (tên dịch vụ). Nếu tên đó đã có người dùng, Render cấp một địa chỉ khác:
-     sửa lại ở bước 5.
-4. Bấm **Apply / Create**. Lần triển khai đầu mất vài phút (tab **Logs** chạy chữ; xong khi thấy `Memory Lane API → …` và dịch vụ
-   chuyển sang **Live**). Render cho bạn địa chỉ `https://….onrender.com` ở đầu trang dịch vụ.
-5. Vào **Environment**: kiểm tra `PUBLIC_URL` **đúng từng ký tự** với địa chỉ ở bước 4 (có `https://`, không có `/` cuối). Sửa thì
-   bấm **Save Changes**; Render tự triển khai lại.
-6. **Google Cloud** → Google Auth Platform → **Clients** → client của bạn (đúng cái đang dùng trên máy) → **Authorized redirect URIs** →
-   **Add URI** → `https://<địa-chỉ-ở-bước-4>/api/auth/google/callback` → **Save**. Giữ nguyên dòng `http://localhost:5173/…` để máy bạn
-   vẫn đăng nhập được. Google có thể mất vài phút để áp dụng.
-7. Kiểm tra: mở `https://<địa-chỉ>/api/health` → `{"ok":true}`; mở trang chủ, bấm **Dùng thử bản demo**; đăng xuất, bấm **Tiếp tục
-   với Google**. Lỗi `redirect_uri_mismatch` → xem lại bước 5–6; "chưa được xác minh" → thêm email vào **Audience → Test users**.
-8. Đăng ký một tài khoản thật, tải lên một ảnh và một video ngắn. Rồi **Manual Deploy → Restart service** (hoặc **Restart**) và kiểm
-   tra tài khoản, tệp vẫn còn: nghĩa là ổ đĩa đã hoạt động.
-9. Làm tiếp danh sách [kiểm tra nhanh](#sau-khi-triển-khai--kiểm-tra-nhanh-15-phút) ở cuối tài liệu này.
+### Azure SQL may pause
 
-**Mỗi lần cập nhật:** đẩy code lên nhánh `main` → Render tự build và triển khai lại (xem tab **Events**). Trước khi đẩy, sao lưu dữ
-liệu (tab **Shell** → `npm run admin -- backup`).
+The free serverless database sleeps after idle time. The first connection after that can take about a minute. The pool retries with backoff (about three attempts, 60 seconds each) before the process gives up. Health checks answer `503` until the database responds. Later queries that hit a dropped connection reconnect once.
 
-## Cách B — Railway
+### What a restart keeps
 
-1. **New Project → Deploy from GitHub repo**.
-2. Trong **Settings** của dịch vụ: build command `npm ci && npm run build`, start command `npm run start:demo`.
-3. **Variables:** `NODE_ENV=production`, `DATA_DIR=/data`, `ALLOW_DEMO=true`, `STORAGE_MB=500`, `PUBLIC_URL`, `GOOGLE_CLIENT_ID`,
-   `GOOGLE_CLIENT_SECRET`.
-4. Thêm một **Volume** cho dịch vụ, mount path `/data`.
-5. **Networking → Generate Domain** để có địa chỉ HTTPS công khai.
+| Kept in Azure | Still local / ephemeral |
+| --- | --- |
+| Users, sessions, Google links, memories, circles, notes, keepsakes, contact messages | In-flight upload temp files under `DATA_DIR` |
+| WebP images, videos, posters, thumbnails, card images | The SQLite file, which production does not open |
+| Demo rows, replaced only when `ALLOW_DEMO=true` | Render's old disk. It was wiped on restart. Do not expect it here. |
 
-## Cách C — Docker (Fly.io, máy chủ riêng, bất cứ đâu chạy được container)
+Deleting a memory or an account deletes that owner's blobs. Contact messages are not tied to an account, so deleting an account leaves them in `contact_messages`.
 
-[Dockerfile](../Dockerfile) build giao diện React ở giai đoạn đầu, rồi chạy `node server/index.js` bằng người dùng không phải root,
-với `DATA_DIR=/data`.
+## Environment variables
 
-```bash
-docker build -t memory-lane .
-```
+Set secrets in the App Service **Configuration** blade. Do not commit them.
 
-```bash
-docker run -p 3001:3001 -v memorylane-data:/data -e ALLOW_DEMO=true memory-lane
-```
+| Variable | Production | Meaning |
+| --- | --- | --- |
+| `NODE_ENV` | `production` | `Secure` cookies, trust the platform proxy, send HSTS |
+| `PORT` | set by App Service | Port to bind. Do not override it |
+| `WEBSITE_NODE_DEFAULT_VERSION` | `~22` | Node 22 LTS for Oryx |
+| `SCM_DO_BUILD_DURING_DEPLOYMENT` | `true` | `npm install` and `npm run build` on deploy |
+| `AZURE_SQL_SERVER` | `memorylane-sql-29823.database.windows.net` | Azure SQL host |
+| `AZURE_SQL_DATABASE` | `memorylane-db` | Database name |
+| `AZURE_SQL_USER` | `mladmin` | SQL login |
+| `AZURE_SQL_PASSWORD` | *(secret)* | SQL password. Never commit it |
+| `AZURE_SQL_CONNECTION_STRING` | optional | Instead of the four settings above. If both styles are set, this string is the one used. Include `Encrypt=True` |
+| `AZURE_SQL_TRUST_SERVER_CERTIFICATE` | unset | `true` only for a local SQL Server container, never for Azure |
+| `AZURE_STORAGE_ACCOUNT` | `memorylanest2555` | Storage account |
+| `AZURE_STORAGE_KEY` | *(secret)* | Account key. `AZURE_STORAGE_ACCOUNT_KEY` is accepted as the same value |
+| `AZURE_STORAGE_CONNECTION_STRING` | optional | Instead of account + key. If both styles are set, this string is the one used |
+| `AZURE_STORAGE_CONTAINER` | `media` | Private container. Default is `media` |
+| `PUBLIC_URL` | `https://memorylane.azurewebsites.net` | Builds Google's redirect URI |
+| `GOOGLE_CLIENT_ID` | from Google Cloud | Turns on "Continue with Google" |
+| `GOOGLE_CLIENT_SECRET` | *(secret)* | OAuth client secret |
+| `ALLOW_DEMO` | `true` for a class demo, `false` for real use | Shows "Try the demo". The start command seeds only when this is `true` |
+| `SMTP_HOST` | `smtp.gmail.com` or empty | Contact form email. Empty: the note is stored and written to the log, and no mail is sent |
+| `SMTP_PORT` | `587` | `587` is STARTTLS. `465` is TLS from the start |
+| `SMTP_USER` | the Gmail address | SMTP login, and the **From** address |
+| `SMTP_PASS` | *(secret)* | Gmail App Password, 16 characters, spaces removed. Not the Gmail login password |
+| `FEEDBACK_TO` | `bonenguyen.19@gmail.com` | Inbox for contact notes. This is the default when unset. **Reply-To** is the visitor |
+| `CONTACT_RATE_LIMIT` | `8` | Contact posts per IP per 15 minutes |
+| `SESSION_DAYS` | `30` | How long a login lasts |
+| `MAX_UPLOAD_MB` | `15` | Largest photo |
+| `MAX_VIDEO_MB` | `100` | Largest video |
+| `STORAGE_MB` | `2048` | Per-account quota for photos, videos, and keepsake images |
+| `INVITE_DAYS` | `7` | How long an invite link lasts |
+| `AUTH_RATE_LIMIT` | `20` | Login and register attempts per IP per 15 minutes |
+| `DATA_DIR` | optional | Scratch folder for an upload that has not been stored yet. With Blob Storage configured, this is not the photo archive |
 
-Trên **Fly.io**:
+Leave every `AZURE_SQL_*` and `AZURE_STORAGE_*` variable unset to stay on SQLite and local files.
 
-1. Chạy `fly launch`. Fly tự nhận ra Dockerfile; trả lời *no* khi được hỏi về database.
-2. Tạo ổ đĩa: `fly volumes create memorylane_data --size 3`.
-3. Thêm vào `fly.toml`:
+## Contact form mail
 
-   ```toml
-   [mounts]
-     source = "memorylane_data"
-     destination = "/data"
-   ```
+`/contact` accepts feedback, a suggestion, or a collaboration note. The server always inserts a row in `contact_messages` (SQLite locally, Azure SQL in production). With `SMTP_HOST` set it also sends mail to `FEEDBACK_TO` through nodemailer. **Reply-To** is the address the visitor typed.
 
-4. Đặt bí mật: `fly secrets set GOOGLE_CLIENT_ID=… GOOGLE_CLIENT_SECRET=… PUBLIC_URL=https://….fly.dev`.
-5. Chạy `fly deploy`.
+Gmail will not accept the normal account password for SMTP. Turn on 2-Step Verification, then create an App Password:
 
----
-
-## Thư từ trang Liên hệ (SMTP)
-
-Trang `/contact` nhận phản hồi, gợi ý và đề xuất hợp tác. Máy chủ luôn **lưu** lời nhắn vào bảng `contact_messages`.
-Khi có `SMTP_HOST`, nó còn gửi email tới `FEEDBACK_TO` (mặc định `bonenguyen.19@gmail.com`) bằng [nodemailer](https://nodemailer.com/).
-Địa chỉ **Reply-To** là email người gửi, nên bấm Trả lời là viết thẳng cho họ. Không đặt `SMTP_HOST` thì không gửi email:
-lời nhắn vẫn được lưu và in ra log của tiến trình (`CONTACT stored …`).
-
-### Gmail — tạo App Password
-
-Gmail không nhận mật khẩu đăng nhập thường cho SMTP. Cần bật xác minh 2 bước, rồi tạo mật khẩu ứng dụng:
-
-1. Đăng nhập tài khoản sẽ gửi thư (ví dụ `bonenguyen.19@gmail.com`).
-2. Mở [Bảo mật tài khoản Google](https://myaccount.google.com/security). Bật **Xác minh 2 bước** (2-Step Verification) nếu chưa bật.
-3. Mở [Mật khẩu ứng dụng](https://myaccount.google.com/apppasswords). Nếu không thấy trang này, xác minh 2 bước chưa bật, hoặc tài khoản là Google Workspace do quản trị viên khóa App Password.
-4. Đặt tên, ví dụ `Memory Lane`, rồi bấm tạo. Google hiện 16 ký tự (dạng `abcd efgh ijkl mnop`).
-5. Chép 16 ký tự đó, **bỏ hết dấu cách**, vào `SMTP_PASS`.
-
-Biến cho Gmail:
+1. Sign in as the account that sends the mail (for example `bonenguyen.19@gmail.com`).
+2. Open [Google Account security](https://myaccount.google.com/security) and turn on **2-Step Verification**.
+3. Open [App passwords](https://myaccount.google.com/apppasswords). If that page is missing, 2-Step Verification is off, or a Workspace admin has blocked app passwords.
+4. Name it `Memory Lane` and create it. Google shows 16 characters (`abcd efgh ijkl mnop`).
+5. Copy them into `SMTP_PASS` with the spaces removed.
 
 ```bash
 SMTP_HOST=smtp.gmail.com
@@ -163,105 +120,33 @@ SMTP_PASS=abcdefghijklmnop
 FEEDBACK_TO=bonenguyen.19@gmail.com
 ```
 
-Đặt các biến này trong mục biến môi trường của nơi hosting (Render: **Environment**; Fly: `fly secrets set`). Không commit `SMTP_PASS`.
-Trên máy, bỏ dấu `#` ở các dòng tương ứng trong `.env` rồi chạy lại `npm run dev`.
+Put `SMTP_PASS` in App Service configuration, not in git. Locally, uncomment the same lines in `.env` and restart `npm run dev`.
 
----
+## Continue with Google
 
-## Bật "Tiếp tục với Google"
+The button is on the sign-in page. Without `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` it stays disabled.
 
-Nút Google luôn hiện trên trang đăng nhập/đăng ký. Khi máy chủ chưa có `GOOGLE_CLIENT_ID` và `GOOGLE_CLIENT_SECRET`, nút **bị mờ**
-kèm dòng "Máy chủ này chưa bật đăng nhập Google…". Đó không phải lỗi: Google chỉ cho đăng nhập qua một **OAuth client** do chính
-chủ dự án tạo trong Google Cloud. Việc này miễn phí, mất khoảng 10 phút, và bạn phải tự làm vì tài khoản Google Cloud là của bạn.
+1. Open [Google Auth Platform clients](https://console.cloud.google.com/auth/clients) and create or pick a project.
+2. Audience: **External**. Scopes: `openid`, `email`, `profile` only.
+3. While the app is in **Testing**, add the people who should sign in under **Audience → Test users**. **Publish app** lets anyone in, because those three scopes do not need a Google review.
+4. Create a **Web application** client. Authorized redirect URIs, character for character:
 
-### Cách nhanh trên máy: `npm run setup:google`
+   | Where | Redirect URI |
+   | --- | --- |
+   | `npm run dev` | `http://localhost:5173/api/auth/google/callback` |
+   | `npm start` on this machine | `http://localhost:3001/api/auth/google/callback` |
+   | This App Service | `https://memorylane.azurewebsites.net/api/auth/google/callback` |
 
-```bash
-npm run setup:google
-```
+5. Put the client id and secret in App Service (and in `.env` locally via `npm run setup:google`). Set `PUBLIC_URL` only on the server, not in the laptop `.env`.
 
-Lệnh này in ra các bước bên dưới, hỏi **Client ID** và **Client secret**, rồi ghi chúng vào `.env` (tạo từ `.env.example` nếu
-chưa có; tệp chỉ mình bạn đọc được và không bao giờ được commit). Nếu `npm run dev` đang chạy, máy chủ API tự khởi động lại. Tải
-lại trang đăng nhập là nút Google bấm được.
+`redirect_uri_mismatch` means the URI Google has and the URI the app sent differ (`https`, host, port, or a trailing slash). The error page's details show the URI the app sent.
 
-### Tạo OAuth client trong Google Cloud
+## After it is up
 
-Giao diện Google Cloud gọi khu vực này là **Google Auth Platform**. Tên cũ là "APIs & Services → OAuth consent screen / Credentials".
+- `https://memorylane.azurewebsites.net/api/health` returns `{"ok":true}` once SQL answers. During a cold resume it can be `503` for about a minute.
+- Register, upload a photo and a short video, restart the app, and confirm the account and the files are still there.
+- Open an image URL in a private window: **401**. Another signed-in person who was not given that memory: **404**.
+- Submit `/contact`. The row is in `contact_messages`. With SMTP set, the inbox receives it.
+- Sign in with Google. The redirect URI is the one in the table above.
 
-1. Vào **console.cloud.google.com/auth/clients**, chọn hoặc tạo một **Project** (ví dụ `memory-lane`).
-2. Lần đầu, Google hỏi thông tin ứng dụng (**Get started**):
-   - App name: `Memory Lane`; User support email: email của bạn.
-   - **Audience: External**; Contact information: email của bạn.
-   - Quyền (scopes): chỉ cần `openid`, `email`, `profile`. Memory Lane chỉ đọc tên và email, không đọc ảnh hay danh bạ.
-3. Mục **Audience → Test users → Add users**: thêm email của bạn, của giảng viên và của bạn bè sẽ thử. Khi app đang ở chế độ
-   **Testing**, chỉ những tài khoản này đăng nhập được. Vì app chỉ xin ba quyền cơ bản trên, bạn có thể bấm **Publish app**
-   (chuyển sang **In production**) để ai cũng dùng được, không cần Google duyệt.
-4. Mục **Clients → Create client**:
-   - Application type: **Web application**.
-   - **Authorized redirect URIs**: thêm **đúng từng ký tự** các địa chỉ bạn dùng:
-
-     | Khi chạy | Redirect URI |
-     | --- | --- |
-     | `npm run dev` | `http://localhost:5173/api/auth/google/callback` |
-     | `npm start` trên máy | `http://localhost:3001/api/auth/google/callback` |
-     | Bản online | `https://TEN-MIEN-CUA-BAN/api/auth/google/callback` |
-
-5. Bấm **Create**, chép **Client ID** (dạng `….apps.googleusercontent.com`) và **Client secret** (thường bắt đầu bằng `GOCSPX-`).
-6. Trên máy: chạy `npm run setup:google` và dán hai giá trị đó. (Cách làm tay: chép `.env.example` thành `.env`, điền
-   `GOOGLE_CLIENT_ID=` và `GOOGLE_CLIENT_SECRET=`, rồi chạy lại `npm run dev`.)
-   Trên nơi hosting: thêm hai biến này **và** `PUBLIC_URL` vào phần biến môi trường. Không đặt `PUBLIC_URL` trong `.env` trên máy.
-7. Thử: trang đăng nhập → **Tiếp tục với Google** → chọn tài khoản → về lại trang **Hôm nay**. Trong **Cài đặt**, mục "Đăng nhập
-   bằng Google" hiện "Đã liên kết với …".
-
-**Lỗi thường gặp:**
-
-- **Nút Google vẫn mờ**: máy chủ chưa đọc được hai biến. Kiểm tra `.env` nằm cạnh `package.json`, rồi tắt và chạy lại
-  `npm run dev`. Địa chỉ `http://localhost:5173/api/auth/session` phải trả về `"google":true`.
-- `Lỗi 400: redirect_uri_mismatch`: địa chỉ ở bước 4 không khớp với địa chỉ app gửi. Bấm **"thông tin chi tiết về lỗi"** trên
-  trang báo lỗi của Google để xem đúng `redirect_uri` app đã gửi, rồi so: `http`/`https`, `localhost` hay `127.0.0.1`, cổng (`5173`
-  khi `npm run dev`), dấu `/` cuối, và `PUBLIC_URL` khi chạy thật. Google có thể mất vài phút để áp dụng địa chỉ mới.
-- `access_denied` / "has not completed the Google verification process": email đó chưa có trong **Test users** (bước 3).
-- **Không dùng được qua địa chỉ Wi-Fi** `http://192.168…` (`npm run dev:phone`): Google chỉ cho phép `localhost` hoặc tên miền thật
-  có HTTPS. Muốn thử Google trên điện thoại, hãy dùng bản online.
-- "Email này đã có album trên Memory Lane": đó là tính năng bảo mật, không phải lỗi. Hãy đăng nhập bằng mật khẩu, rồi vào **Cài đặt
-  → Liên kết tài khoản Google**. Luồng PKCE, `state`, `nonce`, và việc không tự gộp tài khoản nằm ở `server/lib/google.js` và `server/routes/google.js`.
-
----
-
-## Sau khi triển khai — kiểm tra nhanh (15 phút)
-
-- [ ] Trước khi deploy, trên máy: `npm test` và `npm run test:e2e` đều đạt
-- [ ] `https://dia-chi-cua-ban/api/health` trả về `{"ok":true}`
-- [ ] `https://dia-chi-cua-ban/api/auth/session` trả về `{"user":null,"demo":true,"google":true,"limits":{…}}`
-- [ ] Trang giới thiệu hiện đúng; nút VI/EN và nút đổi Sổ tay/Phòng tối hoạt động
-- [ ] Đăng nhập bằng Google được; đăng ký bằng email được
-- [ ] Tạo một kỷ niệm có ảnh **và video quay dọc**: thanh tiến trình chạy, video phát và tua được, khung xem theo đúng hình dạng
-      video
-- [ ] Mở link một ảnh/video trong cửa sổ ẩn danh: **401**. Đăng nhập người khác: **404** (tệp là riêng tư)
-- [ ] Tạo link mời ngay trong form tạo kỷ niệm, mở link ở cửa sổ ẩn danh, đăng ký, nhận lời mời: hai tài khoản đã kết nối và
-      người mới thấy kỷ niệm đó
-- [ ] Mở cùng một kỷ niệm ở hai trình duyệt (hai tài khoản), viết lời nhắn ở bên này: bên kia **thấy ngay** không cần tải lại
-- [ ] Tạo một bưu thiếp từ một kỷ niệm, tải về, rồi **Lưu vào Kỷ vật**: tab Kỷ vật mở đúng tấm thẻ đó
-- [ ] Mở bằng **iPhone và Android**: chạm vào ô nhập không bị phóng to, menu mở được, "Chia sẻ…" mở bảng chia sẻ của máy
-- [ ] Header có `Strict-Transport-Security`, cookie phiên có `Secure; HttpOnly; SameSite=Lax` (công cụ nhà phát triển → Network)
-- [ ] Khởi động lại dịch vụ: dữ liệu và tệp vẫn còn
-- [ ] Trong Shell của nơi hosting: `npm run admin -- stats` thấy đúng số tài khoản; `npm run admin -- backup` tạo được bản sao lưu
-
-## Sau đó: vận hành hằng ngày
-
-Khi đã có người dùng thật:
-
-- **Theo dõi:** `/api/health` (Render dùng nó làm health check; Docker có `HEALTHCHECK`), log có dòng `SERVER <mã lỗi>` khi có lỗi
-  không lường trước, và người dùng thấy cùng mã đó trên màn hình.
-- **Công cụ quản trị** `npm run admin`: tra tài khoản, đặt mật khẩu tạm, đăng xuất mọi nơi, kiểm tra tệp, sao lưu.
-- **Sao lưu** trước mỗi lần deploy và mỗi tuần, rồi chép ra ngoài máy chủ.
-- **Khi mở cho người dùng thật:** `ALLOW_DEMO=false` và đổi `startCommand` trong `render.yaml` thành `npm start`.
-
-## Khi một máy chủ không còn đủ
-
-SQLite và thư mục `uploads/` hợp với một máy chủ. App này chưa chạy nhiều máy sau một bộ cân bằng tải. Hướng đó là:
-
-- **PostgreSQL** thay SQLite.
-- **Kho lưu trữ đối tượng** (S3, Cloudflare R2) cho ảnh/video, kèm link có chữ ký ngắn hạn.
-- **Worker ffmpeg** để nén video.
-- **Redis** cho giới hạn tần suất và cho sự kiện trực tiếp giữa các máy chủ.
+`npm run admin` uses the same database. `stats`, `users`, `reset-password`, and `check-files` work against Azure SQL and the blob container. `backup` does not download them: Azure SQL has its own point-in-time restore, and the blobs stay in the storage account.
