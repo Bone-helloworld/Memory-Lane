@@ -222,7 +222,7 @@ CREATE INDEX IX_artifacts_user ON dbo.artifacts (user_id, created_at);
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_artifacts_memory' AND object_id = OBJECT_ID(N'dbo.artifacts'))
 CREATE INDEX IX_artifacts_memory ON dbo.artifacts (memory_id);
 
--- Public contact form. Not tied to an account, so deleting a user leaves these rows alone.
+-- Contact form. Not tied to an account, so deleting a user leaves these rows alone.
 IF OBJECT_ID(N'dbo.contact_messages', N'U') IS NULL
 CREATE TABLE dbo.contact_messages (
   id         INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_contact_messages PRIMARY KEY,

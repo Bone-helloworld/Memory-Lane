@@ -112,7 +112,7 @@ Vite prints an address like `http://192.168.x.x:5173`. Open that on an iPhone or
 | Uploads | **multer**, **sharp**, **ffmpeg-static**, and **nsfwjs**; files on disk locally and in **Azure Blob Storage** in production | A video is never held in RAM. The file type comes from the bytes, not the name. Photos are re-encoded to WebP. ffmpeg is the binary inside the npm package, so the host does not need `apt install ffmpeg`. The explicit-image model loads on the first photo or video, not at startup. The blob container stays private. |
 | Sign-in | Server-side sessions and **scrypt**; **Google OAuth 2.0 / OpenID Connect** (PKCE, state, nonce) | A session can be revoked immediately. Google sign-in loads no Google script on the page. |
 | Live updates | **Server-Sent Events** (`EventSource`) | The server pushes new notes and shares to the browser. No WebSocket library. |
-| Tests | Built-in **node:test**, plus real Chrome over the DevTools Protocol | 89 server tests: API, privacy, sharing, uploads, keepsakes, Google (a fake Google plus `setup:google`), SSE, metadata stripping, translations, the admin tool, `/api/health`. And `npm run test:e2e`: **35 features** exercised in real Chrome the way a person would click. |
+| Tests | Built-in **node:test**, plus real Chrome over the DevTools Protocol | 109 server tests: API, privacy, sharing, uploads, keepsakes, Google (a fake Google plus `setup:google`), SSE, metadata stripping, translations, the admin tool, `/api/health`. And `npm run test:e2e`: **35 features** exercised in real Chrome the way a person would click. |
 
 The server depends on `express`, `multer`, `compression`, `sharp`, `ffmpeg-static`, `nsfwjs`, `@tensorflow/tfjs` (CPU backend only — not the native TensorFlow build), `mssql`, `@azure/storage-blob`, and `nodemailer`.
 
@@ -261,7 +261,7 @@ Five migrations run in order at startup (`PRAGMA user_version` remembers how far
 | `npm run setup:google` | Turn on "Continue with Google" on this machine: paste your Client ID and Client secret; the command writes `.env` |
 | `npm run start:demo` | Seed, then start (what the hosting blueprint uses) |
 | `npm run admin -- <command>` | Admin tool: `stats`, `users`, `user <email>`, `memory <id>`, `sessions`, `reset-password`, `check-files`, `backup` |
-| `npm test` | The 89 server tests |
+| `npm test` | The 109 server tests |
 | `npm run test:e2e` | Full-system check in real Chrome (35 features, 1–2 minutes; it builds its own server and data). Needs Google Chrome |
 
 Configuration is optional. Copy `.env.example` to `.env` to change the port, the data directory, file limits, the quota, how long an invite lasts, or to turn on Google sign-in (`npm run setup:google`, or set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` yourself; see [docs/DEPLOY.md](docs/DEPLOY.md#bật-tiếp-tục-với-google), in Vietnamese).
