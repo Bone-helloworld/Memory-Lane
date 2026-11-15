@@ -2,18 +2,33 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DatabaseSync } from 'node:sqlite';
+import { openAzureDatabase } from './db/mssql-sync.js';
 import { fold } from './lib/text.js';
 
 const MIGRATIONS_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), 'migrations');
+
+/**
+ * Opens the database for this process.
+ * A file path, or a config with no Azure SQL settings, uses SQLite (local dev and the test suite).
+ * A config with `azureSql` uses Azure SQL and creates the schema if it is not there yet.
+ */
+export function openDb(target) {
+  if (target && typeof target === 'object') {
+    if (target.azureSql) return openAzureDatabase(target.azureSql);
+    return openSqlite(target.dbFile);
+  }
+  return openSqlite(target);
+}
 
 /**
  * Opens (or creates) the SQLite database using Node's built-in driver — no native add-on to compile.
  * Pending migrations in server/migrations/*.sql run in order; PRAGMA user_version remembers
  * how many have been applied.
  */
-export function openDb(file) {
+function openSqlite(file) {
   if (file !== ':memory:') fs.mkdirSync(path.dirname(file), { recursive: true });
   const db = new DatabaseSync(file);
+  db.dialect = 'sqlite';
   db.exec(`
     PRAGMA journal_mode = WAL;
     PRAGMA foreign_keys = ON;
@@ -39,6 +54,7 @@ function migrate(db) {
 
 /** Run fn inside BEGIN/COMMIT; any thrown error rolls everything back. */
 export function transaction(db, fn) {
+  if (db.dialect === 'mssql') return db.transaction(fn);
   db.exec('BEGIN');
   try {
     const result = fn();

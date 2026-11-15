@@ -12,8 +12,9 @@ import { randomInt } from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
 import { loadConfig } from './config.js';
-import { transaction } from './db.js';
-import { NAME_PATTERN } from './lib/files.js';
+import { openDb, transaction } from './db.js';
+import { mssqlMigrationFiles } from './db/migrate-mssql.js';
+import { createFileStore, NAME_PATTERN } from './lib/files.js';
 
 const config = loadConfig();
 const MIGRATIONS = fs
@@ -59,8 +60,15 @@ function stats() {
   const count = (sql, ...params) => db.prepare(sql).get(...params).n;
   const data = {
     dataDir: config.dataDir,
-    database: { version: schemaVersion(db), expected: MIGRATIONS, bytes: sizeOf(config.dbFile) + sizeOf(`${config.dbFile}-wal`) },
-    uploads: folderStats(config.uploadDir),
+    database: {
+      version: schemaVersion(db),
+      expected: db.dialect === 'mssql' ? mssqlMigrationFiles().length : MIGRATIONS,
+      bytes: db.dialect === 'mssql' ? null : sizeOf(config.dbFile) + sizeOf(`${config.dbFile}-wal`),
+      provider: db.dialect === 'mssql' ? 'azure-sql' : 'sqlite',
+    },
+    uploads: config.azureStorage
+      ? { files: null, bytes: null, provider: 'azure-blob', container: config.azureStorage.container }
+      : folderStats(config.uploadDir),
     users: {
       total: count('SELECT COUNT(*) AS n FROM users'),
       demo: count("SELECT COUNT(*) AS n FROM users WHERE email LIKE '%@memorylane.local'"),
@@ -91,8 +99,18 @@ function stats() {
   out(data, (d) => {
     console.log(`Memory Lane — tổng quan (DATA_DIR: ${d.dataDir})\n`);
     facts([
-      ['Cơ sở dữ liệu', `${mb(d.database.bytes)} · phiên bản ${d.database.version}/${d.database.expected}`],
-      ['Thư mục uploads', `${d.uploads.files} tệp · ${mb(d.uploads.bytes)}`],
+      [
+        'Cơ sở dữ liệu',
+        d.database.provider === 'azure-sql'
+          ? `Azure SQL · phiên bản ${d.database.version}/${d.database.expected}`
+          : `${mb(d.database.bytes)} · phiên bản ${d.database.version}/${d.database.expected}`,
+      ],
+      [
+        'Thư mục uploads',
+        d.uploads.provider === 'azure-blob'
+          ? `Azure Blob · ${d.uploads.container}`
+          : `${d.uploads.files} tệp · ${mb(d.uploads.bytes)}`,
+      ],
       ['Tài khoản', `${d.users.total} (${d.users.demo} demo) · ${d.users.withGoogle} liên kết Google · ${d.users.googleOnly} chỉ dùng Google`],
       ['Phiên còn hạn', d.activeSessions],
       ['Kỷ niệm', `${d.memories} · ${d.files.images} ảnh, ${d.files.videos} video · ${mb(d.files.bytes)}`],
@@ -214,7 +232,7 @@ function user() {
 }
 
 /** One memory, by the number in its address (/album/29): is every file still on disk, who can see it. */
-function memory() {
+async function memory() {
   const db = openDatabase();
   const id = Number(args[0]);
   if (!Number.isInteger(id) || id <= 0) fail('Cần số id của kỷ niệm — con số trong địa chỉ /album/<id>.', 2);
@@ -222,10 +240,13 @@ function memory() {
     .prepare('SELECT m.id, m.user_id, u.email, m.year, m.month, m.day, m.created_at FROM memories m JOIN users u ON u.id = m.user_id WHERE m.id = ?')
     .get(id);
   if (!row) fail(`Không có kỷ niệm số ${id}.`);
-  const files = db
+  const fileRows = db
     .prepare('SELECT id, kind, file, poster, size, width, height, duration, position FROM memory_files WHERE memory_id = ? ORDER BY position')
-    .all(id)
-    .map((f) => ({ ...f, onDisk: onDisk(f.file), posterOnDisk: f.poster ? onDisk(f.poster) : null }));
+    .all(id);
+  const files = [];
+  for (const f of fileRows) {
+    files.push({ ...f, onDisk: await isStored(f.file), posterOnDisk: f.poster ? await isStored(f.poster) : null });
+  }
   const data = {
     id: row.id,
     owner: { id: row.user_id, email: row.email },
@@ -317,7 +338,8 @@ async function resetPassword() {
  * brings those back. --fix deletes orphans older than 10 minutes (a younger one may be an upload being saved right
  * now) and leftovers in uploads/tmp; it never touches a file in use.
  */
-function checkFiles() {
+async function checkFiles() {
+  if (config.azureStorage) return checkCloudFiles();
   const fix = flags.has('--fix');
   const db = openDatabase();
   const used = new Map(); // file name → where it is used
@@ -375,6 +397,14 @@ function checkFiles() {
  * and a copy of the uploads folder, side by side, with a short restore guide. Then copy it OFF this machine.
  */
 function backup() {
+  if (config.azureSql || config.azureStorage) {
+    const data = {
+      provider: config.azureSql ? 'azure-sql' : 'sqlite',
+      storage: config.azureStorage ? 'azure-blob' : 'disk',
+      note: 'Azure SQL keeps automatic backups (point-in-time restore in the Azure portal). Media in Blob Storage stays in that account. This command does not download either one.',
+    };
+    return out(data, (d) => console.log(d.note));
+  }
   const db = openDatabase();
   const base = args[0] ? path.resolve(args[0]) : path.join(config.dataDir, 'backups');
   const target = path.join(base, `memory-lane-${stamp(new Date())}`);
@@ -424,14 +454,38 @@ function fail(message, code = 1) {
   process.exit(code);
 }
 
-/** The server's database — read-only unless the command changes something. Never creates an empty one. */
+const opened = [];
+let blobFiles = null;
+
+function mediaStore() {
+  blobFiles ??= createFileStore(config.uploadDir, config.azureStorage);
+  return blobFiles;
+}
+
+async function isStored(name) {
+  if (config.azureStorage) return mediaStore().exists(name);
+  return fs.existsSync(path.join(config.uploadDir, name));
+}
+
+/** The server's database — read-only unless the command changes something. Never creates an empty SQLite file. */
 function openDatabase({ write = false } = {}) {
+  if (config.azureSql) {
+    const db = openDb(config);
+    opened.push(db);
+    const version = schemaVersion(db);
+    const expected = mssqlMigrationFiles().length;
+    if (version !== expected) {
+      console.error(`! Cơ sở dữ liệu ở phiên bản ${version}, mã nguồn cần ${expected}: khởi động máy chủ một lần để chạy migration.`);
+    }
+    return db;
+  }
   if (!fs.existsSync(config.dbFile)) {
     fail(`Không tìm thấy cơ sở dữ liệu: ${config.dbFile}\n  DATA_DIR phải trùng với thư mục máy chủ đang dùng (xem .env hoặc biến môi trường).`);
   }
   const db = new DatabaseSync(config.dbFile, { readOnly: !write });
   db.exec('PRAGMA busy_timeout = 5000');
   if (write) db.exec('PRAGMA foreign_keys = ON');
+  opened.push(db);
   const version = schemaVersion(db);
   if (version !== MIGRATIONS) {
     console.error(`! Cơ sở dữ liệu ở phiên bản ${version}, mã nguồn cần ${MIGRATIONS}: khởi động máy chủ một lần để chạy migration.`);
@@ -439,7 +493,53 @@ function openDatabase({ write = false } = {}) {
   return db;
 }
 
-const schemaVersion = (db) => db.prepare('PRAGMA user_version').get().user_version;
+function schemaVersion(db) {
+  if (db.dialect === 'mssql') {
+    return db.prepare('SELECT COALESCE(MAX(version), 0) AS user_version FROM schema_migrations').get().user_version;
+  }
+  return db.prepare('PRAGMA user_version').get().user_version;
+}
+
+/** Same orphan/missing report as the disk check, against the private blob container. */
+async function checkCloudFiles() {
+  const fix = flags.has('--fix');
+  const db = openDatabase();
+  const used = new Map();
+  for (const f of db.prepare('SELECT f.file, f.poster, f.memory_id, u.email FROM memory_files f JOIN users u ON u.id = f.user_id').all()) {
+    for (const name of [f.file, f.poster].filter(Boolean)) used.set(name, { memoryId: f.memory_id, email: f.email });
+  }
+  for (const a of db.prepare('SELECT a.file, a.preview, a.id, u.email FROM artifacts a JOIN users u ON u.id = a.user_id').all()) {
+    for (const name of [a.file, a.preview].filter(Boolean)) used.set(name, { artifactId: a.id, email: a.email });
+  }
+  const store = mediaStore();
+  const entries = await store.list();
+  const now = Date.now();
+  const orphans = [];
+  const unknown = [];
+  for (const entry of entries) {
+    if (!NAME_PATTERN.test(entry.name)) unknown.push(entry.name);
+    else if (!used.has(entry.name)) orphans.push({ name: entry.name, bytes: entry.size, minutesOld: Math.floor((now - entry.mtimeMs) / 60_000) });
+  }
+  const present = new Set(entries.map((entry) => entry.name));
+  const missing = [...used].filter(([name]) => !present.has(name)).map(([name, where]) => ({ name, ...where }));
+  const removed = [];
+  if (fix) {
+    for (const orphan of orphans.filter((item) => item.minutesOld >= 10)) {
+      await store.remove(orphan.name);
+      removed.push(orphan);
+    }
+  }
+  const data = { files: entries.length, used: used.size, orphans, missing, staleTmp: [], unknown, removed, freedBytes: sum(removed), storage: 'azure-blob' };
+  out(data, (d) => {
+    console.log(`Đối chiếu ${d.files} blob trong container với cơ sở dữ liệu (${d.used} tệp đang được dùng)\n`);
+    console.log(d.orphans.length ? `! ${d.orphans.length} blob mồ côi (${mb(sum(d.orphans))})` : '✓ Không có blob mồ côi');
+    for (const o of d.orphans) console.log(`    ${o.name}  ${mb(o.bytes)}  ${o.minutesOld} phút trước`);
+    console.log(d.missing.length ? `! ${d.missing.length} blob bị MẤT` : '✓ Không thiếu blob nào');
+    for (const m of d.missing) console.log(`    ${m.name}  ${m.memoryId ? `kỷ niệm #${m.memoryId}` : `kỷ vật #${m.artifactId}`} của ${m.email}`);
+    if (fix) console.log(`\n✓ Đã xoá ${d.removed.length} blob, giải phóng ${mb(d.freedBytes)}.`);
+    else if (d.orphans.length) console.log('\nXoá blob mồ côi: npm run admin -- check-files --fix');
+  });
+}
 
 function findUser(db, who) {
   if (!who) fail('Cần email hoặc số id của tài khoản.', 2);
@@ -549,4 +649,8 @@ if (!run) {
   help();
   process.exit(2);
 }
-await run();
+try {
+  await run();
+} finally {
+  for (const db of opened) await Promise.resolve(db.close?.());
+}

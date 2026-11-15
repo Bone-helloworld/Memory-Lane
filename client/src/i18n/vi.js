@@ -152,7 +152,7 @@ export default {
     loginTitle: 'Chào mừng trở lại',
     loginSub: 'Không gian chung vẫn ở nguyên chỗ bạn để.',
     registerTitle: 'Bắt đầu album của bạn',
-    registerSub: 'Một không gian riêng cho bạn và những người đã cùng ở đó. Không bảng tin mới, khônmớig gợi ý quảng cáo.',
+    registerSub: 'Một không gian riêng cho bạn và những người đã cùng ở đó. Không bảng tin mới, không gợi ý quảng cáo.',
     name: 'Bạn muốn được gọi là gì?',
     namePlaceholder: 'ví dụ: An',
     email: 'Email',

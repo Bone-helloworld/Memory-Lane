@@ -46,11 +46,17 @@ export function rateLimit({ windowMs, max }) {
  *
  * In production the app trusts exactly one proxy hop (`trust proxy` = 1). Express's
  * req.ip is then the address that hop appended — the rightmost X-Forwarded-For entry —
- * never the leftmost one, which the client can set. On Render that rightmost address is
- * often a Cloudflare edge machine and changes between attempts, so twenty bad logins
- * never share a bucket. Render's edge overwrites CF-Connecting-IP with the visitor
- * address; we use that only when the process is actually on Render (`RENDER=true`),
- * because any other proxy would forward a value the client invented.
+ * never the leftmost one, which the client can set.
+ *
+ * Azure App Service is that one hop and does not put Cloudflare in front. The rightmost
+ * address is the visitor (sometimes written as IPv4:port; the port is not part of the key).
+ * A forged CF-Connecting-IP is ignored, because App Service would forward whatever the
+ * client sent.
+ *
+ * On Render that rightmost address is often a Cloudflare edge machine and changes between
+ * attempts, so twenty bad logins never share a bucket. Render's edge overwrites
+ * CF-Connecting-IP with the visitor address; we use that only when the process is actually
+ * on Render (`RENDER=true`), because any other proxy would forward a value the client invented.
  */
 export function clientAddress(req) {
   const peer = oneIp(req.socket?.remoteAddress) || 'unknown';
@@ -82,7 +88,17 @@ function oneIp(value) {
   if (typeof value !== 'string') return '';
   const trimmed = value.trim();
   if (!trimmed || trimmed.includes(',')) return '';
-  const stripped = trimmed.toLowerCase().startsWith('::ffff:') ? trimmed.slice(7) : trimmed;
+  const withoutPort = stripPort(trimmed);
+  const stripped = withoutPort.toLowerCase().startsWith('::ffff:') ? withoutPort.slice(7) : withoutPort;
   if (isIP(stripped) === 0) return '';
   return stripped.toLowerCase();
+}
+
+/** App Service has been seen to append the source port (`203.0.113.10:54421`). The port is not a different visitor. */
+function stripPort(value) {
+  const v4 = /^(\d{1,3}(?:\.\d{1,3}){3}):\d+$/.exec(value);
+  if (v4) return v4[1];
+  const v6 = /^\[([^\]]+)\]:\d+$/.exec(value);
+  if (v6) return v6[1];
+  return value;
 }

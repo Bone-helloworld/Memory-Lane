@@ -121,6 +121,51 @@ test('off Render, clients cannot pick the key with CF-Connecting-IP or the left 
   });
 });
 
+test('behind Azure App Service, the limiter keys the address the proxy appended', async () => {
+  await withApp({ isProd: true, cloudflare: false }, async (base) => {
+    for (let attempt = 1; attempt <= 20; attempt += 1) {
+      const res = await badLogin(base, {
+        'x-forwarded-for': `198.51.100.${attempt}, 203.0.113.10`,
+        'x-forwarded-proto': 'https',
+        'cf-connecting-ip': `198.51.100.${attempt}`,
+      });
+      assert.equal(res.status, 401, `attempt ${attempt}`);
+    }
+    assertLimited(
+      await badLogin(base, {
+        'x-forwarded-for': '203.0.113.99, 203.0.113.10',
+        'x-forwarded-proto': 'https',
+        'cf-connecting-ip': '198.51.100.50',
+      }),
+    );
+    // A different visitor, as appended by App Service, has its own bucket.
+    const other = await badLogin(base, {
+      'x-forwarded-for': '203.0.113.10, 203.0.113.20',
+      'x-forwarded-proto': 'https',
+    });
+    assert.equal(other.status, 401);
+  });
+});
+
+test('an App Service client address that includes a source port shares one bucket', async () => {
+  await withApp({ isProd: true, cloudflare: false }, async (base) => {
+    for (let attempt = 1; attempt <= 20; attempt += 1) {
+      const res = await badLogin(base, {
+        'x-forwarded-for': `9.9.9.${attempt}, 203.0.113.10:${40_000 + attempt}`,
+      });
+      assert.equal(res.status, 401, `attempt ${attempt}`);
+    }
+    assertLimited(
+      await badLogin(base, {
+        'x-forwarded-for': '198.51.100.8, 203.0.113.10:51234',
+      }),
+    );
+    // The port is stripped, so a different address is still a different visitor.
+    const other = await badLogin(base, { 'x-forwarded-for': '203.0.113.10:1, 198.51.100.77:9' });
+    assert.equal(other.status, 401);
+  });
+});
+
 test('without a trusted proxy, forwarded headers are ignored', async () => {
   await withApp({ isProd: false, cloudflare: true }, async (base) => {
     for (let attempt = 1; attempt <= 20; attempt += 1) {

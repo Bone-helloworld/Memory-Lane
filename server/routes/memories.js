@@ -59,10 +59,10 @@ export function memoryRoutes({ config, memories, artifacts, social, files, live 
     res.json({ memory: memories.get(req.user.id, id) });
   });
 
-  router.delete('/:id', (req, res) => {
+  router.delete('/:id', async (req, res) => {
     const names = memories.remove(req.user.id, idParam(req.params.id));
     if (!names) throw notFound();
-    names.forEach((name) => files.remove(name));
+    await Promise.all(names.map((name) => files.remove(name)));
     res.status(204).end();
   });
 
@@ -145,11 +145,11 @@ export function memoryRoutes({ config, memories, artifacts, social, files, live 
       }
       v.check();
 
-      const name = files.adopt(main.path, type.ext);
+      const name = await files.adopt(main.path, type.ext);
       adopted.push(name);
       const posterPath = poster?.path ?? generatedThumb;
       const posterExt = poster ? posterType.ext : 'webp';
-      const posterName = posterPath ? files.adopt(posterPath, posterExt) : null;
+      const posterName = posterPath ? await files.adopt(posterPath, posterExt) : null;
       if (posterName) adopted.push(posterName);
 
       memories.addFile(req.user.id, id, {
@@ -168,7 +168,7 @@ export function memoryRoutes({ config, memories, artifacts, social, files, live 
       files.discard(main?.path);
       files.discard(poster?.path);
       files.discard(main ? `${main.path}.thumb` : null);
-      adopted.forEach((name) => files.remove(name));
+      await Promise.all(adopted.map((name) => files.remove(name)));
     }
   });
 
@@ -215,9 +215,9 @@ export function memoryRoutes({ config, memories, artifacts, social, files, live 
       let previewInfo = null;
       if (poster) previewInfo = await keepImage(v, poster.path, 'poster', { maxEdge: THUMB_MAX_EDGE, quality: THUMB_QUALITY });
       v.check();
-      const file = files.adopt(main.path, 'webp');
+      const file = await files.adopt(main.path, 'webp');
       adopted.push(file);
-      const preview = poster ? files.adopt(poster.path, 'webp') : null;
+      const preview = poster ? await files.adopt(poster.path, 'webp') : null;
       if (preview) adopted.push(preview);
 
       const id = artifacts.create(req.user.id, {
@@ -240,14 +240,14 @@ export function memoryRoutes({ config, memories, artifacts, social, files, live 
       // Whatever was not kept is removed: temp files of a refused upload, or files whose DB insert failed.
       files.discard(main?.path);
       files.discard(poster?.path);
-      adopted.forEach((name) => files.remove(name));
+      await Promise.all(adopted.map((name) => files.remove(name)));
     }
   });
 
-  router.delete('/:id/files/:fileId', (req, res) => {
+  router.delete('/:id/files/:fileId', async (req, res) => {
     const names = memories.removeFile(req.user.id, idParam(req.params.id), idParam(req.params.fileId));
     if (!names) throw notFound();
-    names.forEach((name) => files.remove(name));
+    await Promise.all(names.map((name) => files.remove(name)));
     res.json({ memory: memories.get(req.user.id, idParam(req.params.id)) });
   });
 

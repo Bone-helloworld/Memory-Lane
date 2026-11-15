@@ -12,14 +12,15 @@ import { randomBytes } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { loadConfig } from './config.js';
 import { openDb, transaction } from './db.js';
+import { assertDemoEmails, demoEmailWhere, DEMO_EMAIL_SUFFIX } from './lib/demo.js';
 import { createFileStore } from './lib/files.js';
 import { scrubMetadata } from './lib/metadata.js';
 import { hashPassword } from './lib/password.js';
 import { toISODate } from '../shared/dates.js';
 
 const config = loadConfig();
-const db = openDb(config.dbFile);
-const files = createFileStore(config.uploadDir);
+const db = openDb(config);
+const files = createFileStore(config.uploadDir, config.azureStorage);
 const MEDIA_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), 'seed-media');
 
 const today = toISODate();
@@ -458,55 +459,75 @@ function mediaInfo(buffer, name) {
   return { width, height, duration };
 }
 
+/** Writes bytes into private storage. Blob uploads are scrubbed before they leave the machine. */
+async function putBytes(buffer, ext, { scrub = false } = {}) {
+  if (scrub && files.backend === 'blob') {
+    const tmp = path.join(files.tmpDir, randomBytes(16).toString('hex'));
+    fs.writeFileSync(tmp, buffer);
+    try {
+      await scrubMetadata(tmp, ext);
+      return await files.adopt(tmp, ext);
+    } catch (err) {
+      fs.rmSync(tmp, { force: true });
+      throw err;
+    }
+  }
+  const name = await files.saveBuffer(buffer, ext);
+  if (scrub) await scrubMetadata(path.join(files.dir, name), ext);
+  return name;
+}
+
 /** Copies a seed file into the private upload folder (random name, metadata scrubbed) → a memory_files row. */
 async function storeFile(name) {
   const ext = name.split('.').pop();
   const buffer = fs.readFileSync(path.join(MEDIA_DIR, name));
-  const stored = files.saveBuffer(buffer, ext);
-  await scrubMetadata(path.join(files.dir, stored), ext);
+  const stored = await putBytes(buffer, ext, { scrub: true });
   const info = mediaInfo(buffer, name);
   // The small preview the grids show: a still frame for a video, a 560 px thumbnail for a photo
   // (in the app, the browser makes these before uploading).
   const previewName = ext === 'mp4' ? name.replace(/\.mp4$/, '-poster.jpg') : path.join('thumbs', name);
   const previewBuffer = fs.readFileSync(path.join(MEDIA_DIR, previewName));
-  const poster = files.saveBuffer(previewBuffer, 'jpg');
+  const poster = await putBytes(previewBuffer, 'jpg');
   return { kind: ext === 'mp4' ? 'video' : 'image', file: stored, poster, ...info, size: buffer.length, previewSize: previewBuffer.length };
 }
 
 /** Copies a kept card (seed-media/cards: the image and its small preview) into the private upload folder. */
-function storeCard(name) {
+async function storeCard(name) {
   const buffer = fs.readFileSync(path.join(MEDIA_DIR, 'cards', `${name}.jpg`));
   const thumbs = path.join(MEDIA_DIR, 'cards', 'thumbs');
   const previewName = fs.readdirSync(thumbs).find((file) => file.startsWith(`${name}.`));
   const previewBuffer = fs.readFileSync(path.join(thumbs, previewName));
   const { width, height } = mediaInfo(buffer, `${name}.jpg`);
   return {
-    file: files.saveBuffer(buffer, 'jpg'),
-    preview: files.saveBuffer(previewBuffer, path.extname(previewName).slice(1)),
+    file: await putBytes(buffer, 'jpg'),
+    preview: await putBytes(previewBuffer, path.extname(previewName).slice(1)),
     width,
     height,
     size: buffer.length + previewBuffer.length,
   };
 }
 
-// Remove the previous demo accounts (and their files on disk).
+// Remove the previous demo accounts (and their files). Real accounts are not in this list,
+// and the DELETE also requires the @memorylane.local suffix, so it cannot widen by accident.
 const DEMO_EMAILS = ACCOUNTS.map((account) => account.email);
-const inDemo = 'u.email IN (SELECT value FROM json_each(?))';
+assertDemoEmails(DEMO_EMAILS);
+const stored = {};
+const cards = {};
+try {
+const demoParams = [...DEMO_EMAILS, `%${DEMO_EMAIL_SUFFIX}`];
 const oldFiles = [
-  ...db.prepare(`SELECT f.file AS a, f.poster AS b FROM memory_files f JOIN users u ON u.id = f.user_id WHERE ${inDemo}`).all(JSON.stringify(DEMO_EMAILS)),
-  ...db.prepare(`SELECT x.file AS a, x.preview AS b FROM artifacts x JOIN users u ON u.id = x.user_id WHERE ${inDemo}`).all(JSON.stringify(DEMO_EMAILS)),
+  ...db.prepare(`SELECT f.file AS a, f.poster AS b FROM memory_files f JOIN users u ON u.id = f.user_id WHERE ${demoEmailWhere(DEMO_EMAILS.length, 'u.email')}`).all(...demoParams),
+  ...db.prepare(`SELECT x.file AS a, x.preview AS b FROM artifacts x JOIN users u ON u.id = x.user_id WHERE ${demoEmailWhere(DEMO_EMAILS.length, 'u.email')}`).all(...demoParams),
 ].flatMap((row) => [row.a, row.b].filter(Boolean));
-db.prepare('DELETE FROM users WHERE email IN (SELECT value FROM json_each(?))').run(JSON.stringify(DEMO_EMAILS));
-oldFiles.forEach((name) => files.remove(name));
+db.prepare(`DELETE FROM users WHERE ${demoEmailWhere(DEMO_EMAILS.length)}`).run(...demoParams);
+for (const name of oldFiles) await files.remove(name);
 
 // Copy the photos and videos first; the database rows are then written in one transaction.
-const stored = {};
 const allMemories = [...AN_MEMORIES, ...Object.values(FRIEND_MEMORIES).flat()];
 for (const memory of allMemories) {
   for (const name of memory.files ?? []) stored[name] = await storeFile(name);
 }
-const cards = {};
-for (const card of CARDS) cards[card.image] = storeCard(card.image);
+for (const card of CARDS) cards[card.image] = await storeCard(card.image);
 
 // Random passwords nobody knows: the demo accounts are reachable only through the demo buttons.
 const hashes = {};
@@ -536,7 +557,6 @@ function addMemory(userId, memory) {
   return id;
 }
 
-try {
   transaction(db, () => {
     const users = {};
     ACCOUNTS.forEach((account, index) => {
@@ -631,12 +651,15 @@ try {
     for (const [title, who, days, body] of COMMENTS) comment.run(memoryIds[title], users[who], body, ago(days));
   });
 } catch (err) {
-  Object.values(stored).forEach((f) => [f.file, f.poster].forEach((name) => files.remove(name)));
-  Object.values(cards).forEach((f) => [f.file, f.preview].forEach((name) => files.remove(name)));
+  const names = [
+    ...Object.values(stored).flatMap((f) => [f.file, f.poster]),
+    ...Object.values(cards).flatMap((f) => [f.file, f.preview]),
+  ].filter(Boolean);
+  for (const name of names) await files.remove(name);
   throw err;
+} finally {
+  await Promise.resolve(db.close());
 }
-
-db.close();
 const friendCount = Object.values(FRIEND_MEMORIES).flat().length;
 console.log(
   `Demo ready: An — ${AN_MEMORIES.length} memories, ${PEOPLE.length} people, ${CARDS.length} keepsake cards (artifacts), ${MEDIA.length} films & songs; ` +
