@@ -121,7 +121,7 @@ export default {
     },
     closingA: 'Bắt đầu bằng tấm ảnh',
     closingB: 'bạn thương nhất.',
-    footer: '© 2026 MemoryLane - Bone-helloworld copyright',
+    footer: '© Bone-helloworld copyright',
     // ✎ MỚI — bản nháp, cần duyệt (bạn sửa thoải mái)
     navSharing: 'Chia sẻ',
     demoFriend: 'hoặc vào vai Thu Hà, người được An chia sẻ →',

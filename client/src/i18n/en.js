@@ -101,7 +101,7 @@ export default {
     },
     closingA: 'Start with the one photo',
     closingB: 'you love most.',
-    footer: '© 2026 MemoryLane - Bone-helloworld copyright',
+    footer: '© Bone-helloworld copyright',
     navSharing: 'Sharing',
     demoFriend: 'or try it as Thu Hà, the friend An shares with →',
     footerNav: 'More',
