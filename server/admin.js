@@ -57,7 +57,7 @@ Không bao giờ in tiêu đề, câu chuyện, ghi chú hay lời nhắn của 
 function stats() {
   const db = openDatabase();
   const now = new Date().toISOString();
-  const count = (sql, ...params) => db.prepare(sql).get(...params).n;
+  const count = (sql, ...params) => Number(db.prepare(sql).get(...params).n);
   const data = {
     dataDir: config.dataDir,
     database: {
@@ -152,7 +152,7 @@ function users() {
       google: Boolean(row.google),
       hasPassword: Boolean(row.has_password),
       memories: row.memories,
-      bytes: row.bytes,
+      bytes: Number(row.bytes),
       activeSessions: row.sessions,
       lastLogin: row.last_login,
     }));
@@ -177,7 +177,7 @@ function user() {
   const db = openDatabase();
   const row = findUser(db, args[0]);
   const now = new Date().toISOString();
-  const count = (sql) => db.prepare(sql).get(row.id).n;
+  const count = (sql) => Number(db.prepare(sql).get(row.id).n);
   const data = {
     id: row.id,
     email: row.email,

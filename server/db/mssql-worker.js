@@ -14,17 +14,19 @@ let pool = null;
 let tx = null;
 let config = {};
 
-parentPort.on('message', async (msg) => {
-  try {
-    const result = await dispatch(msg);
-    msg.port.postMessage({ ok: true, result });
-  } catch (err) {
-    msg.port.postMessage(failure(err));
-  } finally {
-    Atomics.store(msg.shared, 0, 1);
-    Atomics.notify(msg.shared, 0);
-  }
-});
+if (parentPort) {
+  parentPort.on('message', async (msg) => {
+    try {
+      const result = await dispatch(msg);
+      msg.port.postMessage({ ok: true, result });
+    } catch (err) {
+      msg.port.postMessage(failure(err));
+    } finally {
+      Atomics.store(msg.shared, 0, 1);
+      Atomics.notify(msg.shared, 0);
+    }
+  });
+}
 
 async function dispatch(msg) {
   if (msg.op === 'init') {
@@ -141,12 +143,42 @@ function bind(request, params) {
   });
 }
 
-function normalizeRows(rows) {
+const NUMERIC_SQL_TYPES = new Set(['BigInt', 'Decimal', 'Numeric']);
+const INTEGER_STRING = /^-?\d+$/;
+
+function sqlTypeName(type) {
+  if (!type) return '';
+  if (typeof type.name === 'string' && type.name) return type.name;
+  if (typeof type.type?.name === 'string') return type.type.name;
+  return '';
+}
+
+function isNumericSqlColumn(column) {
+  const type = column?.type;
+  if (!type) return false;
+  if (type === sql.BigInt || type === sql.Decimal || type === sql.Numeric) return true;
+  return NUMERIC_SQL_TYPES.has(sqlTypeName(type));
+}
+
+/**
+ * Tedious returns BIGINT as a string (and a JS bigint when the driver already
+ * parsed one). Adding that string to a byte count concatenates, so a quota
+ * check reads as full. Convert only BigInt/Decimal/Numeric columns — a digit
+ * string in an nvarchar column stays text.
+ */
+export function coerceDriverValue(value, column) {
+  if (typeof value === 'bigint') return Number(value);
+  if (typeof value === 'string' && isNumericSqlColumn(column) && INTEGER_STRING.test(value)) return Number(value);
+  return value;
+}
+
+export function normalizeRows(rows) {
   if (!rows) return [];
+  const columns = rows.columns ?? {};
   return rows.map((row) => {
     const out = {};
     for (const [key, value] of Object.entries(row)) {
-      out[key] = typeof value === 'bigint' ? Number(value) : value;
+      out[key] = coerceDriverValue(value, columns[key]);
     }
     return out;
   });
