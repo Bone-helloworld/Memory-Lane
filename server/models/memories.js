@@ -199,17 +199,19 @@ export function memoriesModel(db) {
     // ---- photos & videos ----
 
     fileCount(memoryId) {
-      return db.prepare('SELECT COUNT(*) AS n FROM memory_files WHERE memory_id = ?').get(memoryId).n;
+      return Number(db.prepare('SELECT COUNT(*) AS n FROM memory_files WHERE memory_id = ?').get(memoryId).n);
     },
 
     /** Bytes stored by a user (the storage quota): memory photos and videos + photos of artifacts. */
     storageUsed(userId) {
-      return db
-        .prepare(
-          `SELECT (SELECT COALESCE(SUM(size), 0) FROM memory_files WHERE user_id = ?)
+      return Number(
+        db
+          .prepare(
+            `SELECT (SELECT COALESCE(SUM(size), 0) FROM memory_files WHERE user_id = ?)
                 + (SELECT COALESCE(SUM(size), 0) FROM artifacts WHERE user_id = ?) AS n`,
-        )
-        .get(userId, userId).n;
+          )
+          .get(userId, userId).n,
+      );
     },
 
     addFile(userId, memoryId, file) {

@@ -134,9 +134,11 @@ export function socialModel(db) {
     },
 
     invitesCreatedSince(inviterId, since) {
-      return db
-        .prepare('SELECT COUNT(*) AS n FROM invites WHERE inviter_id = ? AND created_at >= ?')
-        .get(inviterId, since.toISOString()).n;
+      return Number(
+        db
+          .prepare('SELECT COUNT(*) AS n FROM invites WHERE inviter_id = ? AND created_at >= ?')
+          .get(inviterId, since.toISOString()).n,
+      );
     },
 
     revokeInvite(inviterId, id) {
