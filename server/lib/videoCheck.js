@@ -5,15 +5,17 @@ import path from 'node:path';
 import ffmpegPath from 'ffmpeg-static';
 import { LIMITS } from '../../shared/limits.js';
 import { analyzeImage } from './content-safety.js';
+import { reviewClip } from './clip.js';
 import { scoreImage } from './moderate.js';
 
 /**
  * Looks at stills from an uploaded video and refuses it when any still is explicit.
  *
  * The video file itself is not recompressed. ffmpeg, the binary shipped in the
- * `ffmpeg-static` package, pulls out JPEGs. nsfwjs scores every frame. Azure
- * Content Safety, when it is configured, sees at most four of them — the ones
- * nsfwjs found most suspicious — because the free tier is quota-limited.
+ * `ffmpeg-static` package, pulls out JPEGs. nsfwjs scores every frame. CLIP's
+ * vision tower scores every frame too (drawings that look "neutral" to nsfwjs).
+ * Azure Content Safety, when it is configured, sees at most four of them — the
+ * ones nsfwjs found most suspicious — because the free tier is quota-limited.
  *
  * How many frames: eight, spread across the clip, and never sparser than one
  * every 10 seconds. A 10-minute video would be 60 frames at that pace, so the
@@ -147,6 +149,10 @@ export async function reviewVideo(filePath) {
       // One explicit frame is enough. The rest are not scored, and Azure is not called.
       if (verdict.explicit) return { explicit: true };
       scored.push({ frame, suspicion: verdict.suspicion ?? 0 });
+    }
+    for (const row of scored) {
+      const clip = await reviewClip(row.frame);
+      if (clip.explicit) return { explicit: true };
     }
     for (const pick of contentSafetyFrames(scored)) {
       const safety = await analyzeImage(pick.frame);

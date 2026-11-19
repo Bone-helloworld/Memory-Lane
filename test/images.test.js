@@ -12,6 +12,7 @@ import { createApp } from '../server/app.js';
 import { loadConfig } from '../server/config.js';
 import { openDb } from '../server/db.js';
 import { ContentSafetyError, setContentSafetyClient } from '../server/lib/content-safety.js';
+import { ClipUnavailableError, setClipReviewer } from '../server/lib/clip.js';
 import { isExplicit, setImageReviewer } from '../server/lib/moderate.js';
 import { frameTimestamps, FRAME_EVERY_SEC, MAX_FRAMES, TARGET_FRAMES, setVideoReviewer } from '../server/lib/videoCheck.js';
 
@@ -27,6 +28,7 @@ let config;
 
 before(async () => {
   setContentSafetyClient(null);
+  setClipReviewer(async () => ({ explicit: false }));
   setImageReviewer(async () => ({ explicit: false }));
   setVideoReviewer(async () => ({ explicit: false }));
   tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'memorylane-images-'));
@@ -42,6 +44,7 @@ before(async () => {
 
 after(() => {
   setContentSafetyClient(undefined);
+  setClipReviewer(undefined);
   setImageReviewer(undefined);
   setVideoReviewer(undefined);
   server?.close();
@@ -174,6 +177,19 @@ describe('upload pipeline', () => {
   test('when content safety cannot verify a photo, the upload is refused', async () => {
     setImageReviewer(async () => {
       throw new ContentSafetyError('content safety request failed');
+    });
+    const { a, memoryId } = await owner();
+    const before = fs.readdirSync(config.uploadDir);
+    const res = await a.post(`/api/memories/${memoryId}/files`, { form: form(PNG, { name: 'photo.png', type: 'image/png' }) });
+    assert.equal(res.status, 400);
+    assert.equal(res.body.fields.file.code, 'COULD_NOT_VERIFY');
+    assert.deepEqual(fs.readdirSync(config.uploadDir), before);
+    setImageReviewer(async () => ({ explicit: false }));
+  });
+
+  test('when the drawing check cannot run, the upload is refused', async () => {
+    setImageReviewer(async () => {
+      throw new ClipUnavailableError('vision tower failed');
     });
     const { a, memoryId } = await owner();
     const before = fs.readdirSync(config.uploadDir);

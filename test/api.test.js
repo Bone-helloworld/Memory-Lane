@@ -10,11 +10,13 @@ import { createApp } from '../server/app.js';
 import { loadConfig } from '../server/config.js';
 import { openDb } from '../server/db.js';
 import { setContentSafetyClient } from '../server/lib/content-safety.js';
+import { setClipReviewer } from '../server/lib/clip.js';
 import { setImageReviewer } from '../server/lib/moderate.js';
 import { setVideoReviewer } from '../server/lib/videoCheck.js';
 
 // These tests check storage and access, not the nude-photo model. See test/images.test.js.
 setContentSafetyClient(null);
+setClipReviewer(async () => ({ explicit: false }));
 setImageReviewer(async () => ({ explicit: false }));
 setVideoReviewer(async () => ({ explicit: false }));
 import { toISODate } from '../shared/dates.js';

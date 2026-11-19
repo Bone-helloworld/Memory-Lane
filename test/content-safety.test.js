@@ -20,6 +20,7 @@ import {
   setContentSafetyClient,
   textIsBlocked,
 } from '../server/lib/content-safety.js';
+import { ClipUnavailableError, setClipReviewer } from '../server/lib/clip.js';
 import { applyImageSafety, scoreImage, setImageReviewer } from '../server/lib/moderate.js';
 import { contentSafetyFrames, setVideoReviewer } from '../server/lib/videoCheck.js';
 
@@ -278,6 +279,11 @@ describe('the REST client', () => {
 describe('photos and the frames sent to content safety', () => {
   test('a local refusal skips Azure; an Azure refusal still blocks', async () => {
     let calls = 0;
+    let clipCalls = 0;
+    setClipReviewer(async () => {
+      clipCalls += 1;
+      return { explicit: false };
+    });
     setContentSafetyClient({
       async analyzeImage() {
         calls += 1;
@@ -288,9 +294,11 @@ describe('photos and the frames sent to content safety', () => {
       const local = await applyImageSafety('photo', { explicit: true, suspicion: 0.9 });
       assert.equal(local.explicit, true);
       assert.equal(calls, 0);
+      assert.equal(clipCalls, 0);
       const remote = await applyImageSafety('photo', { explicit: false, suspicion: 0.2 });
       assert.equal(remote.explicit, true);
       assert.equal(calls, 1);
+      assert.equal(clipCalls, 0, 'Azure already refused the photo');
       setContentSafetyClient({
         async analyzeImage() {
           throw new ContentSafetyError('down');
@@ -302,8 +310,19 @@ describe('photos and the frames sent to content safety', () => {
       );
       setContentSafetyClient(null);
       assert.equal((await applyImageSafety('photo', { explicit: false, suspicion: 0.1 })).explicit, false);
+      assert.equal(clipCalls, 1);
+      setClipReviewer(async () => ({ explicit: true, unsafe: 0.4 }));
+      assert.equal((await applyImageSafety('photo', { explicit: false, suspicion: 0 })).explicit, true);
+      setClipReviewer(async () => {
+        throw new ClipUnavailableError('vision tower failed');
+      });
+      await assert.rejects(
+        () => applyImageSafety('photo', { explicit: false, suspicion: 0 }),
+        (err) => err instanceof ClipUnavailableError && err.code === 'CLIP_UNAVAILABLE',
+      );
     } finally {
       setContentSafetyClient(null);
+      setClipReviewer(async () => ({ explicit: false }));
     }
   });
 

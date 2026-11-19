@@ -354,7 +354,7 @@ async function keepVideo(v, filePath) {
       return;
     }
     console.error(`[${new Date().toISOString()}] VIDEO_CHECK ${err instanceof Error ? err.message : err}`);
-    if (err?.code === 'CONTENT_SAFETY_UNAVAILABLE') v.fail('file', 'COULD_NOT_VERIFY');
+    if (err?.code === 'CONTENT_SAFETY_UNAVAILABLE' || err?.code === 'CLIP_UNAVAILABLE') v.fail('file', 'COULD_NOT_VERIFY');
     else v.fail('file', 'MODERATION_UNAVAILABLE');
   }
 }
@@ -377,7 +377,7 @@ async function keepImage(v, filePath, field, options) {
     // (when configured) gets its own "try again" message; a local-model failure
     // keeps the existing one.
     console.error(`[${new Date().toISOString()}] IMAGE_CHECK ${err instanceof Error ? err.message : err}`);
-    if (err?.code === 'CONTENT_SAFETY_UNAVAILABLE') v.fail(field, 'COULD_NOT_VERIFY');
+    if (err?.code === 'CONTENT_SAFETY_UNAVAILABLE' || err?.code === 'CLIP_UNAVAILABLE') v.fail(field, 'COULD_NOT_VERIFY');
     else v.fail(field, 'MODERATION_UNAVAILABLE');
   }
   return info;
