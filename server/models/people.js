@@ -90,10 +90,13 @@ export function peopleModel(db) {
       return Number(changes) > 0;
     },
 
-    notes(personId) {
+    notes(userId, personId) {
       return db
-        .prepare('SELECT * FROM person_notes WHERE person_id = ? ORDER BY created_at DESC, id DESC')
-        .all(personId)
+        .prepare(
+          `SELECT n.* FROM person_notes n JOIN people p ON p.id = n.person_id
+            WHERE n.person_id = ? AND p.user_id = ? ORDER BY n.created_at DESC, n.id DESC`,
+        )
+        .all(personId, userId)
         .map(toNote);
     },
 

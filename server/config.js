@@ -78,7 +78,9 @@ export function loadConfig(env = process.env) {
     // How long an invite link stays valid.
     inviteDays: Number(env.INVITE_DAYS) || 7,
     // Login/register attempts allowed per IP in each 15-minute window.
-    authRateLimit: Number(env.AUTH_RATE_LIMIT) || 20,
+    authRateLimit: Number(env.AUTH_RATE_LIMIT) || 10,
+    // Requests one address may make to /api in a minute. One instance, so this lives in memory.
+    apiRateLimit: Number(env.API_RATE_LIMIT) || 300,
     // Contact notes allowed per email and per IP in each rolling 24 hours.
     // Counted from contact_messages, so a restart does not clear it.
     contactRateLimit: Number(env.CONTACT_RATE_LIMIT) || 2,

@@ -7,6 +7,7 @@ import multer from 'multer';
 import { HttpError } from './lib/errors.js';
 import { createFileStore } from './lib/files.js';
 import { createLive } from './lib/live.js';
+import { rateLimit } from './lib/rateLimit.js';
 import { blockCrossSiteWrites, noStore, securityHeaders } from './lib/security.js';
 import { createSessions, requireAuth } from './lib/sessions.js';
 import { artifactsModel } from './models/artifacts.js';
@@ -72,6 +73,9 @@ export function createApp({ db, config }) {
   // ---------- JSON API ----------
   const api = express.Router();
   api.use(noStore);
+  // One address, one minute. Health checks from the platform sit well under this;
+  // a script walking the API does not.
+  api.use(rateLimit({ windowMs: 60_000, max: config.apiRateLimit }));
   // "Is the app up, and can it read its database?" — for the hosting platform's health check and for whoever
   // looks after the server (curl …/api/health). Public, and it says nothing else.
   api.get('/health', (req, res) => {

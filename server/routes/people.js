@@ -18,7 +18,7 @@ export function peopleRoutes({ people, memories, social }) {
     if (!person) throw notFound();
     res.json({
       person,
-      notes: people.notes(id),
+      notes: people.notes(req.user.id, id),
       memories: memories.list(req.user.id, { personId: id }),
       invites: social.invites(req.user.id).filter((invite) => invite.person?.id === id),
     });

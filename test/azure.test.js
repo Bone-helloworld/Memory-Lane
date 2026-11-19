@@ -226,7 +226,7 @@ test('demo reset deletes only @memorylane.local rows', () => {
 
 test('the Azure SQL script is idempotent and splits the trigger into its own batch', () => {
   const files = mssqlMigrationFiles();
-  assert.deepEqual(files, ['001_schema.sql', '002_contact_ip.sql']);
+  assert.deepEqual(files, ['001_schema.sql', '002_contact_ip.sql', '003_comment_replies.sql']);
   const script = fs.readFileSync(new URL('../server/migrations/mssql/001_schema.sql', import.meta.url), 'utf8');
   const batches = splitBatches(script);
   assert.equal(batches.length, 2);
@@ -235,6 +235,13 @@ test('the Azure SQL script is idempotent and splits the trigger into its own bat
   assert.match(batches[1], /CREATE OR ALTER TRIGGER dbo\.trg_users_delete/);
   assert.match(script, /INSTEAD OF DELETE/);
   assert.doesNotMatch(script, /PUBLIC|container public/i);
+
+  const replies = fs.readFileSync(new URL('../server/migrations/mssql/003_comment_replies.sql', import.meta.url), 'utf8');
+  const replyBatches = splitBatches(replies);
+  assert.ok(replyBatches.length >= 2);
+  assert.match(replies, /ON DELETE NO ACTION/);
+  assert.match(replyBatches.at(-1), /CREATE OR ALTER TRIGGER dbo\.trg_users_delete/);
+  assert.match(replies, /SET parent_id = NULL/);
 });
 
 test('blob storage uploads, deletes, and serves a Range without making anything public', async () => {

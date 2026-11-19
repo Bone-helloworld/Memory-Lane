@@ -6,7 +6,15 @@ import { FullPageLoading } from './States.jsx';
 export function returnPath(location) {
   // Normally the page that sent us here; after a Google sign-in that did not work out, ?next= in the address (an invite…).
   const from = location.state?.from ?? new URLSearchParams(location.search).get('next');
-  const inside = typeof from === 'string' && from.startsWith('/') && !from.startsWith('//') && !from.startsWith('/\\') && !from.startsWith('/api/');
+  // Same rule as the server: a single in-app path. %2f and backslashes would leave the site.
+  const inside =
+    typeof from === 'string' &&
+    from.length <= 200 &&
+    from.startsWith('/') &&
+    !from.startsWith('/api/') &&
+    !from.includes('\\') &&
+    !from.includes('%') &&
+    !from.includes('//');
   return inside ? from : '/today';
 }
 

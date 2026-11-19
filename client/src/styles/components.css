@@ -744,6 +744,38 @@
   white-space: pre-line;
   overflow-wrap: anywhere;
 }
+.comment-reply {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-3);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.comment-reply:hover {
+  color: var(--text);
+}
+.comment-replies {
+  display: grid;
+  gap: 12px;
+  margin: 4px 0 0 18px;
+  padding-left: 12px;
+  border-left: 2px solid var(--line, rgba(0, 0, 0, 0.12));
+}
+.comment-reply-box {
+  margin-top: 4px;
+}
+.comment-reply-box .textarea {
+  min-height: 64px;
+}
+.comment-replying {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-2);
+}
 .comment-form {
   display: grid;
   gap: 10px;

@@ -192,7 +192,11 @@ export function memoriesModel(db) {
     remove(userId, id) {
       if (!owns(userId, id)) return null;
       const names = fileNamesOf(id);
-      db.prepare('DELETE FROM memories WHERE id = ? AND user_id = ?').run(id, userId);
+      transaction(db, () => {
+        // SQL Server will not cascade a memory delete while comments point at each other.
+        db.prepare('UPDATE comments SET parent_id = NULL WHERE memory_id = ?').run(id);
+        db.prepare('DELETE FROM memories WHERE id = ? AND user_id = ?').run(id, userId);
+      });
       return names;
     },
 

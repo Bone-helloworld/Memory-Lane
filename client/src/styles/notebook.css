@@ -648,6 +648,12 @@
   font-size: 16px;
   line-height: 1.45;
 }
+[data-theme='notebook'] .comment-replies .comment {
+  transform: none;
+  box-shadow: none;
+  background: rgba(255, 255, 255, 0.45);
+  padding: 10px 12px;
+}
 [data-theme='notebook'] .comment-time {
   font-family: var(--font-note);
 }
