@@ -12,10 +12,12 @@ import { createApp } from '../server/app.js';
 import { loadConfig } from '../server/config.js';
 import { openDb } from '../server/db.js';
 import { setContentSafetyClient } from '../server/lib/content-safety.js';
+import { setClipReviewer } from '../server/lib/clip.js';
 import { setImageReviewer } from '../server/lib/moderate.js';
 import { setVideoReviewer } from '../server/lib/videoCheck.js';
 
 setContentSafetyClient(null);
+setClipReviewer(async () => ({ explicit: false }));
 setImageReviewer(async () => ({ explicit: false }));
 setVideoReviewer(async () => ({ explicit: false }));
 

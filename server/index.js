@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import { createApp } from './app.js';
+import { warmClip } from './lib/clip.js';
 import { loadConfig } from './config.js';
 import { openDb } from './db.js';
 
@@ -27,6 +28,17 @@ const server = app.listen(config.port, '0.0.0.0', () => {
 server.headersTimeout = 20_000;
 server.requestTimeout = 5 * 60_000;
 server.keepAliveTimeout = 5_000;
+
+// The drawing check is a few hundred megabytes. Start it after the port is open
+// so a cold boot still answers health checks, and so the first upload is not
+// the one that pays for the download.
+if (config.isProd) {
+  setTimeout(() => {
+    warmClip().catch((err) => {
+      console.error(`[${new Date().toISOString()}] CLIP warm-up failed: ${err instanceof Error ? err.message : err}`);
+    });
+  }, 5_000).unref();
+}
 
 // The port is taken — almost always by another `npm run dev` / `npm start` that is still running.
 server.on('error', (err) => {

@@ -18,6 +18,7 @@
     "seed": "node server/seed.js",
     "setup:google": "node server/setup-google.js",
     "admin": "node server/admin.js",
+    "clip-labels": "node scripts/clip-labels.mjs",
     "test": "node --test \"test/*.test.js\"",
     "test:e2e": "node test/e2e/system.mjs"
   },
@@ -27,6 +28,7 @@
     "@fontsource-variable/playpen-sans": "^5.3.0",
     "@fontsource/be-vietnam-pro": "^5.3.0",
     "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@huggingface/transformers": "^3.8.1",
     "@tensorflow/tfjs": "^4.22.0",
     "@tensorflow/tfjs-backend-cpu": "^4.22.0",
     "compression": "^1.8.2",

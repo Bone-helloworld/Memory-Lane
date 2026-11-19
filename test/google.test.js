@@ -14,9 +14,11 @@ import { createApp } from '../server/app.js';
 import { loadConfig } from '../server/config.js';
 import { openDb } from '../server/db.js';
 import { setContentSafetyClient } from '../server/lib/content-safety.js';
+import { setClipReviewer } from '../server/lib/clip.js';
 import { isGoogleClientId, setEnvValue } from '../server/lib/envfile.js';
 
 setContentSafetyClient(null);
+setClipReviewer(async () => ({ explicit: false }));
 
 const CLIENT_ID = 'test-client.apps.googleusercontent.com';
 const CLIENT_SECRET = 'test-secret';

@@ -1,10 +1,11 @@
 import sharp from 'sharp';
+import { reviewClip } from './clip.js';
 import { analyzeImage } from './content-safety.js';
 
 /**
  * Decides whether a photo is too explicit to keep.
  *
- * Two checks, and either one can refuse the file:
+ * Three checks, and any one of them can refuse the file:
  *   - nsfwjs, a small MobileNetV2 model that runs inside Node on the CPU build
  *     of TensorFlow.js (not the native tfjs-node build, which is far too heavy
  *     for a small host). The weights ship inside the nsfwjs package (~4 MB).
@@ -14,9 +15,13 @@ import { analyzeImage } from './content-safety.js';
  *     AZURE_CONTENT_SAFETY_KEY are set (see content-safety.js). It is skipped
  *     locally. When it is configured and cannot answer, the error is left for
  *     the route to turn into "could not verify, try again".
+ *   - CLIP's vision tower (see clip.js), for drawings nsfwjs and Azure both
+ *     score as ordinary pictures. It loads on the first upload and stays
+ *     loaded. If it cannot load, the upload is refused.
  *
- * nsfwjs runs first. A photo it already refuses is not sent to Azure (the free
- * tier is quota-limited). A photo it allows is still refused when Azure flags it.
+ * nsfwjs runs first. A photo it already refuses is not sent to Azure or CLIP.
+ * A photo both of those allow is still refused when CLIP flags a drawing.
+ * Azure is skipped when it is not configured. CLIP is not.
  *
  * Fail closed for the local model too. If it cannot load, or the check throws,
  * the photo is refused and nothing is stored.
@@ -116,15 +121,18 @@ async function classify(filePath) {
 }
 
 /**
- * nsfwjs already ran. Content Safety runs only when the local model allowed the photo.
+ * nsfwjs already ran. Azure runs when it is configured, then CLIP. Any one of
+ * them refusing the photo is enough.
  * → { explicit, suspicion }
- * Throws ContentSafetyError when Azure is configured but cannot answer.
+ * Throws when Azure is configured but silent, or when CLIP cannot run.
  */
 export async function applyImageSafety(filePath, scored) {
   const suspicion = scored?.suspicion ?? 0;
   if (scored?.explicit) return { explicit: true, suspicion };
   const safety = await analyzeImage(filePath);
-  return { explicit: Boolean(safety.blocked), suspicion };
+  if (safety.blocked) return { explicit: true, suspicion };
+  const clip = await reviewClip(filePath);
+  return { explicit: Boolean(clip.explicit), suspicion };
 }
 
 /**
