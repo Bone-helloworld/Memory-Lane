@@ -214,7 +214,7 @@ export default function MemoryForm({ memory, onSaved, onCancel, onBusyChange }) 
     }
     if (field?.code === 'TOO_MANY_FILES') return t('upload.errors.tooMany', { max: field.max });
     if (field?.code === 'STORAGE_FULL') return t('upload.errors.storageFull');
-    if (field && ['EXPLICIT', 'MODERATION_UNAVAILABLE', 'UNREADABLE', 'VIDEO_TOO_LONG'].includes(field.code)) {
+    if (field && ['EXPLICIT', 'MODERATION_UNAVAILABLE', 'COULD_NOT_VERIFY', 'UNREADABLE', 'VIDEO_TOO_LONG'].includes(field.code)) {
       return fieldMessage(t, field);
     }
     return errorMessage(t, err);

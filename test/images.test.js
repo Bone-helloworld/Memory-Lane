@@ -11,8 +11,9 @@ import sharp from 'sharp';
 import { createApp } from '../server/app.js';
 import { loadConfig } from '../server/config.js';
 import { openDb } from '../server/db.js';
+import { ContentSafetyError, setContentSafetyClient } from '../server/lib/content-safety.js';
 import { isExplicit, setImageReviewer } from '../server/lib/moderate.js';
-import { frameTimestamps, FRAME_EVERY_SEC, MAX_FRAMES, setVideoReviewer } from '../server/lib/videoCheck.js';
+import { frameTimestamps, FRAME_EVERY_SEC, MAX_FRAMES, TARGET_FRAMES, setVideoReviewer } from '../server/lib/videoCheck.js';
 
 const PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
@@ -25,6 +26,7 @@ let tmp;
 let config;
 
 before(async () => {
+  setContentSafetyClient(null);
   setImageReviewer(async () => ({ explicit: false }));
   setVideoReviewer(async () => ({ explicit: false }));
   tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'memorylane-images-'));
@@ -39,6 +41,7 @@ before(async () => {
 });
 
 after(() => {
+  setContentSafetyClient(undefined);
   setImageReviewer(undefined);
   setVideoReviewer(undefined);
   server?.close();
@@ -92,12 +95,17 @@ function form(bytes, { name = 'photo.jpg', type = 'image/jpeg', fields = {} } = 
 }
 
 describe('which frames of a video are checked', () => {
-  test('about every 3 seconds, and never more than the cap', () => {
+  test('eight frames across the clip, at least one every 10 seconds, never more than 12', () => {
     assert.deepEqual(frameTimestamps(0), []);
-    assert.equal(frameTimestamps(3).length, 1);
+    assert.deepEqual(frameTimestamps(-1), []);
+    assert.equal(frameTimestamps(3).length, TARGET_FRAMES);
     const halfMinute = frameTimestamps(30);
-    assert.equal(halfMinute.length, Math.ceil(30 / FRAME_EVERY_SEC));
-    assert.ok(halfMinute.every((t, i) => i === 0 || t - halfMinute[i - 1] >= FRAME_EVERY_SEC - 0.01));
+    assert.equal(halfMinute.length, TARGET_FRAMES);
+    assert.ok(halfMinute.every((t, i) => i === 0 || t > halfMinute[i - 1]));
+    assert.ok(halfMinute[0] > 0 && halfMinute.at(-1) < 30);
+    const ninety = frameTimestamps(90);
+    assert.equal(ninety.length, Math.ceil(90 / FRAME_EVERY_SEC));
+    assert.ok(ninety.every((t, i) => i === 0 || t - ninety[i - 1] <= FRAME_EVERY_SEC + 0.05));
     const tenMinutes = frameTimestamps(10 * 60);
     assert.equal(tenMinutes.length, MAX_FRAMES);
     assert.ok(tenMinutes[0] > 0 && tenMinutes.at(-1) < 10 * 60);
@@ -108,11 +116,16 @@ describe('which frames of a video are checked', () => {
 describe('what counts as explicit', () => {
   const row = (className, probability) => ({ className, probability });
 
-  test('porn and hentai are refused, a beach-level "sexy" score is not', () => {
-    assert.equal(isExplicit([row('Porn', 0.61), row('Neutral', 0.3)]), true);
-    assert.equal(isExplicit([row('Hentai', 0.6), row('Neutral', 0.2)]), true);
-    assert.equal(isExplicit([row('Sexy', 0.7), row('Neutral', 0.25), row('Porn', 0.05)]), false);
-    assert.equal(isExplicit([row('Sexy', 0.9), row('Neutral', 0.05), row('Porn', 0.02)]), true);
+  test('porn, hentai, a low-neutral sexy score, or a high combined score are refused', () => {
+    assert.equal(isExplicit([row('Porn', 0.35), row('Neutral', 0.6)]), true);
+    assert.equal(isExplicit([row('Porn', 0.34), row('Neutral', 0.6)]), false);
+    assert.equal(isExplicit([row('Hentai', 0.4), row('Neutral', 0.5)]), true);
+    assert.equal(isExplicit([row('Hentai', 0.39), row('Neutral', 0.5)]), false);
+    assert.equal(isExplicit([row('Sexy', 0.6), row('Neutral', 0.34)]), true);
+    assert.equal(isExplicit([row('Sexy', 0.6), row('Neutral', 0.35)]), false);
+    assert.equal(isExplicit([row('Sexy', 0.7), row('Neutral', 0.4), row('Porn', 0.02)]), false);
+    assert.equal(isExplicit([row('Porn', 0.25), row('Hentai', 0.25), row('Sexy', 0.25), row('Neutral', 0.25)]), true);
+    assert.equal(isExplicit([row('Porn', 0.2), row('Hentai', 0.2), row('Sexy', 0.2), row('Neutral', 0.4)]), false);
     assert.equal(isExplicit([row('Neutral', 0.92), row('Drawing', 0.05)]), false);
   });
 });
@@ -158,6 +171,19 @@ describe('upload pipeline', () => {
     setImageReviewer(async () => ({ explicit: false }));
   });
 
+  test('when content safety cannot verify a photo, the upload is refused', async () => {
+    setImageReviewer(async () => {
+      throw new ContentSafetyError('content safety request failed');
+    });
+    const { a, memoryId } = await owner();
+    const before = fs.readdirSync(config.uploadDir);
+    const res = await a.post(`/api/memories/${memoryId}/files`, { form: form(PNG, { name: 'photo.png', type: 'image/png' }) });
+    assert.equal(res.status, 400);
+    assert.equal(res.body.fields.file.code, 'COULD_NOT_VERIFY');
+    assert.deepEqual(fs.readdirSync(config.uploadDir), before);
+    setImageReviewer(async () => ({ explicit: false }));
+  });
+
   test('when the checker cannot run, the photo is refused (fail closed)', async () => {
     setImageReviewer(async () => {
       throw new Error('model failed to load');
@@ -190,6 +216,21 @@ describe('upload pipeline', () => {
     });
     assert.equal(res.status, 400);
     assert.equal(res.body.fields.file.code, 'EXPLICIT');
+    assert.deepEqual(fs.readdirSync(config.uploadDir), before);
+    setVideoReviewer(async () => ({ explicit: false }));
+  });
+
+  test('when content safety cannot verify a video, the upload is refused', async () => {
+    setVideoReviewer(async () => {
+      throw new ContentSafetyError('content safety request failed');
+    });
+    const { a, memoryId } = await owner();
+    const before = fs.readdirSync(config.uploadDir);
+    const res = await a.post(`/api/memories/${memoryId}/files`, {
+      form: form(tinyMp4(), { name: 'clip.mp4', type: 'video/mp4', fields: { duration: 12 } }),
+    });
+    assert.equal(res.status, 400);
+    assert.equal(res.body.fields.file.code, 'COULD_NOT_VERIFY');
     assert.deepEqual(fs.readdirSync(config.uploadDir), before);
     setVideoReviewer(async () => ({ explicit: false }));
   });

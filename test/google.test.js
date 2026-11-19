@@ -13,7 +13,10 @@ import { once } from 'node:events';
 import { createApp } from '../server/app.js';
 import { loadConfig } from '../server/config.js';
 import { openDb } from '../server/db.js';
+import { setContentSafetyClient } from '../server/lib/content-safety.js';
 import { isGoogleClientId, setEnvValue } from '../server/lib/envfile.js';
+
+setContentSafetyClient(null);
 
 const CLIENT_ID = 'test-client.apps.googleusercontent.com';
 const CLIENT_SECRET = 'test-secret';

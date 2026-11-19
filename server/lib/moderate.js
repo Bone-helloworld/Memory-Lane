@@ -1,46 +1,66 @@
 import sharp from 'sharp';
+import { analyzeImage } from './content-safety.js';
 
 /**
  * Decides whether a photo is too explicit to keep.
  *
- * sharp cannot tell a nude photo from a landscape, so this asks nsfwjs:
- * a small MobileNetV2 model that runs inside Node on the CPU build of
- * TensorFlow.js (not the native tfjs-node build, which is far too heavy
- * for a small host). The weights ship inside the nsfwjs
- * package (~4 MB). They are loaded the first time someone uploads a photo
- * or a video, not when the server boots, so a cold start stays a normal Node start.
- * After that the model stays in memory for the life of the process.
+ * Two checks, and either one can refuse the file:
+ *   - nsfwjs, a small MobileNetV2 model that runs inside Node on the CPU build
+ *     of TensorFlow.js (not the native tfjs-node build, which is far too heavy
+ *     for a small host). The weights ship inside the nsfwjs package (~4 MB).
+ *     They are loaded the first time someone uploads a photo or a video, not
+ *     when the server boots. After that the model stays in memory.
+ *   - Azure AI Content Safety, when AZURE_CONTENT_SAFETY_ENDPOINT and
+ *     AZURE_CONTENT_SAFETY_KEY are set (see content-safety.js). It is skipped
+ *     locally. When it is configured and cannot answer, the error is left for
+ *     the route to turn into "could not verify, try again".
  *
- * Fail closed. If the model cannot load, or the check throws, the photo
- * is refused and nothing is stored. A family album should not keep a
- * picture we failed to look at. The next upload tries to load the model
- * again.
+ * nsfwjs runs first. A photo it already refuses is not sent to Azure (the free
+ * tier is quota-limited). A photo it allows is still refused when Azure flags it.
  *
- * What we refuse (names are the model's own classes):
- *   Porn   ≥ 0.60
- *   Hentai ≥ 0.60
- *   Sexy   ≥ 0.85 and Neutral < 0.20
- * "Sexy" on its own is often a beach photo. Those stay.
+ * Fail closed for the local model too. If it cannot load, or the check throws,
+ * the photo is refused and nothing is stored.
  *
- * Videos are sampled by server/lib/videoCheck.js (a few small frames via ffmpeg).
- * Each frame is passed to reviewImage below, one at a time.
+ * What nsfwjs refuses (names are the model's own classes):
+ *   Porn   ≥ 0.35
+ *   Hentai ≥ 0.40
+ *   Sexy   ≥ 0.60 and Neutral < 0.35
+ *   Porn + Hentai + Sexy ≥ 0.75
+ *
+ * Videos are sampled by server/lib/videoCheck.js. Each frame is scored here;
+ * only the most suspicious frames are sent to Content Safety.
  */
 
 export const EXPLICIT_THRESHOLDS = {
-  porn: 0.6,
-  hentai: 0.6,
-  sexy: 0.85,
-  sexyNeutralBelow: 0.2,
+  porn: 0.35,
+  hentai: 0.4,
+  sexy: 0.6,
+  sexyNeutralBelow: 0.35,
+  combined: 0.75,
 };
+
+function scoresOf(predictions) {
+  const score = {};
+  for (const row of predictions ?? []) score[row.className] = row.probability ?? 0;
+  return score;
+}
+
+/** Porn + Hentai + Sexy. Video sampling uses this to pick frames for Content Safety. */
+export function suspicionScore(predictions) {
+  const score = scoresOf(predictions);
+  return (score.Porn ?? 0) + (score.Hentai ?? 0) + (score.Sexy ?? 0);
+}
 
 /** predictions: [{ className, probability }, …] from nsfwjs. */
 export function isExplicit(predictions) {
-  const score = Object.fromEntries(predictions.map((row) => [row.className, row.probability]));
-  if ((score.Porn ?? 0) >= EXPLICIT_THRESHOLDS.porn) return true;
-  if ((score.Hentai ?? 0) >= EXPLICIT_THRESHOLDS.hentai) return true;
-  if ((score.Sexy ?? 0) >= EXPLICIT_THRESHOLDS.sexy && (score.Neutral ?? 1) < EXPLICIT_THRESHOLDS.sexyNeutralBelow) {
-    return true;
-  }
+  const score = scoresOf(predictions);
+  const porn = score.Porn ?? 0;
+  const hentai = score.Hentai ?? 0;
+  const sexy = score.Sexy ?? 0;
+  if (porn >= EXPLICIT_THRESHOLDS.porn) return true;
+  if (hentai >= EXPLICIT_THRESHOLDS.hentai) return true;
+  if (sexy >= EXPLICIT_THRESHOLDS.sexy && (score.Neutral ?? 1) < EXPLICIT_THRESHOLDS.sexyNeutralBelow) return true;
+  if (porn + hentai + sexy >= EXPLICIT_THRESHOLDS.combined) return true;
   return false;
 }
 
@@ -49,7 +69,7 @@ let override;
 
 let modelPromise = null;
 
-/** @param {((filePath: string) => Promise<{ explicit: boolean }>) | undefined} fn */
+/** @param {((filePath: string) => Promise<{ explicit: boolean, suspicion?: number }>) | undefined} fn */
 export function setImageReviewer(fn) {
   override = fn;
 }
@@ -84,18 +104,51 @@ async function tensorFromFile(filePath) {
   return tf.tensor3d(new Uint8Array(data), [info.height, info.width, 3]);
 }
 
-/**
- * → { explicit: boolean }
- * Throws when the model cannot run. Callers must not store the photo.
- */
-export async function reviewImage(filePath) {
-  if (override) return override(filePath);
+async function classify(filePath) {
   const model = await loadModel();
   const tensor = await tensorFromFile(filePath);
   try {
     const predictions = await model.classify(tensor);
-    return { explicit: isExplicit(predictions) };
+    return { explicit: isExplicit(predictions), suspicion: suspicionScore(predictions) };
   } finally {
     tensor.dispose();
   }
+}
+
+/**
+ * nsfwjs already ran. Content Safety runs only when the local model allowed the photo.
+ * → { explicit, suspicion }
+ * Throws ContentSafetyError when Azure is configured but cannot answer.
+ */
+export async function applyImageSafety(filePath, scored) {
+  const suspicion = scored?.suspicion ?? 0;
+  if (scored?.explicit) return { explicit: true, suspicion };
+  const safety = await analyzeImage(filePath);
+  return { explicit: Boolean(safety.blocked), suspicion };
+}
+
+/**
+ * → { explicit: boolean }
+ * Throws when the check cannot run. Callers must not store the photo.
+ */
+export async function reviewImage(filePath) {
+  if (override) return override(filePath);
+  return applyImageSafety(filePath, await classify(filePath));
+}
+
+/**
+ * nsfwjs only, for video frames. Content Safety is applied afterwards to a few
+ * of them (see videoCheck.js), not to every frame.
+ * → { explicit, suspicion }
+ */
+export async function scoreImage(filePath) {
+  if (override) {
+    const verdict = await override(filePath);
+    const suspicion = Number(verdict?.suspicion);
+    return {
+      explicit: Boolean(verdict?.explicit),
+      suspicion: Number.isFinite(suspicion) ? suspicion : verdict?.explicit ? 1 : 0,
+    };
+  }
+  return classify(filePath);
 }
