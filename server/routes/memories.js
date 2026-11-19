@@ -10,6 +10,7 @@ import {
   transcodeImageTo,
 } from '../lib/images.js';
 import { scrubMetadata } from '../lib/metadata.js';
+import { analyzeText } from '../lib/content-safety.js';
 import { reviewImage } from '../lib/moderate.js';
 import { reviewVideo } from '../lib/videoCheck.js';
 import { idParam, parseIdList, validator } from '../lib/validate.js';
@@ -47,15 +48,18 @@ export function memoryRoutes({ config, memories, artifacts, social, files, live 
     res.json({ memory });
   });
 
-  router.post('/', (req, res) => {
+  router.post('/', async (req, res) => {
     const data = readMemoryForm(req.body);
+    await moderateMemoryText(data);
     const id = memories.create(req.user.id, { ...data, scene: 1 + Math.floor(Math.random() * 5) });
     res.status(201).json({ memory: memories.get(req.user.id, id) });
   });
 
-  router.put('/:id', (req, res) => {
+  router.put('/:id', async (req, res) => {
     const id = idParam(req.params.id);
-    if (!memories.update(req.user.id, id, readMemoryForm(req.body))) throw notFound();
+    const data = readMemoryForm(req.body);
+    await moderateMemoryText(data);
+    if (!memories.update(req.user.id, id, data)) throw notFound();
     res.json({ memory: memories.get(req.user.id, id) });
   });
 
@@ -290,11 +294,13 @@ export function memoryRoutes({ config, memories, artifacts, social, files, live 
     res.json({ comments: social.comments(id) });
   });
 
-  router.post('/:id/comments', (req, res) => {
+  router.post('/:id/comments', async (req, res) => {
     const id = idParam(req.params.id);
     if (!social.canView(req.user.id, id)) throw notFound();
     const v = validator(req.body);
     const body = v.text('body', { required: true, max: LIMITS.comment });
+    v.check();
+    await moderateText(v, { body });
     v.check();
     const comment = social.addComment(id, req.user.id, body);
     // Everyone else who can see this memory gets the note live.
@@ -331,7 +337,8 @@ async function keepVideo(v, filePath) {
       return;
     }
     console.error(`[${new Date().toISOString()}] VIDEO_CHECK ${err instanceof Error ? err.message : err}`);
-    v.fail('file', 'MODERATION_UNAVAILABLE');
+    if (err?.code === 'CONTENT_SAFETY_UNAVAILABLE') v.fail('file', 'COULD_NOT_VERIFY');
+    else v.fail('file', 'MODERATION_UNAVAILABLE');
   }
 }
 
@@ -349,11 +356,44 @@ async function keepImage(v, filePath, field, options) {
   try {
     if ((await reviewImage(filePath)).explicit) v.fail(field, 'EXPLICIT');
   } catch (err) {
-    // Fail closed: a photo we could not check is not stored.
+    // Fail closed: a photo we could not check is not stored. Content Safety
+    // (when configured) gets its own "try again" message; a local-model failure
+    // keeps the existing one.
     console.error(`[${new Date().toISOString()}] IMAGE_CHECK ${err instanceof Error ? err.message : err}`);
-    v.fail(field, 'MODERATION_UNAVAILABLE');
+    if (err?.code === 'CONTENT_SAFETY_UNAVAILABLE') v.fail(field, 'COULD_NOT_VERIFY');
+    else v.fail(field, 'MODERATION_UNAVAILABLE');
   }
   return info;
+}
+
+/**
+ * Title and story (and a comment body) go through Content Safety when it is
+ * configured. An empty field is skipped. If the service is down, every remaining
+ * field is marked without another call — one timeout is enough.
+ */
+async function moderateText(v, fields) {
+  let unavailable = false;
+  for (const [name, value] of Object.entries(fields)) {
+    if (!value || !String(value).trim()) continue;
+    if (unavailable) {
+      v.fail(name, 'COULD_NOT_VERIFY');
+      continue;
+    }
+    try {
+      if ((await analyzeText(value)).blocked) v.fail(name, 'INAPPROPRIATE_TEXT');
+    } catch (err) {
+      if (err?.code !== 'CONTENT_SAFETY_UNAVAILABLE') throw err;
+      console.error(`[${new Date().toISOString()}] TEXT_CHECK ${err instanceof Error ? err.message : err}`);
+      unavailable = true;
+      v.fail(name, 'COULD_NOT_VERIFY');
+    }
+  }
+}
+
+async function moderateMemoryText(data) {
+  const v = validator({});
+  await moderateText(v, { title: data.title, story: data.story });
+  v.check();
 }
 
 /** ?year=2019 → { exact: 2019 } · ?year=before-2009 → { before: 2009 } */

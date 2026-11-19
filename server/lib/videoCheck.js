@@ -4,28 +4,29 @@ import os from 'node:os';
 import path from 'node:path';
 import ffmpegPath from 'ffmpeg-static';
 import { LIMITS } from '../../shared/limits.js';
-import { reviewImage } from './moderate.js';
+import { analyzeImage } from './content-safety.js';
+import { scoreImage } from './moderate.js';
 
 /**
  * Looks at stills from an uploaded video and refuses it when any still is explicit.
  *
- * The video file itself is not recompressed (that would need a full encode). ffmpeg,
- * the binary shipped in the `ffmpeg-static` package, only pulls out a few small JPEGs.
- * Those go through the same nsfwjs check as photos (`reviewImage`), one at a time, and
- * each JPEG is deleted before the next one is made. A 10-minute video therefore never
- * holds more than one tiny frame plus the model that is already loaded.
+ * The video file itself is not recompressed. ffmpeg, the binary shipped in the
+ * `ffmpeg-static` package, pulls out JPEGs. nsfwjs scores every frame. Azure
+ * Content Safety, when it is configured, sees at most four of them — the ones
+ * nsfwjs found most suspicious — because the free tier is quota-limited.
  *
- * How many frames: about one every 3 seconds, and never more than 40. A short clip is
- * sampled every 3 seconds. A 10-minute clip would be 200 frames at that pace, which is
- * too much CPU, so the 40 frames are spread across the whole video (about every 15 seconds)
- * instead of only looking at the opening two minutes.
+ * How many frames: eight, spread across the clip, and never sparser than one
+ * every 10 seconds. A 10-minute video would be 60 frames at that pace, so the
+ * sample is capped at 12 and those 12 are spread across the whole video.
  *
- * Fail closed. If ffmpeg is missing, the file has no readable duration, a frame cannot
- * be decoded, or the model throws, the video is not stored.
+ * Fail closed. If ffmpeg is missing, the file has no readable duration, a frame
+ * cannot be decoded, or either checker throws, the video is not stored.
  */
 
-export const FRAME_EVERY_SEC = 3;
-export const MAX_FRAMES = 40;
+export const TARGET_FRAMES = 8;
+export const FRAME_EVERY_SEC = 10;
+export const MAX_FRAMES = 12;
+export const CONTENT_SAFETY_FRAMES = 4;
 
 // Tests pass a function. Undefined means "use ffmpeg + the image checker".
 let override;
@@ -42,8 +43,8 @@ export function setVideoReviewer(fn) {
 export function frameTimestamps(durationSec) {
   const duration = Number(durationSec);
   if (!Number.isFinite(duration) || duration <= 0) return [];
-  const wanted = Math.ceil(duration / FRAME_EVERY_SEC);
-  const count = Math.max(1, Math.min(MAX_FRAMES, wanted));
+  const byRate = Math.ceil(duration / FRAME_EVERY_SEC);
+  const count = Math.max(1, Math.min(MAX_FRAMES, Math.max(TARGET_FRAMES, byRate)));
   const step = duration / count;
   const times = [];
   for (let i = 0; i < count; i += 1) {
@@ -51,6 +52,17 @@ export function frameTimestamps(durationSec) {
     times.push(Math.round(at * 1000) / 1000);
   }
   return times;
+}
+
+/**
+ * The frames Content Safety should see: the highest nsfwjs suspicion, at most
+ * `max`, keeping earlier frames when the scores tie.
+ */
+export function contentSafetyFrames(frames, max = CONTENT_SAFETY_FRAMES) {
+  return frames
+    .map((frame, index) => ({ ...frame, index }))
+    .sort((a, b) => (b.suspicion ?? 0) - (a.suspicion ?? 0) || a.index - b.index)
+    .slice(0, max);
 }
 
 function runFfmpeg(args, { allowFail = false, timeoutMs = 30_000 } = {}) {
@@ -97,7 +109,7 @@ async function extractFrame(filePath, seconds, dest) {
       '-frames:v',
       '1',
       '-vf',
-      'scale=224:224:force_original_aspect_ratio=decrease',
+      'scale=1024:1024:force_original_aspect_ratio=decrease',
       '-q:v',
       '5',
       '-y',
@@ -127,12 +139,19 @@ export async function reviewVideo(filePath) {
 
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'ml-frames-'));
   try {
+    const scored = [];
     for (let i = 0; i < times.length; i += 1) {
       const frame = path.join(dir, `frame-${i}.jpg`);
       await extractFrame(filePath, times[i], frame);
-      const verdict = await reviewImage(frame);
-      await fs.rm(frame, { force: true });
+      const verdict = await scoreImage(frame);
+      // One explicit frame is enough. The rest are not scored, and Azure is not called.
       if (verdict.explicit) return { explicit: true };
+      scored.push({ frame, suspicion: verdict.suspicion ?? 0 });
+    }
+    for (const pick of contentSafetyFrames(scored)) {
+      const safety = await analyzeImage(pick.frame);
+      if (safety.skipped) break;
+      if (safety.blocked) return { explicit: true };
     }
     return { explicit: false };
   } finally {
