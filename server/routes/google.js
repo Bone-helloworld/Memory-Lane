@@ -10,7 +10,10 @@ const COOKIE_PATH = '/api/auth/google';
 /** Only a path inside the app, so ?next= can never send someone to another site (open redirect). */
 function safeNext(value) {
   const next = String(value ?? '');
-  return /^\/(?![/\\])/.test(next) && !next.startsWith('/api/') && next.length <= 200 ? next : null;
+  // Encoded slashes (%2f), backslashes and a second slash become //host in some browsers.
+  if (next.length > 200 || next.includes('\\') || next.includes('%') || next.includes('//')) return null;
+  if (!next.startsWith('/') || next.startsWith('/api/')) return null;
+  return next;
 }
 
 /**
@@ -67,7 +70,7 @@ export function googleRoutes({ config, sessions, users }) {
     }
     res.clearCookie(COOKIE, cookieOptions); // one attempt, one use
     const failPage = saved?.mode === 'link' ? '/settings' : '/login';
-    const failNext = saved?.mode === 'link' ? null : (saved?.next ?? null);
+    const failNext = saved?.mode === 'link' ? null : safeNext(saved?.next);
 
     if (!config.google) return back(res, failPage, 'NOT_CONFIGURED', failNext);
     // No attempt started in this browser, or a different one: refuse (forged callback).
@@ -103,8 +106,8 @@ export function googleRoutes({ config, sessions, users }) {
       const name = (profile.name || profile.email.split('@')[0]).slice(0, LIMITS.userName);
       user = users.byId(users.create({ email: profile.email, name, passwordHash: '', locale: saved.locale, google: profile }));
     }
-    sessions.start(res, user.id);
-    res.redirect(303, saved.next ?? '/today');
+    sessions.start(res, user.id, req);
+    res.redirect(303, safeNext(saved.next) ?? '/today');
   });
 
   return router;

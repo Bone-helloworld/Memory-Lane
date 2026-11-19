@@ -47,7 +47,7 @@ export function inviteRoutes({ config, social, live }) {
 
   // Body: { label?, personId?, memoryId? } → the invite plus its token. The token is in this
   // response only — afterwards the server could not show it again even if it wanted to.
-  router.post('/', requireAuth, (req, res) => {
+  router.post('/', requireAuth, limiter, (req, res) => {
     const v = validator(req.body);
     const label = v.text('label', { max: LIMITS.inviteLabel });
     const personId = v.int('personId', { min: 1 });

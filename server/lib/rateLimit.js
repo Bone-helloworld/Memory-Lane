@@ -2,21 +2,22 @@ import { isIP } from 'node:net';
 import { HttpError } from './errors.js';
 
 /**
- * Fixed-window, in-memory rate limiter keyed by client IP.
- * Good enough for one server process; use Redis or the host's limiter when scaling out.
- *
- * The key must be the visitor, not an address the visitor chose. See clientAddress.
+ * Fixed-window, in-memory rate limiter. Good enough for one server process.
+ * `keyFn` defaults to the visitor address (never an address the visitor chose —
+ * see clientAddress). Auth passes IP + email so guessing many accounts, and many
+ * people behind one address, are both bounded.
  */
-export function rateLimit({ windowMs, max }) {
-  const hits = new Map(); // ip → { count, resetAt }
+export function rateLimit({ windowMs, max, keyFn } = {}) {
+  const hits = new Map(); // key → { count, resetAt }
+  const keyOf = keyFn ?? ((req) => clientAddress(req));
 
   function limiter(req, res, next) {
     const now = Date.now();
-    const ip = clientAddress(req);
-    let entry = hits.get(ip);
+    const key = String(keyOf(req) || 'unknown');
+    let entry = hits.get(key);
     if (!entry || entry.resetAt <= now) {
       entry = { count: 0, resetAt: now + windowMs };
-      hits.set(ip, entry);
+      hits.set(key, entry);
     }
     entry.count += 1;
     if (entry.count > max) {
@@ -26,7 +27,7 @@ export function rateLimit({ windowMs, max }) {
     next();
   }
 
-  limiter.reset = (req) => hits.delete(clientAddress(req));
+  limiter.reset = (req) => hits.delete(String(keyOf(req) || 'unknown'));
 
   const sweep = setInterval(() => {
     const now = Date.now();
@@ -58,6 +59,13 @@ export function rateLimit({ windowMs, max }) {
  * CF-Connecting-IP with the visitor address; we use that only when the process is actually
  * on Render (`RENDER=true`), because any other proxy would forward a value the client invented.
  */
+/** Login and register: one bucket per visitor and the email they typed. */
+export function authAttemptKey(req) {
+  const raw = req.body?.email;
+  const email = String(Array.isArray(raw) ? raw[0] : (raw ?? '')).trim().toLowerCase().slice(0, 320);
+  return `${clientAddress(req)}\n${email}`;
+}
+
 export function clientAddress(req) {
   const peer = oneIp(req.socket?.remoteAddress) || 'unknown';
   const hops = trustedHops(req);

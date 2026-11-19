@@ -235,7 +235,7 @@ describe('continue with Google', () => {
   });
 
   test('?next= can only lead inside the app', async () => {
-    for (const next of ['https://evil.example/', '//evil.example', '/\\evil.example', '/api/me/export']) {
+    for (const next of ['https://evil.example/', '//evil.example', '/\\evil.example', '/%2f%2fevil.example', '/api/me/export']) {
       const { callback } = await signInWithGoogle(browser(), { sub: `n-${next}`, email: `n${codeCount}@gmail.com` }, { query: { next } });
       assert.equal(callback.location, '/today', next);
     }

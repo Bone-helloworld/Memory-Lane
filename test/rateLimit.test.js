@@ -62,6 +62,19 @@ function assertLimited(res) {
   assert.ok(retry >= 1 && retry <= 15 * 60, `Retry-After out of range: ${res.retryAfter}`);
 }
 
+test('the same email shares one bucket, and a different email does not, until the address cap', async () => {
+  await withApp({ authRateLimit: 2 }, async (base) => {
+    const attempt = (email) =>
+      post(base, '/api/auth/login', { json: { email, password: 'not-a-real-password' } });
+    assert.equal((await attempt('one@example.com')).status, 401);
+    assert.equal((await attempt('one@example.com')).status, 401);
+    assertLimited(await attempt('one@example.com'));
+    // A different email still has its own tries, until the address cap (twice the per-email cap).
+    assert.equal((await attempt('two@example.com')).status, 401);
+    assertLimited(await attempt('two@example.com'));
+  });
+});
+
 test('the 21st bad login is rejected with Retry-After', async () => {
   await withApp({ isProd: true, cloudflare: true }, async (base) => {
     for (let attempt = 1; attempt <= 20; attempt += 1) {

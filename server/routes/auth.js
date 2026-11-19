@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { HttpError } from '../lib/errors.js';
 import { DUMMY_HASH, hashPassword, verifyPassword } from '../lib/password.js';
-import { rateLimit } from '../lib/rateLimit.js';
+import { authAttemptKey, rateLimit } from '../lib/rateLimit.js';
 import { validator } from '../lib/validate.js';
 import { toUser } from '../models/users.js';
 import { LIMITS, LOCALES } from '../../shared/limits.js';
@@ -15,8 +15,12 @@ export const DEMO_LOGIN_LIMIT = 60;
 
 export function authRoutes({ config, sessions, users, live }) {
   const router = Router();
-  const limiter = rateLimit({ windowMs: 15 * 60_000, max: config.authRateLimit });
-  const demoLimiter = config.allowDemo ? rateLimit({ windowMs: 15 * 60_000, max: DEMO_LOGIN_LIMIT }) : null;
+  const windowMs = 15 * 60_000;
+  // Per address, so rotating the email does not open a new budget. Twice the
+  // per-email cap keeps the old address budget while each account is tighter.
+  const byIp = rateLimit({ windowMs, max: config.authRateLimit * 2 });
+  const byAccount = rateLimit({ windowMs, max: config.authRateLimit, keyFn: authAttemptKey });
+  const demoLimiter = config.allowDemo ? rateLimit({ windowMs, max: DEMO_LOGIN_LIMIT }) : null;
 
   // Always 200 so the landing page can ask "who am I?" without a console error.
   // limits: upload sizes the client checks before sending (the server checks again).
@@ -29,7 +33,7 @@ export function authRoutes({ config, sessions, users, live }) {
     });
   });
 
-  router.post('/register', limiter, async (req, res) => {
+  router.post('/register', byIp, byAccount, async (req, res) => {
     const v = validator(req.body);
     const name = v.text('name', { required: true, max: LIMITS.userName });
     const email = v.email('email');
@@ -51,11 +55,11 @@ export function authRoutes({ config, sessions, users, live }) {
       if (err.errcode === SQLITE_CONSTRAINT_UNIQUE) throw new HttpError(400, 'VALIDATION', { email: { code: 'EMAIL_UNAVAILABLE' } });
       throw err;
     }
-    sessions.start(res, id);
+    sessions.start(res, id, req);
     res.status(201).json({ user: toUser(users.byId(id)) });
   });
 
-  router.post('/login', limiter, async (req, res) => {
+  router.post('/login', byIp, byAccount, async (req, res) => {
     const email = String(req.body?.email ?? '').trim().toLowerCase();
     const password = String(req.body?.password ?? '');
     const user = email ? users.byEmail(email) : undefined;
@@ -63,7 +67,7 @@ export function authRoutes({ config, sessions, users, live }) {
     // An account created with Google has no password ('') and cannot log in with one.
     const valid = await verifyPassword(password, user?.password_hash || DUMMY_HASH);
     if (!user || !user.password_hash || !valid) throw new HttpError(401, 'INVALID_CREDENTIALS');
-    sessions.start(res, user.id);
+    sessions.start(res, user.id, req);
     res.json({ user: toUser(user) });
   });
 
@@ -81,7 +85,7 @@ export function authRoutes({ config, sessions, users, live }) {
     if (!config.allowDemo) throw new HttpError(404, 'NOT_FOUND');
     const user = users.byEmail(req.body?.as === 'friend' ? config.demoFriendEmail : config.demoEmail);
     if (!user) throw new HttpError(404, 'DEMO_MISSING');
-    sessions.start(res, user.id);
+    sessions.start(res, user.id, req);
     res.json({ user: toUser(user) });
   });
 

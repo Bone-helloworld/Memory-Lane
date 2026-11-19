@@ -1,5 +1,6 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { transaction } from '../db.js';
+import { LIMITS } from '../../shared/limits.js';
 
 const NOW = "strftime('%Y-%m-%dT%H:%M:%fZ', 'now')";
 const hashToken = (token) => createHash('sha256').update(token).digest('hex');
@@ -247,17 +248,39 @@ export function socialModel(db) {
     comments(memoryId) {
       return db
         .prepare(
-          `SELECT c.id, c.body, c.created_at, c.user_id, u.name FROM comments c JOIN users u ON u.id = c.user_id
+          `SELECT c.id, c.body, c.parent_id, c.created_at, c.user_id, u.name
+             FROM comments c JOIN users u ON u.id = c.user_id
             WHERE c.memory_id = ? ORDER BY c.created_at, c.id`,
         )
         .all(memoryId)
-        .map((row) => ({ id: row.id, body: row.body, createdAt: row.created_at, author: { id: row.user_id, name: row.name } }));
+        .map(toComment);
     },
 
-    addComment(memoryId, userId, body) {
+    /**
+     * Adds a comment. `parentId` must be a comment on this same memory.
+     * A reply to a reply is stored on the top-level parent and prefixed with @Name.
+     * → the comment, or null when the parent is not on this memory.
+     */
+    addComment(memoryId, userId, body, parentId = null) {
+      let storedParent = null;
+      let text = body;
+      if (parentId) {
+        const parent = db
+          .prepare(
+            `SELECT c.id, c.parent_id, u.name FROM comments c JOIN users u ON u.id = c.user_id
+              WHERE c.id = ? AND c.memory_id = ?`,
+          )
+          .get(parentId, memoryId);
+        if (!parent) return null;
+        storedParent = parent.parent_id ?? parent.id;
+        if (parent.parent_id) {
+          const mention = `@${mentionName(parent.name)} `;
+          if (!text.startsWith(mention)) text = `${mention}${text}`.slice(0, LIMITS.comment + 80);
+        }
+      }
       const { lastInsertRowid } = db
-        .prepare('INSERT INTO comments (memory_id, user_id, body) VALUES (?, ?, ?)')
-        .run(memoryId, userId, body);
+        .prepare('INSERT INTO comments (memory_id, user_id, body, parent_id) VALUES (?, ?, ?, ?)')
+        .run(memoryId, userId, text, storedParent);
       return this.comments(memoryId).find((comment) => comment.id === Number(lastInsertRowid));
     },
 
@@ -265,22 +288,52 @@ export function socialModel(db) {
     commentsBy(userId) {
       return db
         .prepare(
-          `SELECT c.id, c.memory_id, c.body, c.created_at FROM comments c JOIN memories m ON m.id = c.memory_id
+          `SELECT c.id, c.memory_id, c.parent_id, c.body, c.created_at FROM comments c JOIN memories m ON m.id = c.memory_id
             WHERE c.user_id = ? AND m.user_id <> ? ORDER BY c.created_at`,
         )
         .all(userId, userId)
-        .map((row) => ({ id: row.id, memoryId: row.memory_id, body: row.body, createdAt: row.created_at }));
+        .map((row) => ({
+          id: row.id,
+          memoryId: row.memory_id,
+          parentId: row.parent_id ?? null,
+          body: row.body,
+          createdAt: row.created_at,
+        }));
     },
 
-    /** The author, or the owner of the memory, may delete a comment. */
+    /**
+     * The author, or the owner of the memory, may delete a comment.
+     * Replies go with a top-level comment. They are removed first so SQL Server's
+     * NO ACTION self-reference does not reject the delete.
+     */
     removeComment(memoryId, commentId, userId) {
-      const { changes } = db
-        .prepare(
-          `DELETE FROM comments WHERE id = ? AND memory_id = ?
-             AND (user_id = ? OR EXISTS (SELECT 1 FROM memories m WHERE m.id = ? AND m.user_id = ?))`,
-        )
-        .run(commentId, memoryId, userId, memoryId, userId);
-      return Number(changes) > 0;
+      return transaction(db, () => {
+        const allowed = db
+          .prepare(
+            `SELECT id FROM comments WHERE id = ? AND memory_id = ?
+               AND (user_id = ? OR EXISTS (SELECT 1 FROM memories m WHERE m.id = ? AND m.user_id = ?))`,
+          )
+          .get(commentId, memoryId, userId, memoryId, userId);
+        if (!allowed) return false;
+        db.prepare('DELETE FROM comments WHERE memory_id = ? AND parent_id = ?').run(memoryId, commentId);
+        db.prepare('DELETE FROM comments WHERE id = ? AND memory_id = ?').run(commentId, memoryId);
+        return true;
+      });
     },
   };
+}
+
+function toComment(row) {
+  return {
+    id: row.id,
+    body: row.body,
+    parentId: row.parent_id ?? null,
+    createdAt: row.created_at,
+    author: { id: row.user_id, name: row.name },
+  };
+}
+
+/** A name is user-controlled. Keep it on one line so the @mention cannot break the message. */
+function mentionName(name) {
+  return String(name ?? '').replace(/[\r\n\u0000]/g, ' ').trim().slice(0, 80) || '…';
 }

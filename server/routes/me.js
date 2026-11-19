@@ -37,7 +37,7 @@ export function meRoutes({ config, users, memories, people, media, artifacts, so
     users.setPassword(req.user.id, await hashPassword(newPassword));
     // Sign out every device (their sessions and their live streams), then keep this one signed in.
     sessions.revokeAll(req.user.id);
-    sessions.start(res, req.user.id);
+    sessions.start(res, req.user.id, req);
     res.status(204).end();
   });
 
@@ -72,7 +72,7 @@ export function meRoutes({ config, users, memories, people, media, artifacts, so
         sharedWith: social.recipients(userId, memory.id),
         comments: social.comments(memory.id),
       })),
-      people: people.list(userId).map((person) => ({ ...person, notes: people.notes(person.id) })),
+      people: people.list(userId).map((person) => ({ ...person, notes: people.notes(userId, person.id) })),
       media: media.list(userId),
       artifacts: artifacts.list(userId).map(({ imageUrl, previewUrl, memory, ...artifact }) => ({
         ...artifact,

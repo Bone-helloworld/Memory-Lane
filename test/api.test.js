@@ -55,6 +55,7 @@ before(async () => {
     ...loadConfig({
       DATA_DIR: tmp,
       AUTH_RATE_LIMIT: '1000',
+      API_RATE_LIMIT: '10000',
       MAX_UPLOAD_MB: '1',
       MAX_VIDEO_MB: '2',
       STORAGE_MB: '5',
@@ -809,6 +810,43 @@ describe('circle, invites, sharing and comments', () => {
     assert.equal((await ha.del(`/api/memories/${memory.id}/comments/${fromAn.id}`)).status, 404, "not someone else's comment");
     assert.equal((await an.del(`/api/memories/${memory.id}/comments/${fromHa.body.comment.id}`)).status, 204, 'the owner moderates');
     assert.equal((await an.get(`/api/memories/${memory.id}`)).body.memory.commentCount, 1);
+  });
+
+  test('a reply nests under the top-level message, and a reply to a reply says who', async () => {
+    const { agent: an } = await registeredAgent('An');
+    const { agent: ha } = await registeredAgent('Hà');
+    const { agent: stranger } = await registeredAgent('Stranger');
+    const memory = await createMemory(an, { title: 'Hội An' });
+    const other = await createMemory(an, { title: 'Huế' });
+    await connect(an, ha, { memoryId: memory.id });
+
+    const top = (await ha.post(`/api/memories/${memory.id}/comments`, { json: { body: 'Xin chào' } })).body.comment;
+    assert.equal(top.parentId, null);
+
+    const reply = await an.post(`/api/memories/${memory.id}/comments`, { json: { body: 'Đồng ý', parentId: top.id } });
+    assert.equal(reply.status, 201, JSON.stringify(reply.body));
+    assert.equal(reply.body.comment.parentId, top.id);
+    assert.equal(reply.body.comment.body, 'Đồng ý');
+
+    const nested = await ha.post(`/api/memories/${memory.id}/comments`, {
+      json: { body: 'Mình cũng vậy', parent_id: reply.body.comment.id },
+    });
+    assert.equal(nested.status, 201, JSON.stringify(nested.body));
+    assert.equal(nested.body.comment.parentId, top.id, 'a reply to a reply stays on the top-level parent');
+    assert.equal(nested.body.comment.body, '@An Mình cũng vậy');
+
+    const wrongMemory = await an.post(`/api/memories/${other.id}/comments`, { json: { body: 'lạc', parentId: top.id } });
+    assert.equal(wrongMemory.status, 400);
+    assert.equal(wrongMemory.body.fields.parentId.code, 'INVALID_PARENT');
+
+    assert.equal((await stranger.post(`/api/memories/${memory.id}/comments`, { json: { body: 'hi', parentId: top.id } })).status, 404);
+
+    const list = (await ha.get(`/api/memories/${memory.id}/comments`)).body.comments;
+    assert.deepEqual(list.map((comment) => comment.body), ['Xin chào', 'Đồng ý', '@An Mình cũng vậy']);
+
+    assert.equal((await an.del(`/api/memories/${memory.id}/comments/${top.id}`)).status, 204);
+    assert.deepEqual((await ha.get(`/api/memories/${memory.id}/comments`)).body.comments, []);
+    assert.equal((await an.get(`/api/memories/${memory.id}`)).body.memory.commentCount, 0);
   });
 
   test('leaving a circle withdraws every share both ways and unlinks the address-book entry', async () => {

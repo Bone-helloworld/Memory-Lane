@@ -22,6 +22,12 @@ const server = app.listen(config.port, '0.0.0.0', () => {
   console.log(`  Media          → ${config.azureStorage ? `Azure Blob (${config.azureStorage.container})` : 'local disk'}\n`);
 });
 
+// Slowloris: drop a client that will not finish its headers. The body may still take
+// a few minutes — a video upload on a slow connection is legitimate.
+server.headersTimeout = 20_000;
+server.requestTimeout = 5 * 60_000;
+server.keepAliveTimeout = 5_000;
+
 // The port is taken — almost always by another `npm run dev` / `npm start` that is still running.
 server.on('error', (err) => {
   if (err.code !== 'EADDRINUSE') throw err;

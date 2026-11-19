@@ -47,7 +47,13 @@ export function createSessions(db, config) {
       live = channel;
     },
 
-    start(res, userId) {
+    start(res, userId, req) {
+      // Drop the session this browser already held, then issue a new token.
+      // Logging in must not keep a token someone planted before the password was checked.
+      if (req) {
+        const previous = readCookie(req, COOKIE);
+        if (previous) remove.run(hashToken(previous));
+      }
       const token = randomBytes(32).toString('base64url');
       insert.run(hashToken(token), userId, new Date(Date.now() + maxAgeMs).toISOString());
       res.cookie(COOKIE, token, {

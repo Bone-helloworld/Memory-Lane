@@ -12,6 +12,7 @@ import {
 import { scrubMetadata } from '../lib/metadata.js';
 import { analyzeText } from '../lib/content-safety.js';
 import { reviewImage } from '../lib/moderate.js';
+import { clientAddress, rateLimit } from '../lib/rateLimit.js';
 import { reviewVideo } from '../lib/videoCheck.js';
 import { idParam, parseIdList, validator } from '../lib/validate.js';
 import { addDays, isValidDate, toISODate } from '../../shared/dates.js';
@@ -24,6 +25,16 @@ export function memoryRoutes({ config, memories, artifacts, social, files, live 
 
   // One photo or video per request (plus a poster frame for videos), streamed to disk.
   const upload = files.uploader(Math.max(config.maxVideoMb, config.maxUploadMb) * MB);
+  const uploadLimit = rateLimit({
+    windowMs: 15 * 60_000,
+    max: 40,
+    keyFn: (req) => `upload:${clientAddress(req)}:${req.user?.id ?? ''}`,
+  });
+  const commentLimit = rateLimit({
+    windowMs: 15 * 60_000,
+    max: 30,
+    keyFn: (req) => `comment:${clientAddress(req)}:${req.user?.id ?? ''}`,
+  });
 
   router.get('/', (req, res) => {
     res.json({
@@ -88,7 +99,7 @@ export function memoryRoutes({ config, memories, artifacts, social, files, live 
     next();
   }
 
-  router.post('/:id/files', beforeUpload, upload, async (req, res) => {
+  router.post('/:id/files', uploadLimit, beforeUpload, upload, async (req, res) => {
     const main = req.files?.file?.[0];
     const poster = req.files?.poster?.[0];
     let adopted = [];
@@ -189,7 +200,7 @@ export function memoryRoutes({ config, memories, artifacts, social, files, live 
     next();
   }
 
-  router.post('/:id/artifacts', beforeCard, upload, async (req, res) => {
+  router.post('/:id/artifacts', uploadLimit, beforeCard, upload, async (req, res) => {
     const main = req.files?.file?.[0];
     const poster = req.files?.poster?.[0];
     let adopted = [];
@@ -294,15 +305,21 @@ export function memoryRoutes({ config, memories, artifacts, social, files, live 
     res.json({ comments: social.comments(id) });
   });
 
-  router.post('/:id/comments', async (req, res) => {
+  router.post('/:id/comments', commentLimit, async (req, res) => {
     const id = idParam(req.params.id);
     if (!social.canView(req.user.id, id)) throw notFound();
+    if (req.body && req.body.parentId == null && req.body.parent_id != null) req.body.parentId = req.body.parent_id;
     const v = validator(req.body);
+    const parentId = v.int('parentId', { min: 1 });
     const body = v.text('body', { required: true, max: LIMITS.comment });
     v.check();
     await moderateText(v, { body });
     v.check();
-    const comment = social.addComment(id, req.user.id, body);
+    const comment = social.addComment(id, req.user.id, body, parentId);
+    if (!comment) {
+      v.fail('parentId', 'INVALID_PARENT');
+      v.check();
+    }
     // Everyone else who can see this memory gets the note live.
     const others = social.audience(id).filter((userId) => userId !== req.user.id);
     live.publish(others, { type: 'comment', memoryId: id, title: memories.get(req.user.id, id).title, comment });

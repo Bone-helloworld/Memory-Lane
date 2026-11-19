@@ -25,5 +25,7 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
+    // The production bundle must not ship source (or anything a map would point at).
+    sourcemap: false,
   },
 });
